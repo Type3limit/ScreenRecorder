@@ -1,0 +1,18 @@
+<RCC>
+    <qresource prefix="/icons">
+        <file>images/close.svg</file>
+        <file>images/minimize.svg</file>
+        <file>images/fullscreen.svg</file>
+        <file>images/areas.svg</file>
+        <file>images/micphone.svg</file>
+        <file>images/player.svg</file>
+        <file>images/stop_recoding.svg</file>
+        <file>images/stop_recoding_minimize.svg</file>
+        <file>images/centerAnchor.svg</file>
+        <file>images/comboBoxExpander.svg</file>
+        <file>images/expander_expanded.svg</file>
+        <file>images/expander_unexpand.svg</file>
+        <file>images/lock.svg</file>
+        <file>images/start.svg</file>
+    </qresource>
+</RCC>

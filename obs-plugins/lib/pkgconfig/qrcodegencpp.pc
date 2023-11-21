@@ -1,0 +1,11 @@
+prefix=D:/a/obs-deps/obs-deps/windows/obs-deps-x64
+exec_prefix=${prefix}
+libdir=${prefix}/lib
+includedir=${prefix}/include/qrcodegencpp
+
+Name: qrcodegencpp
+Description: High-quality QR Code generator library in Java, TypeScript/JavaScript, Python, C++, C, Rust
+Version: 1.8.0
+
+Libs: -L${libdir} -lqrcodegencpp
+Cflags: -I${includedir}

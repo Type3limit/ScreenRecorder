@@ -1,0 +1,11 @@
+# cmocka pkg-config source file
+
+prefix=D:/a/obs-deps/obs-deps/windows/obs-deps-x64
+libdir=D:/a/obs-deps/obs-deps/windows/obs-deps-x64/lib
+includedir=D:/a/obs-deps/obs-deps/windows/obs-deps-x64/include
+
+Name: cmocka
+Description: The cmocka unit testing library
+Version: 1.1.7
+Libs: -L${libdir} -lcmocka
+Cflags: -I${includedir}

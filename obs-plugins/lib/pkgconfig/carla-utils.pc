@@ -1,0 +1,9 @@
+prefix=D:/a/obs-deps/obs-deps/windows/obs-deps-x64
+libdir=lib
+includedir=include
+
+Name: carla-utils
+Version: 2.6.0-alpha1
+Description: Carla Host Utilities
+Libs: -L${libdir}/carla -lcarla_utils
+Cflags: -I${includedir}/carla -I${includedir}/carla/includes -I${includedir}/carla/utils
