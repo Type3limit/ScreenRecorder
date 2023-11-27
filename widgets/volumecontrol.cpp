@@ -10,6 +10,7 @@
 VolumeControl::VolumeControl(QWidget* widget)
 	:QWidget(widget)
 {
+	updateTimer.setInterval(40);
 	updateTimer.setTimerType(Qt::PreciseTimer);
 	updateTimer.start();
 	connect(&updateTimer, &QTimer::timeout, this, [&]() {update(); });
@@ -43,7 +44,6 @@ void VolumeControl::setLevels(const float* magnitude,
 		currentPeak[channelNr] = peak[channelNr];
 		currentInputPeak[channelNr] = inputPeak[channelNr];
 	}
-
 	locker.unlock();
 }
 
@@ -98,9 +98,9 @@ void VolumeControl::paintEvent(QPaintEvent* event)
 	int width = widgetRect.width();
 	int height = widgetRect.height();
 	QPainter painter(this);
-	painter.setPen(QColor(15, 15, 15));
+	painter.setPen(QPen(QColor(15, 15, 15),1));
 	painter.setBrush(QColor(33, 33, 38));
-	painter.drawRoundedRect(widgetRect, 2, 2);
+	painter.drawRoundedRect(widgetRect, 4, 4);
 
 	if (width > 8)
 	{

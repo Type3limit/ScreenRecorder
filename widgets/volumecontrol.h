@@ -27,14 +27,14 @@ private:
 	int channelCount = 8;
 	int audioChannelCount = 0;
 	//音频绘制
-	float currentMagnitude[MAX_AUDIO_CHANNELS]{0};
-	float currentPeak[MAX_AUDIO_CHANNELS]{0};
-	float currentInputPeak[MAX_AUDIO_CHANNELS]{0};
-	float displayMagnitude[MAX_AUDIO_CHANNELS]{0};
-	float displayPeak[MAX_AUDIO_CHANNELS]{0};
-	float displayPeakHold[MAX_AUDIO_CHANNELS]{0};
+	float currentMagnitude[MAX_AUDIO_CHANNELS]{-90};
+	float currentPeak[MAX_AUDIO_CHANNELS]{-90};
+	float currentInputPeak[MAX_AUDIO_CHANNELS]{-90};
+	float displayMagnitude[MAX_AUDIO_CHANNELS]{-90};
+	float displayPeak[MAX_AUDIO_CHANNELS]{-90};
+	float displayPeakHold[MAX_AUDIO_CHANNELS]{-90};
 	uint64_t displayPeakHoldLastUpdateTime[MAX_AUDIO_CHANNELS]{0};
-	float displayInputPeakHold[MAX_AUDIO_CHANNELS]{0};
+	float displayInputPeakHold[MAX_AUDIO_CHANNELS]{-90};
 	uint64_t displayInputPeakHoldLastUpdateTime[MAX_AUDIO_CHANNELS]{0};
 
 	QMutex dataMutex;

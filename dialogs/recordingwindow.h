@@ -1,4 +1,4 @@
-//
+﻿//
 // Created by 58226 on 2023/11/21.
 //
 
@@ -6,8 +6,13 @@
 #define RECORDINGWINDOW_H
 
 #include <QMainWindow>
-
-
+#include "obswrapper.h"
+#include "config.h"
+#include "minimizedrecordingwindow.h"
+#include "qhotkey.h"
+#include "backgroundwindow.h"
+#include <QTcpServer>
+#include "countdowndialog.h"
 QT_BEGIN_NAMESPACE
 namespace Ui { class RecordingWindow; }
 QT_END_NAMESPACE
@@ -21,11 +26,37 @@ public:
     void mousePressEvent(QMouseEvent *e) override;
     void mouseMoveEvent(QMouseEvent *e) override;
     void mouseReleaseEvent(QMouseEvent *e) override;
+    void closeEvent(QCloseEvent *event) override;
+    bool isFullScreenMode() const;
+
+    void startRecord();
+    void pauseRecord();
+    void stopRecord();
+    void saveConfig();
+public slots:
+    void rebuildBackgroundWindow();
+protected:
+    void init();
+
 private:
-    QPoint m_pos;
-    bool m_leftButtonPressed;
+    QPoint m_pos = {0,0};
+    bool m_leftButtonPressed = false;
+    bool m_isRecordingStarted  = false;
+    bool m_isPauseNow=false;
 private:
     Ui::RecordingWindow *ui;
+    QSharedPointer<ObsWrapper> m_obs;
+    MinimizedRecordingWindow* m_miniWindow = nullptr;
+    BackgroundWindow* m_backgroundWindow=nullptr;
+    CountDownDialog* m_countDownDialog = nullptr;
+    Config m_config;
+    QHotkey* m_recordHotKey;
+    QHotkey* m_pauseHotKey;
+    QTcpServer * m_server;
+    QTimer m_timer;
+    qint64 m_seconds = 0;
+    QPoint m_startPos = {0,0};
+    QPoint m_endPos = {0,0};
 };
 
 

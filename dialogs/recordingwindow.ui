@@ -29,16 +29,33 @@
    <string notr="true">QFrame#contentFrame
 {
 background-color:#28282E;
+border-top : 0px solid #0F0F0F;
+border-left : 1px solid #0F0F0F;
+border-right : 1px solid #0F0F0F;
+border-bottom : 1px solid #0F0F0F;
 border-bottom-left-radius:10px;
 border-bottom-right-radius:10px;
 }
 
 QFrame#titleFrame
 {
+border-top : 1px solid #0F0F0F;
+border-left : 1px solid #0F0F0F;
+border-right : 1px solid #0F0F0F;
+border-bottom : 1px solid #0F0F0F;
 background-color:#212126;
 border-top-left-radius:10px;
 border-top-right-radius:10px;
 }
+
+
+QFrame#countDownFrame
+{
+background-color:#212126;
+border-radius:4px;
+  border: 1px solid #0F0F0F;
+}
+
 QCheckBox,
 QLabel
 {
@@ -54,13 +71,14 @@ QFrame#line,
 {
 background-color:#353539;
 }
+QComboBox QAbstractItemView { outline: 0px;}
 QLineEdit,
 QComboBox{
   subcontrol-origin: padding;
   subcontrol-position: top right;
   selection-background-color: #40404A;
   selection-color: #3B3B41;
-  color: white;
+  color: #99A1B0;
   height:24px;
   background-color: #212126;
   border-style: solid;
@@ -85,15 +103,14 @@ QComboBox{
   {
   padding-top: 0px;
   padding-left: 0px;
-  color: white;
+  color: #99A1B0;
   background-color: #40404A;
   selection-background-color: #3B3B41;
   }
 
   QComboBox:!on
   {
-  color: white;
-  background-color: ;
+  color: #99A1B0;
   }
 
 
@@ -101,13 +118,17 @@ QComboBox{
   {
   border: 0px solid darkgray;
   color: white;
+  background-color:#212126;
   selection-background-color: #454549;
+height:24px;
   }
 
 
   QComboBox QAbstractItemView::item
   {
   qproperty-elide-mode: '...';
+  height:24px;
+outline: 0px;
   }
 
 
@@ -128,9 +149,51 @@ QComboBox{
   QComboBox::down-arrow
   {
   image: url(:/icons/images/comboBoxExpander.svg);
-  width: 7px;
+  width: 8px;
   height: 4px;
   }
+
+QListWidget{outline:0px;}
+QListView {
+  border-radius: 4px;
+  padding: 5px;
+  margin: 0px;
+}
+
+QTableView::item,
+QTreeView::item,
+QListView::item {
+  padding: 5px;
+  height: 22px;
+  color: #99A1B0;
+  selection-color: white;
+  border-color: transparent; 
+  border-radius: 4px;
+outline: 0px;
+}
+
+
+
+QTableView:item:selected,
+QTreeView::item:selected,
+QListView::item:selected {
+  background-color: #40404A;
+  selection-background-color:  #3B3B41;
+  color: #99A1B0;
+  selection-color:  white;
+  border-radius: 4px;
+}
+
+QTableView:item:selected:focus,
+QTreeView::item:selected:focus,
+QListView::item:selected:focus {
+  background-color: #40404A;
+  selection-background-color:#3B3B41;
+  color:  #99A1B0;
+  selection-color: white; 
+}
+
+
 </string>
   </property>
   <widget class="QWidget" name="centralwidget">
@@ -252,7 +315,7 @@ QComboBox{
        <item>
         <widget class="QWidget" name="AreaWidgets" native="true">
          <property name="sizePolicy">
-          <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+          <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
            <horstretch>0</horstretch>
            <verstretch>0</verstretch>
           </sizepolicy>
@@ -261,8 +324,17 @@ QComboBox{
           <property name="spacing">
            <number>0</number>
           </property>
+          <property name="leftMargin">
+           <number>0</number>
+          </property>
+          <property name="topMargin">
+           <number>0</number>
+          </property>
+          <property name="rightMargin">
+           <number>0</number>
+          </property>
           <property name="bottomMargin">
-           <number>1</number>
+           <number>0</number>
           </property>
           <item>
            <widget class="QWidget" name="ScreenAreaWidget" native="true">
@@ -273,7 +345,7 @@ QComboBox{
              <item>
               <layout class="QHBoxLayout" name="horizontalLayout_5">
                <item>
-                <widget class="QPushButton" name="pushButton">
+                <widget class="QPushButton" name="areaButton">
                  <property name="minimumSize">
                   <size>
                    <width>80</width>
@@ -286,6 +358,9 @@ QComboBox{
                    <height>80</height>
                   </size>
                  </property>
+                 <property name="toolTip">
+                  <string>录制区域</string>
+                 </property>
                  <property name="styleSheet">
                   <string notr="true">QPushButton
 {
@@ -293,6 +368,10 @@ qproperty-icon:url(:/icons/images/fullscreen.svg);
 qproperty-iconSize:54px;
 background-color:#2F2F34;
 border-radius:4px;
+}
+QPushButton:hover
+{
+background-color:#212126;
 }</string>
                  </property>
                  <property name="text">
@@ -430,6 +509,9 @@ image:url(:/icons/images/lock.svg);
                    <height>80</height>
                   </size>
                  </property>
+                 <property name="toolTip">
+                  <string>麦克风设备</string>
+                 </property>
                  <property name="styleSheet">
                   <string notr="true">QPushButton
 {
@@ -437,6 +519,10 @@ qproperty-icon:url(:/icons/images/micphone.svg);
 qproperty-iconSize:54px;
 background-color:#2F2F34;
 border-radius:4px;
+}
+QPushButton:hover
+{
+background-color:#212126;
 }</string>
                  </property>
                  <property name="text">
@@ -521,6 +607,9 @@ border-radius:4px;
                    <height>80</height>
                   </size>
                  </property>
+                 <property name="toolTip">
+                  <string>扬声器设备</string>
+                 </property>
                  <property name="styleSheet">
                   <string notr="true">QPushButton
 {
@@ -528,6 +617,10 @@ qproperty-icon:url(:/icons/images/player.svg);
 qproperty-iconSize:54px;
 background-color:#2F2F34;
 border-radius:4px;
+}
+QPushButton:hover
+{
+background-color:#212126;
 }</string>
                  </property>
                  <property name="text">
@@ -606,6 +699,9 @@ border-radius:4px;
                    <height>80</height>
                   </size>
                  </property>
+                 <property name="toolTip">
+                  <string>开始停止 录制</string>
+                 </property>
                  <property name="styleSheet">
                   <string notr="true">QPushButton
 {
@@ -613,6 +709,10 @@ qproperty-icon:url(:/icons/images/start.svg);
 qproperty-iconSize:44px;
 background-color:#2F2F34;
 border-radius:4px;
+}
+QPushButton:hover
+{
+background-color:#212126;
 }</string>
                  </property>
                  <property name="text">
@@ -635,6 +735,12 @@ border-radius:4px;
                </property>
                <item>
                 <widget class="QFrame" name="placeholder">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
                  <property name="minimumSize">
                   <size>
                    <width>0</width>
@@ -653,6 +759,33 @@ border-radius:4px;
                  <property name="frameShadow">
                   <enum>QFrame::Raised</enum>
                  </property>
+                 <layout class="QHBoxLayout" name="horizontalLayout_24">
+                  <property name="spacing">
+                   <number>0</number>
+                  </property>
+                  <property name="leftMargin">
+                   <number>0</number>
+                  </property>
+                  <property name="topMargin">
+                   <number>0</number>
+                  </property>
+                  <property name="rightMargin">
+                   <number>0</number>
+                  </property>
+                  <property name="bottomMargin">
+                   <number>0</number>
+                  </property>
+                  <item>
+                   <widget class="QLabel" name="statusLabel">
+                    <property name="text">
+                     <string/>
+                    </property>
+                    <property name="alignment">
+                     <set>Qt::AlignCenter</set>
+                    </property>
+                   </widget>
+                  </item>
+                 </layout>
                 </widget>
                </item>
               </layout>
@@ -678,16 +811,22 @@ border-radius:4px;
         </widget>
        </item>
        <item>
-        <widget class="QWidget" name="SettingWidget" native="true">
+        <widget class="QWidget" name="SettingExpandWidget" native="true">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
            <horstretch>0</horstretch>
            <verstretch>0</verstretch>
           </sizepolicy>
          </property>
+         <property name="maximumSize">
+          <size>
+           <width>16777215</width>
+           <height>30</height>
+          </size>
+         </property>
          <layout class="QHBoxLayout" name="horizontalLayout_3">
           <item>
-           <widget class="QCheckBox" name="checkBox">
+           <widget class="QCheckBox" name="settingExpander">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
               <horstretch>0</horstretch>
@@ -749,7 +888,313 @@ border-radius:4px;
         </widget>
        </item>
        <item>
-        <layout class="QVBoxLayout" name="verticalLayout_6"/>
+        <widget class="QWidget" name="SettingWidget" native="true">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <layout class="QVBoxLayout" name="verticalLayout_6">
+          <property name="spacing">
+           <number>12</number>
+          </property>
+          <property name="leftMargin">
+           <number>1</number>
+          </property>
+          <property name="bottomMargin">
+           <number>9</number>
+          </property>
+          <item>
+           <layout class="QHBoxLayout" name="horizontalLayout_7">
+            <property name="leftMargin">
+             <number>20</number>
+            </property>
+            <item>
+             <widget class="QLabel" name="label_2">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="text">
+               <string>任务名称：</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLineEdit" name="nameEdit"/>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <layout class="QHBoxLayout" name="horizontalLayout_10">
+            <property name="leftMargin">
+             <number>20</number>
+            </property>
+            <item>
+             <widget class="QLabel" name="label_4">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="text">
+               <string>录屏码率：</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QComboBox" name="bitrateComboBox"/>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <layout class="QHBoxLayout" name="horizontalLayout_12">
+            <property name="leftMargin">
+             <number>20</number>
+            </property>
+            <item>
+             <widget class="QLabel" name="label_5">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="text">
+               <string>录屏帧率：</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QComboBox" name="frameRateComboBox"/>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <layout class="QHBoxLayout" name="horizontalLayout_14">
+            <property name="leftMargin">
+             <number>20</number>
+            </property>
+            <item>
+             <widget class="QLabel" name="label_6">
+              <property name="text">
+               <string>保存位置：</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLineEdit" name="savePathEdit"/>
+            </item>
+            <item>
+             <widget class="QPushButton" name="pathSelectionButton">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="minimumSize">
+               <size>
+                <width>50</width>
+                <height>0</height>
+               </size>
+              </property>
+              <property name="styleSheet">
+               <string notr="true">QPushButton
+{
+  selection-background-color: #40404A;
+  selection-color: #3B3B41;
+  color: #99A1B0;
+  height:24px;
+  background-color: #212126;
+  border-style: solid;
+  border: 1px solid #0F0F0F;
+  border-radius: 4;
+  padding: 1px 0px 1px 2px;
+  font-size: 12px;
+  font-family:Microsoft YaHei UI;
+  padding-left:0px;
+}
+QPushButton:hover
+{
+ background-color: #2F2F34;
+}</string>
+              </property>
+              <property name="text">
+               <string>选择</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <layout class="QHBoxLayout" name="horizontalLayout_17">
+            <property name="leftMargin">
+             <number>8</number>
+            </property>
+            <item>
+             <widget class="QLabel" name="label_7">
+              <property name="text">
+               <string>启停快捷键：</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QKeySequenceEdit" name="StartShortCut">
+              <property name="keySequence">
+               <string>F9</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <layout class="QHBoxLayout" name="horizontalLayout_18">
+            <property name="leftMargin">
+             <number>8</number>
+            </property>
+            <item>
+             <widget class="QLabel" name="label_8">
+              <property name="text">
+               <string>暂停快捷键：</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QKeySequenceEdit" name="PauseShortCut">
+              <property name="keySequence">
+               <string>F10</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <layout class="QHBoxLayout" name="horizontalLayout_19">
+            <property name="leftMargin">
+             <number>32</number>
+            </property>
+            <property name="bottomMargin">
+             <number>0</number>
+            </property>
+            <item>
+             <widget class="QLabel" name="label_9">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="text">
+               <string>倒计时：</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QCheckBox" name="countDownCheckBox">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="styleSheet">
+               <string notr="true"> QCheckBox::indicator {
+     width: 24px;
+     height:14px;
+
+ }
+
+  QCheckBox::indicator:checked
+  {
+    image: url(:/icons/images/checkbox_checked.svg)
+  }
+  QCheckBox::indicator:unchecked
+  {
+    image: url(:/icons/images/checkbox_unchecked.svg)
+  }</string>
+              </property>
+              <property name="text">
+               <string/>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QFrame" name="countDownFrame">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="minimumSize">
+               <size>
+                <width>0</width>
+                <height>24</height>
+               </size>
+              </property>
+              <property name="frameShape">
+               <enum>QFrame::StyledPanel</enum>
+              </property>
+              <property name="frameShadow">
+               <enum>QFrame::Raised</enum>
+              </property>
+              <layout class="QHBoxLayout" name="horizontalLayout_23">
+               <property name="spacing">
+                <number>5</number>
+               </property>
+               <property name="leftMargin">
+                <number>0</number>
+               </property>
+               <property name="topMargin">
+                <number>0</number>
+               </property>
+               <property name="rightMargin">
+                <number>3</number>
+               </property>
+               <property name="bottomMargin">
+                <number>0</number>
+               </property>
+               <item>
+                <widget class="QLineEdit" name="countDownEdit">
+                 <property name="styleSheet">
+                  <string notr="true">QLineEdit,
+QComboBox{
+  subcontrol-origin: padding;
+  subcontrol-position: top right;
+  selection-background-color: #40404A;
+  selection-color: #3B3B41;
+  color: #99A1B0;
+  height:24px;
+  background-color: #212126;
+  border-style: solid;
+  border: 0px solid #0F0F0F;
+  padding: 1px 0px 1px 2px;
+  font-size: 12px;
+  font-family:Microsoft YaHei UI;
+  padding-left:8px;
+  }</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QLabel" name="label_10">
+                 <property name="text">
+                  <string>秒</string>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </widget>
+            </item>
+           </layout>
+          </item>
+         </layout>
+        </widget>
        </item>
       </layout>
      </widget>

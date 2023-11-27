@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>CountDownDialog</class>
+ <widget class="QDialog" name="CountDownDialog">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>232</width>
+    <height>224</height>
+   </rect>
+  </property>
+  <property name="minimumSize">
+   <size>
+    <width>232</width>
+    <height>224</height>
+   </size>
+  </property>
+  <property name="maximumSize">
+   <size>
+    <width>232</width>
+    <height>224</height>
+   </size>
+  </property>
+  <property name="windowTitle">
+   <string>CountDownDialog</string>
+  </property>
+  <property name="styleSheet">
+   <string notr="true">QFrame#contentFrame
+{
+background-color:#28282E;
+border-top : 1px solid #0F0F0F;
+border-left : 1px solid #0F0F0F;
+border-right : 1px solid #0F0F0F;
+border-bottom : 1px solid #0F0F0F;
+border-radius:10px;
+}
+QLabel
+{
+color:#FFFFFF;
+font-size:120px;
+font-family:Microsoft YaHei UI;
+}
+QPushButton
+{
+background-color:#5967F2;
+color:#FFFFFF;
+border-radius:4px;
+font-size:14px;
+font-family:Microsoft YaHei UI;
+}
+QPushButton:hover
+{
+background-color:#885967F2
+}</string>
+  </property>
+  <layout class="QHBoxLayout" name="horizontalLayout">
+   <property name="spacing">
+    <number>0</number>
+   </property>
+   <property name="leftMargin">
+    <number>0</number>
+   </property>
+   <property name="topMargin">
+    <number>0</number>
+   </property>
+   <property name="rightMargin">
+    <number>0</number>
+   </property>
+   <property name="bottomMargin">
+    <number>0</number>
+   </property>
+   <item>
+    <widget class="QFrame" name="contentFrame">
+     <property name="frameShape">
+      <enum>QFrame::StyledPanel</enum>
+     </property>
+     <property name="frameShadow">
+      <enum>QFrame::Raised</enum>
+     </property>
+     <layout class="QVBoxLayout" name="verticalLayout">
+      <property name="leftMargin">
+       <number>41</number>
+      </property>
+      <property name="rightMargin">
+       <number>41</number>
+      </property>
+      <property name="bottomMargin">
+       <number>30</number>
+      </property>
+      <item>
+       <widget class="QLabel" name="displayLabel">
+        <property name="text">
+         <string>3</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignCenter</set>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="startButton">
+        <property name="minimumSize">
+         <size>
+          <width>0</width>
+          <height>34</height>
+         </size>
+        </property>
+        <property name="cursor">
+         <cursorShape>PointingHandCursor</cursorShape>
+        </property>
+        <property name="text">
+         <string>直接开始</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

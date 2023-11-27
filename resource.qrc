@@ -14,5 +14,7 @@
         <file>images/expander_unexpand.svg</file>
         <file>images/lock.svg</file>
         <file>images/start.svg</file>
+        <file>images/checkbox_checked.svg</file>
+        <file>images/checkbox_unchecked.svg</file>
     </qresource>
 </RCC>

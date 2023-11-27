@@ -14,6 +14,13 @@ enum REC_TYPE
 	REC_DESKTOP
 };
 
+enum RecordingStatus
+{
+	Recording = 0,
+	Paused = 1,
+	Stoped = 2,
+};
+
 struct SoundDeviceIdentifier;
 
 class ObsWrapper:public QObject
@@ -21,12 +28,13 @@ class ObsWrapper:public QObject
 	Q_OBJECT
 public:
 signals:
-		void MicVolumeDataChange(const float* magnitude, const float* peak, const float* inputPeak);
-		void PlayerVolumeDataChange(const float* magnitude, const float* peak, const float* inputPeak);
+	void MicVolumeDataChange(const float* magnitude, const float* peak, const float* inputPeak);
+	void PlayerVolumeDataChange(const float* magnitude, const float* peak, const float* inputPeak);
+	void recordStatusChanged(int recordingStatus);
 public:
 	ObsWrapper();
 	~ObsWrapper();
-
+    void release() ;
 	static void OBSVolumeChanged(void* data, float db);
 
 	static void OBSVolumeLevel(void* data, const float magnitude[MAX_AUDIO_CHANNELS], const float peak[MAX_AUDIO_CHANNELS], const float inputPeak[MAX_AUDIO_CHANNELS]);
@@ -36,42 +44,54 @@ public:
 	int playerChannelCount();
 	int audioChannel();
 
-	void updateText();
+	bool initObs(int srcWidth,int srcHeight,int fps);
+	int  startRecording();
+	int  stopRecording(bool isForceStop = false);
 
-	bool init_obs();
-	int  start_rec();
-	int  stop_rec();
+    int pauseRecording();
 
-	int  add_scene_source(REC_TYPE type);
-	void rec_system_audio();
-	void rec_out_audio();
+	int  addSceneSource(REC_TYPE type);
+	void recSystemAudio();
+	void recOutAudio();
 	void SearchRecTargets(REC_TYPE type);
-	void UpdateRecItem(const char* target, REC_TYPE type,bool useCrop = false);
-	void UpdateMicAudioCache();
-	void UpdatePlayerAudioCache();
+	bool UpdateRecItem(const char* target, REC_TYPE type,bool useCrop = false,
+		int LeftCrop = 0,
+		int RightCrop = 0,
+		int TopCrop = 0,
+		int BottomCrop = 0);
 	QList<QString> getRecTargets() const
 	{
 		return m_vecRecTargets;
 	}
 
-private:
+    QString playerDeviceName();
+    QString micphoneDeviceName();
+	bool isRecordingStart() const;
 	bool ResetAudio();
-	int ResetVideo();
-	bool create_output_mode();
-	void SetupFFmpeg();
+	int ResetVideo(int srcWidth,int srcHeight,int outPutWidth,int outOutHeight,int fps);
+	void setupFFmpeg(const QString& storePath,int srcWidth,int srcHeight,int fps,int bitRate);
+private:
+
+
+	bool createOutputMode();
+
 
 private:
+
+    bool isRecordingStarted = false;
+    bool isPaused = false;
+
 	OBSOutput fileOutput;
 	obs_source_t* fadeTransition = nullptr;
 	obs_scene_t* scene = nullptr;
-
-	obs_source_t* captureSource;
 
 	obs_source_t* micSource;
 
     obs_source_t* playerSource;
 
-	obs_properties_t* properties;
+	obs_source_t* captureSource;
+
+
 	OBSEncoder aacTrack[MAX_AUDIO_MIXES];
 	std::string aacEncoderID[MAX_AUDIO_MIXES];
 	obs_fader_t * mic_obs_fader;
@@ -80,8 +100,6 @@ private:
 	obs_volmeter_t * player_obs_volmeter;
 	QList<QString> m_vecRecTargets;
 
-	obs_property_t* property = nullptr;
-	obs_data_t* setting_source = nullptr;
 	SoundDeviceIdentifier* micIdentifier = nullptr;
 	SoundDeviceIdentifier* playerIndentifier = nullptr;
 
@@ -92,6 +110,8 @@ private:
 	float currentMagnitudePlayer[MAX_AUDIO_CHANNELS]{0};
 	float currentPeakPlayer[MAX_AUDIO_CHANNELS]{0};
 	float currentInputPeakPlayer[MAX_AUDIO_CHANNELS]{0};
+
+
 };
 
 struct SoundDeviceIdentifier

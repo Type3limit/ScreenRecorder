@@ -1,0 +1,4 @@
+/cmake-build-debug/
+/.clang-tidy
+/CMakePresets.json
+/CMakeUserPresets.json

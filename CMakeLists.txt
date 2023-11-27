@@ -16,6 +16,7 @@ find_package(Qt5 COMPONENTS
         Gui
         Svg
         Widgets
+        Network
         REQUIRED)
 
 link_directories(${CMAKE_CURRENT_LIST_DIR}/obs/lib/${BUILD_TYPE})
@@ -27,7 +28,7 @@ include_directories(
         ${CMAKE_CURRENT_LIST_DIR}/widgets
         ${CMAKE_CURRENT_LIST_DIR}/helper)
 
-set(RESOURCES
+set(RESOURCES resource.qrc
         dialogs/recordingwindow.cpp
         dialogs/recordingwindow.h
         dialogs/recordingwindow.ui
@@ -35,8 +36,39 @@ set(RESOURCES
         widgets/volumecontrol.cpp
         helper/obswrapper.h
         helper/obswrapper.cpp
-        resource.qrc)
+        helper/config.h
+        helper/optionnalchain.h
+        helper/extensionmethods.h
+        dialogs/minimizedrecordingwindow.cpp
+        dialogs/minimizedrecordingwindow.h
+        dialogs/minimizedrecordingwindow.ui
+        dialogs/backgroundwindow.cpp
+        dialogs/backgroundwindow.h
+        dialogs/backgroundwindow.h
+        helper/qhotkey.h
+        helper/qhotkey.cpp
+        helper/qhotkey_p.h
+        helper/debug.cpp
+        helper/debug.h
+        dialogs/countdowndialog.cpp
+        dialogs/countdowndialog.h
+        dialogs/countdowndialog.ui
+)
+if(WIN32)
+    list(APPEND RESOURCES
+            helper/qhotkey_win.cpp
+    )
+elseif(APPLE)
 
+    list(APPEND RESOURCES
+            helper/qhotkey_mac.cpp
+    )
+elseif(UNIX)
+
+    list(APPEND RESOURCES
+            helper/qhotkey_x11.cpp
+    )
+endif()
 add_executable(screenRecorder ${RESOURCES} main.cpp)
 
 target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE obs)
@@ -46,4 +78,5 @@ target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE
         Qt5::Gui
         Qt5::Svg
         Qt5::Widgets
+        Qt5::Network
 )
