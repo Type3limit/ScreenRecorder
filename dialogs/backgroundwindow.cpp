@@ -11,7 +11,7 @@
 #include <QPainter>
 #include <QDesktopWidget>
 #include <QDebug>
-
+#include <QIcon>
 
 
 #define ANCHOR_SIZE 50.0
@@ -29,10 +29,12 @@ BackgroundWindow::BackgroundWindow(bool isFullScreenModel, QWidget* parent, cons
 {
     m_renderer.load(QString(":/icons/images/centerAnchor.svg"));
     m_drawingColor = QColor(255, 154, 0);
-    setWindowFlags(Qt::FramelessWindowHint|Qt::WindowStaysOnTopHint);
+    setWindowFlags(Qt::FramelessWindowHint|Qt::WindowStaysOnTopHint|Qt::SubWindow);
     setAttribute(Qt::WA_TranslucentBackground);
     resetStatus(isFullScreenModel,curScreen);
     setMouseTracking(true);
+    setWindowIcon(QIcon(QString(":/icons/images/recording.svg")));
+    setWindowTitle(u8"录制区");
 }
 
 BackgroundWindow::~BackgroundWindow()
@@ -153,6 +155,7 @@ void BackgroundWindow::mouseReleaseEvent(QMouseEvent* event)
             {
                 m_startPos = {0,0};
                 m_endPos = {static_cast<qreal>(rect().width()),static_cast<qreal>(rect().height())};
+                emit areaChanged(m_startPos.x(),m_startPos.y(),m_endPos.x(),m_endPos.y());
                 return;
             }
             m_endPos = curCursorPos;

@@ -19,8 +19,10 @@ m_countDownSeconds(countDownSeconds),
 m_obs(obs),m_curScreen(curSc)
 {
     ui->setupUi(this);
-    setWindowFlags(Qt::FramelessWindowHint|Qt::WindowStaysOnTopHint);
+    setWindowFlags(Qt::FramelessWindowHint|Qt::WindowStaysOnTopHint|Qt::SubWindow);
     setAttribute(Qt::WA_TranslucentBackground);
+    setWindowIcon(QIcon(QString(":/icons/images/recording.svg")));
+    setWindowTitle(u8"倒计时");
     setDialogCenter(m_curScreen);
     ui->displayLabel->setText(QString::number(countDownSeconds));
     m_timer.setInterval(1000);

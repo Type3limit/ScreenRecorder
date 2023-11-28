@@ -6,6 +6,7 @@
 #include <QString>
 #include <QMutex>
 #include <QList>
+#include <QSharedPointer>
 using namespace std;
 
 enum REC_TYPE
@@ -51,8 +52,8 @@ public:
     int pauseRecording();
 
 	int  addSceneSource(REC_TYPE type);
-	void recSystemAudio();
-	void recOutAudio();
+	void recSystemAudio(bool enable = true);
+	void recOutAudio(bool enable = true);
 	void SearchRecTargets(REC_TYPE type);
 	bool UpdateRecItem(const char* target, REC_TYPE type,bool useCrop = false,
 		int LeftCrop = 0,
@@ -64,17 +65,25 @@ public:
 		return m_vecRecTargets;
 	}
 
+
+
     QString playerDeviceName();
     QString micphoneDeviceName();
 	bool isRecordingStart() const;
 	bool ResetAudio();
 	int ResetVideo(int srcWidth,int srcHeight,int outPutWidth,int outOutHeight,int fps);
+	int initVideo(int srcWidth,int srcHeight,int fps);
 	void setupFFmpeg(const QString& storePath,int srcWidth,int srcHeight,int fps,int bitRate);
 private:
 
 
 	bool createOutputMode();
+public:
+	OBSSource micSource;
 
+	OBSSource playerSource;
+
+	OBSSource captureSource;
 
 private:
 
@@ -82,26 +91,21 @@ private:
     bool isPaused = false;
 
 	OBSOutput fileOutput;
-	obs_source_t* fadeTransition = nullptr;
-	obs_scene_t* scene = nullptr;
+	OBSSource fadeTransition = nullptr;
+	OBSScene scene = nullptr;
 
-	obs_source_t* micSource;
-
-    obs_source_t* playerSource;
-
-	obs_source_t* captureSource;
-
+	OBSDisplay displayer;
 
 	OBSEncoder aacTrack[MAX_AUDIO_MIXES];
 	std::string aacEncoderID[MAX_AUDIO_MIXES];
-	obs_fader_t * mic_obs_fader;
-	obs_volmeter_t * mic_obs_volmeter;
-	obs_fader_t * player_obs_fader;
-	obs_volmeter_t * player_obs_volmeter;
+	OBSFader mic_obs_fader;
+	OBSVolMeter mic_obs_volmeter;
+	OBSFader player_obs_fader;
+	OBSVolMeter player_obs_volmeter;
 	QList<QString> m_vecRecTargets;
-
-	SoundDeviceIdentifier* micIdentifier = nullptr;
-	SoundDeviceIdentifier* playerIndentifier = nullptr;
+	QList<QString> m_vecRecTargetIds;
+	QSharedPointer<SoundDeviceIdentifier> micIdentifier = nullptr;
+	QSharedPointer<SoundDeviceIdentifier> playerIndentifier = nullptr;
 
 	float currentMagnitudeMic[MAX_AUDIO_CHANNELS]{0};
 	float currentPeakMic[MAX_AUDIO_CHANNELS]{0};

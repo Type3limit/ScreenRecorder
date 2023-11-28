@@ -9,29 +9,40 @@
 #define DL_D3D11  "libobs-d3d11.dll"
 #define DL_OPENGL  "libobs-opengl.dll"
 
-
-
 #define VIDEO_ENCODER_ID           AV_CODEC_ID_H264
 #define VIDEO_ENCODER_NAME         "libx264"
 #define RECORD_OUTPUT_FORMAT       "mp4"
 #define RECORD_OUTPUT_FORMAT_MIME  "video/mp4"
-#define AUDIO_BITRATE 128
+#define AUDIO_BITRATE 256
+#define USE_GS  1
 
 #ifdef _WIN32
 #define get_os_module(win, mac, linux) obs_get_module(win)
 #define get_os_text(mod, win, mac, linux) obs_module_get_locale_text(mod, win)
 #define INPUT_AUDIO_SOURCE "wasapi_input_capture"
 #define OUTPUT_AUDIO_SOURCE "wasapi_output_capture"
+
+#if USE_GS
+#define PROP_NAME "monitor_id"
+#else
+#define PROP_NAME "monitor"
+#endif
+
+#define IS_INT false
 #elif __APPLE__
 #define get_os_module(win, mac, linux) obs_get_module(mac)
 #define get_os_text(mod, win, mac, linux) obs_module_get_locale_text(mod, mac)
 #define INPUT_AUDIO_SOURCE "coreaudio_input_capture"
 #define OUTPUT_AUDIO_SOURCE "coreaudio_output_capture"
+#define PROP_NAME "display_uuid";
+#define IS_INT false;
 #else
 #define get_os_module(win, mac, linux) obs_get_module(linux)
 #define get_os_text(mod, win, mac, linux) obs_module_get_locale_text(mod, linux)
 #define INPUT_AUDIO_SOURCE "pulse_input_capture"
 #define OUTPUT_AUDIO_SOURCE "pulse_output_capture"
+#define PROP_NAME  "screen"
+#define IS_INT true
 #endif
 
 
@@ -48,13 +59,12 @@ enum SOURCE_CHANNELS {
 
 inline obs_source_t *getSoundSource(const char *sourceId, const char *deviceId, const char *deviceDesc, int channel)
 {
-    obs_source_t *source = obs_get_output_source(channel);
+    OBSSource source = obs_get_output_source(channel);
     if (!source) {
-        obs_data_t *settings = obs_data_create();
+        OBSData settings = obs_data_create();
         obs_data_set_string(settings, "device_id", deviceId);
         source = obs_source_create(sourceId, deviceDesc, settings,
                                    nullptr);
-        obs_data_release(settings);
     }
     return source;
 }
@@ -67,18 +77,24 @@ ObsWrapper::ObsWrapper()
 ObsWrapper::~ObsWrapper()
 {
 
+
+
+}
+
+void ObsWrapper::release()
+{
     obs_output_stop(fileOutput);
     obs_fader_remove_callback(this->mic_obs_fader, OBSVolumeChanged, this);
     obs_volmeter_remove_callback(this->mic_obs_volmeter, OBSVolumeLevel, this);
     obs_fader_remove_callback(this->player_obs_fader, OBSVolumeChanged, this);
     obs_volmeter_remove_callback(this->player_obs_volmeter, OBSVolumeLevel, this);
-    obs_fader_destroy(this->mic_obs_fader);
-    obs_volmeter_destroy(this->mic_obs_volmeter);
-    obs_fader_destroy(this->player_obs_fader);
-    obs_volmeter_destroy(this->player_obs_volmeter);
-    obs_source_release(this->micSource);
-    obs_source_release(this->playerSource);
-    obs_source_release(this->captureSource);
+    // obs_fader_destroy(this->mic_obs_fader);
+    // obs_volmeter_destroy(this->mic_obs_volmeter);
+    // obs_fader_destroy(this->player_obs_fader);
+    // obs_volmeter_destroy(this->player_obs_volmeter);
+    // obs_source_release(this->micSource);
+    // obs_source_release(this->playerSource);
+    // obs_source_release(this->captureSource);
     obs_set_output_source(SOURCE_CHANNEL_TRANSITION,nullptr);
     obs_set_output_source(SOURCE_CHANNEL_AUDIO_INPUT,nullptr);
     obs_set_output_source(SOURCE_CHANNEL_AUDIO_OUTPUT,nullptr);
@@ -90,14 +106,8 @@ ObsWrapper::~ObsWrapper()
     };
     obs_enum_scenes(cb, nullptr);
     obs_enum_sources(cb, nullptr);
-    delete this->micIdentifier;
-    delete this->playerIndentifier;
-
-}
-
-void ObsWrapper::release()
-{
-
+    // delete this->micIdentifier;
+    // delete this->playerIndentifier;
 }
 
 void ObsWrapper::OBSVolumeChanged(void *data, float db)
@@ -183,16 +193,14 @@ bool ObsWrapper::initObs(int srcWidth,int srcHeight,int fps)
 
         obs_add_module_path(plugin_path.c_str(), data_path.c_str());
 
-        //reset video to enter graphcis model
-        if (ResetVideo(srcWidth,srcHeight,srcWidth,srcHeight,fps) != OBS_VIDEO_SUCCESS)
-            return false;
 
         //reset audio
         if (!ResetAudio())
             return false;
-
+        //reset video to enter graphcis model
+        if (ResetVideo(srcWidth,srcHeight,srcWidth,srcHeight,fps) != OBS_VIDEO_SUCCESS)
+            return false;
         obs_load_all_modules();
-
     }
 
     if (!createOutputMode())
@@ -207,12 +215,12 @@ bool ObsWrapper::initObs(int srcWidth,int srcHeight,int fps)
     mic_obs_volmeter = obs_volmeter_create(OBS_FADER_LOG);
     player_obs_fader = obs_fader_create(OBS_FADER_LOG);
     player_obs_volmeter = obs_volmeter_create(OBS_FADER_LOG);
-    micIdentifier = new SoundDeviceIdentifier(SoundDeviceIdentifier::Type::Micphone, this, mic_obs_volmeter);
-    playerIndentifier = new SoundDeviceIdentifier(SoundDeviceIdentifier::Type::Player, this, player_obs_volmeter);
-    obs_fader_add_callback(mic_obs_fader, OBSVolumeChanged, micIdentifier);
-    obs_volmeter_add_callback(mic_obs_volmeter, OBSVolumeLevel, micIdentifier);
-    obs_fader_add_callback(player_obs_fader, OBSVolumeChanged, playerIndentifier);
-    obs_volmeter_add_callback(player_obs_volmeter, OBSVolumeLevel, playerIndentifier);
+    micIdentifier = QSharedPointer<SoundDeviceIdentifier>(new SoundDeviceIdentifier(SoundDeviceIdentifier::Type::Micphone, this, mic_obs_volmeter));
+    playerIndentifier = QSharedPointer<SoundDeviceIdentifier>(new SoundDeviceIdentifier(SoundDeviceIdentifier::Type::Player, this, player_obs_volmeter));
+    obs_fader_add_callback(mic_obs_fader, OBSVolumeChanged, micIdentifier.get());
+    obs_volmeter_add_callback(mic_obs_volmeter, OBSVolumeLevel, micIdentifier.get());
+    obs_fader_add_callback(player_obs_fader, OBSVolumeChanged, playerIndentifier.get());
+    obs_volmeter_add_callback(player_obs_volmeter, OBSVolumeLevel, playerIndentifier.get());
 
     obs_fader_attach_source(mic_obs_fader, micSource);
     obs_volmeter_attach_source(mic_obs_volmeter, micSource);
@@ -277,10 +285,11 @@ int ObsWrapper::addSceneSource(const REC_TYPE type)
         const char* name = obs_source_get_display_name(id);
 
         if (!obs_is_source_configurable(id)) {
-            obs_source_t* tr = obs_source_create_private(id, name, NULL);
+            OBSSource tr = obs_source_create_private(id, name, NULL);
 
             if (strcmp(id, "fade_transition") == 0)
                 fadeTransition = tr;
+
         }
     }
 
@@ -290,14 +299,13 @@ int ObsWrapper::addSceneSource(const REC_TYPE type)
     }
 
     obs_set_output_source(SOURCE_CHANNEL_TRANSITION, fadeTransition);
-    obs_source_release(fadeTransition);
+
     scene = obs_scene_create("CurrentDesktopCapture");
     if (!scene) {
         return -2;
     }
-    obs_source_t* s = obs_get_output_source(SOURCE_CHANNEL_TRANSITION);
+    OBSSource s = obs_get_output_source(SOURCE_CHANNEL_TRANSITION);
     obs_transition_set(s, obs_scene_get_source(scene));
-    obs_source_release(s);
 
     //to create monitor capture
     if (type == REC_DESKTOP) {
@@ -315,8 +323,9 @@ int ObsWrapper::addSceneSource(const REC_TYPE type)
         
         return -3;
     }
-    auto setting_source = obs_data_create();
-    obs_data_t* curSetting = obs_source_get_settings(captureSource);
+    OBSData setting_source = obs_data_create();
+    OBSData curSetting = obs_source_get_settings(captureSource);
+    obs_data_set_int(setting_source,"method",1);
     obs_data_apply(setting_source, curSetting);
     obs_data_release(curSetting);
     return 0;
@@ -327,14 +336,14 @@ void ResetAudioDevice(const char *sourceId, const char *deviceId,
                       const char *deviceDesc, int channel)
 {
     bool disable = deviceId && strcmp(deviceId, "disabled") == 0;
-    obs_source_t *source = getSoundSource(sourceId, deviceId, deviceDesc, channel);
+    OBSSource source = getSoundSource(sourceId, deviceId, deviceDesc, channel);
 
     if (source) {
         if (disable) {
             obs_set_output_source(channel, nullptr);
         } else {
             obs_set_output_source(channel, source);
-            auto settings = obs_source_get_settings(source);
+            OBSData settings = obs_source_get_settings(source);
             const char *oldId =
                 obs_data_get_string(settings, "device_id");
             if (strcmp(oldId, deviceId) != 0) {
@@ -350,7 +359,7 @@ void ResetAudioDevice(const char *sourceId, const char *deviceId,
     }
 }
 
-static inline bool HasAudioDevices(const char *source_id)
+static bool HasAudioDevices(const char *source_id)
 {
     const char *output_id = source_id;
     obs_properties_t *props = obs_get_source_properties(output_id);
@@ -368,6 +377,8 @@ static inline bool HasAudioDevices(const char *source_id)
     return count != 0;
 }
 
+
+
 static bool CreateAACEncoder(OBSEncoder &res, std::string &id,
                              const char *name, size_t idx)
 {
@@ -383,20 +394,20 @@ static bool CreateAACEncoder(OBSEncoder &res, std::string &id,
     return false;
 }
 
-void ObsWrapper::recSystemAudio()
+void ObsWrapper::recSystemAudio(bool enable)
 {
     bool hasDesktopAudio = HasAudioDevices(OUTPUT_AUDIO_SOURCE);
 
     if (hasDesktopAudio)
-        ResetAudioDevice(OUTPUT_AUDIO_SOURCE, "default",
+        ResetAudioDevice(OUTPUT_AUDIO_SOURCE, enable?"default":"disable",
                          "Default Desktop Audio", SOURCE_CHANNEL_AUDIO_OUTPUT);
 }
 
-void ObsWrapper::recOutAudio()
+void ObsWrapper::recOutAudio(bool enable)
 {
     bool hasInputAudio = HasAudioDevices(INPUT_AUDIO_SOURCE);
     if (hasInputAudio)
-        ResetAudioDevice(INPUT_AUDIO_SOURCE, "default",
+        ResetAudioDevice(INPUT_AUDIO_SOURCE, enable?"default":"disable",
                          "Default Mic/Aux", SOURCE_CHANNEL_AUDIO_INPUT);
 }
 
@@ -407,18 +418,11 @@ void ObsWrapper::SearchRecTargets(REC_TYPE type)
     //use to specific poroperty name
     std::string prop_name;
     std::string cur_id;
-    bool is_int = false;
+    bool is_int = IS_INT;
     if (type == REC_WINDOWS) {
         prop_name = "window";
     } else {
-#ifdef _WIN32
-        prop_name = "monitor_id";
-#elif __APPLE__
-        prop_name = "display_uuid";
-#else
-        is_int = true;
-        prop_name = "screen";
-#endif
+        prop_name = PROP_NAME;
     }
 
     OBSDataAutoRelease settings = obs_source_get_settings(captureSource);
@@ -446,10 +450,13 @@ void ObsWrapper::SearchRecTargets(REC_TYPE type)
                 const char *val = obs_property_list_item_string(property, i);
                 id = val ? val : "";
             }
+           
+            m_vecRecTargets.push_back(QString::fromStdString(str));
+            m_vecRecTargetIds.push_back(QString::fromStdString(id));
+            
         }
-        m_vecRecTargets.push_back(QString::fromStdString(str));
     }
-
+    obs_properties_destroy(properties);
 }
 
 bool ObsWrapper::UpdateRecItem(const char *target, REC_TYPE type, bool useCrop,
@@ -459,52 +466,55 @@ bool ObsWrapper::UpdateRecItem(const char *target, REC_TYPE type, bool useCrop,
     int BottomCrop)
 {
     bool isFind = false;
-    std::string prop_name;
-#ifdef _WIN32
-    prop_name = "monitor_id";
-#elif __APPLE__
-    prop_name = "display_uuid";
-#else
-    is_int = true;
-    prop_name = "screen";
-#endif
-
-
+    std::string prop_name = PROP_NAME;
+    int index = 0;
     for (const auto &ele: m_vecRecTargets) {
         if (ele == QString(target)) {
             OBSDataAutoRelease setting_source = obs_source_get_settings(captureSource);
             if (type == REC_DESKTOP)
-                obs_data_set_string(setting_source, prop_name.c_str(), ele.toStdString().c_str());
+            {
+#if USE_GS
+                obs_data_set_string(setting_source, prop_name.c_str(), m_vecRecTargetIds.at(index).toStdString().c_str());
+                obs_data_set_int(setting_source,"method",0);
+#else
+                obs_data_set_int(setting_source, prop_name.c_str(), index);
+                 obs_data_set_bool(setting_source,"compatibility",true);
+#endif
+            }
             else
                 obs_data_set_string(setting_source, "window", ele.toStdString().c_str());
-            obs_data_set_bool(setting_source,"compatibility",true);
+           
+            obs_data_set_bool(setting_source, "capture_cursor", true);
+
             obs_source_update(captureSource, setting_source);
-            // QString name = obs_source_get_display_name("crop_filter");
-            // auto existingFilter = obs_source_get_filter_by_name(captureSource, name.toStdString().c_str());
-            // if (existingFilter) {
-            //         obs_source_filter_remove(captureSource, existingFilter);
-            //     }
-            // if (useCrop) {
-            //     if (!existingFilter) {
-            //         auto curCrop = obs_source_create("crop_filter", name.toUtf8().data(), nullptr, nullptr);
-            //         if (curCrop) {
-            //             obs_source_filter_add(captureSource, curCrop);
-            //         }
-            //         auto cropV = obs_data_create();
-            //         obs_data_set_bool(cropV, "relative", true);
-            //         obs_data_set_int(cropV, "left", LeftCrop);
-            //         obs_data_set_int(cropV, "top", TopCrop);
-            //         obs_data_set_int(cropV, "right", RightCrop);
-            //         obs_data_set_int(cropV, "bottom", BottomCrop);
-            //         obs_data_set_int(cropV, "cx", 0);
-            //         obs_data_set_int(cropV, "cy", 0);
-            //         obs_source_update(curCrop, cropV);
-            //         obs_source_release(curCrop);
-            //     }
-            // }
+            QString name = obs_source_get_display_name("crop_filter");
+            auto existingFilter = obs_source_get_filter_by_name(captureSource, name.toStdString().c_str());
+            if (existingFilter) {
+                    obs_source_filter_remove(captureSource, existingFilter);
+                    obs_source_release(existingFilter);
+                }
+            if (useCrop) {
+               
+                    auto curCrop = obs_source_create("crop_filter", name.toUtf8().data(), nullptr, nullptr);
+                    if (curCrop) {
+                        obs_source_filter_add(captureSource, curCrop);
+                    }
+                    auto cropV = obs_data_create();
+                    obs_data_set_bool(cropV, "relative", true);
+                    obs_data_set_int(cropV, "left", LeftCrop);
+                    obs_data_set_int(cropV, "top", TopCrop);
+                    obs_data_set_int(cropV, "right", RightCrop);
+                    obs_data_set_int(cropV, "bottom", BottomCrop);
+                    obs_data_set_int(cropV, "cx", 0);
+                    obs_data_set_int(cropV, "cy", 0);
+                    obs_source_update(curCrop, cropV);
+                    obs_source_release(curCrop);
+                
+            }
             isFind = true;
             break;
         }
+        index++;
     }
     return isFind;
 
@@ -526,10 +536,10 @@ int ObsWrapper::ResetVideo(int srcWidth,int srcHeight,int outPutWidth,int outOut
     ovi.fps_den = 1;
 
     ovi.graphics_module = DL_D3D11;
-    ovi.base_width = 3840;
-    ovi.base_height = 2160;
-    ovi.output_width = 3840;
-    ovi.output_height = 2160;
+    ovi.base_width = srcWidth;
+    ovi.base_height = srcHeight;
+    ovi.output_width = outPutWidth;
+    ovi.output_height = outOutHeight;
     ovi.output_format = VIDEO_FORMAT_I420;
     ovi.colorspace = VIDEO_CS_709;
     ovi.range = VIDEO_RANGE_FULL;
@@ -539,6 +549,7 @@ int ObsWrapper::ResetVideo(int srcWidth,int srcHeight,int outPutWidth,int outOut
 
     return obs_reset_video(&ovi);
 }
+
 
 bool ObsWrapper::createOutputMode()
 {
@@ -569,7 +580,7 @@ void ObsWrapper::setupFFmpeg(const QString& storePath,int srcWidth,int srcHeight
     qDebug()<<"set up ffpmeg with storePath:["
         <<storePath<<"] srcWidth:["<<srcWidth<<"] srcHeight:["
         <<srcHeight<<"] fps:["<<fps<<"] bitRate:["<<bitRate<<"]";
-    obs_data_t *settings = obs_data_create();
+    OBSData settings = obs_data_create();
 
     QString out_file_name =storePath + "."+RECORD_OUTPUT_FORMAT;
 
@@ -581,11 +592,11 @@ void ObsWrapper::setupFFmpeg(const QString& storePath,int srcWidth,int srcHeight
     obs_data_set_string(settings, "video_encoder", VIDEO_ENCODER_NAME);
     obs_data_set_int(settings, "video_encoder_id", VIDEO_ENCODER_ID);
 
-    if (VIDEO_ENCODER_ID == AV_CODEC_ID_H264)
-    {
-        obs_data_set_string(settings, "video_settings", "profile=main x264-params=crf=18");
-
-    }
+    // if (VIDEO_ENCODER_ID == AV_CODEC_ID_H264)
+    // {
+    //     obs_data_set_string(settings, "video_settings", "profile=main x264-params=crf=0");
+    //
+    // }
 
     obs_data_set_int(settings, "video_bitrate", bitRate * 1024);
 
@@ -594,15 +605,19 @@ void ObsWrapper::setupFFmpeg(const QString& storePath,int srcWidth,int srcHeight
     obs_data_set_int(settings, "audio_encoder_id", AV_CODEC_ID_AAC);
     obs_data_set_string(settings, "audio_settings", nullptr);
 
-    obs_data_set_int(settings, "scale_width", 1920);
-    obs_data_set_int(settings, "scale_height", 1080);
+    auto srcWidthInUse = srcWidth%2==1?srcWidth+1:srcWidth;
+    auto srcHeightInUse = srcHeight%2==1?srcHeight+1:srcHeight;
+    obs_data_set_int(settings, "scale_width", srcWidthInUse);
+    obs_data_set_int(settings, "scale_height", srcHeightInUse);
 
     obs_output_set_mixer(fileOutput, 1);  //混流器，如果不设置，可能只有视频没有音频
     obs_output_set_media(fileOutput, obs_get_video(), obs_get_audio());
     obs_output_update(fileOutput, settings);
-
-    obs_data_release(settings);
 }
+
+
+
+
 
 QString ObsWrapper::playerDeviceName()
 {

@@ -13,6 +13,7 @@
 #include "backgroundwindow.h"
 #include <QTcpServer>
 #include "countdowndialog.h"
+#include "testwindow.h"
 QT_BEGIN_NAMESPACE
 namespace Ui { class RecordingWindow; }
 QT_END_NAMESPACE
@@ -49,6 +50,9 @@ private:
     MinimizedRecordingWindow* m_miniWindow = nullptr;
     BackgroundWindow* m_backgroundWindow=nullptr;
     CountDownDialog* m_countDownDialog = nullptr;
+    volatile bool m_isMicphoneEnable = true;
+    volatile bool m_isPlayerEnable = true;
+    testwindow* m_test = nullptr;
     Config m_config;
     QHotkey* m_recordHotKey;
     QHotkey* m_pauseHotKey;

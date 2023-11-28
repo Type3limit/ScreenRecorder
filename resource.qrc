@@ -16,5 +16,6 @@
         <file>images/start.svg</file>
         <file>images/checkbox_checked.svg</file>
         <file>images/checkbox_unchecked.svg</file>
+        <file>images/recording.svg</file>
     </qresource>
 </RCC>

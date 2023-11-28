@@ -53,6 +53,11 @@ set(RESOURCES resource.qrc
         dialogs/countdowndialog.cpp
         dialogs/countdowndialog.h
         dialogs/countdowndialog.ui
+        dialogs/testwindow.cpp
+        dialogs/testwindow.h
+        dialogs/testwindow.ui
+        helper/qoperationhelper.h
+        helper/qoperationhelper.h
 )
 if(WIN32)
     list(APPEND RESOURCES

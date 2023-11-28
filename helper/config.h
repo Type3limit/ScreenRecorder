@@ -9,10 +9,11 @@
 #include "extensionmethods.h"
 
 using StrEx = ExtensionMethods::QStringExtension;
-class Config {
 
+class Config
+{
 public:
-    Config(){ readJson(); }
+    Config() { readJson(); }
     QString bitRateInUse;
     QString frameRateInUse;
     QString savePath;
@@ -21,34 +22,35 @@ public:
     int tcpPort = 29989;
     bool countDownEnable = false;
     int countDownSeconds = 3;
+    bool showPreviewWindow = false;
 
     bool isDefault() const
     {
         return (StrEx::isNullOrEmpty(bitRateInUse)
-        &&StrEx::isNullOrEmpty(frameRateInUse)&&StrEx::isNullOrEmpty(savePath)
-        &&StrEx::isNullOrEmpty(startRecordShortCut)&&StrEx::isNullOrEmpty(pauseRecordShortCut));
+            && StrEx::isNullOrEmpty(frameRateInUse) && StrEx::isNullOrEmpty(savePath)
+            && StrEx::isNullOrEmpty(startRecordShortCut) && StrEx::isNullOrEmpty(pauseRecordShortCut));
     }
 
     const QString ConfigPath = "./config.json";
-
-    inline void writeJson()
+    void writeJson()
     {
         QJsonObject obj = {
-                           {"bitRateInUse",bitRateInUse},
-                           {"frameRateInUse",frameRateInUse},
-                           {"savePath",savePath},
-                           {"startRecordShortCut",startRecordShortCut},
-                           {"pauseRecordShortCut",pauseRecordShortCut},
-                           {"countDownEnable",countDownEnable},
-                           {"countDownSeconds",countDownSeconds},
-                             {"tcpPort",tcpPort}};
-        StrEx::writeAllText(ConfigPath,QJsonDocument(obj).toJson());
+            {"bitRateInUse", bitRateInUse},
+            {"frameRateInUse", frameRateInUse},
+            {"savePath", savePath},
+            {"startRecordShortCut", startRecordShortCut},
+            {"pauseRecordShortCut", pauseRecordShortCut},
+            {"countDownEnable", countDownEnable},
+            {"countDownSeconds", countDownSeconds},
+            {"tcpPort", tcpPort},
+            {"showPreviewWindow", showPreviewWindow}
+        };
+        StrEx::writeAllText(ConfigPath, QJsonDocument(obj).toJson());
     }
-
-    inline void readJson()
+    void readJson()
     {
-        auto doc =  QJsonDocument::fromJson(StrEx::readAllText(ConfigPath).toUtf8());
-        if(doc.isEmpty())
+        auto doc = QJsonDocument::fromJson(StrEx::readAllText(ConfigPath).toUtf8());
+        if (doc.isEmpty())
             return;
         auto obj = doc.object();
         this->bitRateInUse = obj["bitRateInUse"].toString();
@@ -59,8 +61,8 @@ public:
         this->countDownEnable = obj["countDownEnable"].toBool();
         this->countDownSeconds = obj["countDownSeconds"].toInt();
         this->tcpPort = obj["tcpPort"].toInt();
+        this->showPreviewWindow = obj["showPreviewWindow"].toBool();
     }
-
 };
 
 

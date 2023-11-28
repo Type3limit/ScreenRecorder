@@ -16,7 +16,8 @@ MinimizedRecordingWindow::MinimizedRecordingWindow(const QSharedPointer<ObsWrapp
     // hide title bar
     setWindowFlags(Qt::FramelessWindowHint);
     setAttribute(Qt::WA_TranslucentBackground);
-
+    setWindowIcon(QIcon(QString(":/icons/images/recording.svg")));
+    setWindowTitle(u8"录屏");
     connect(m_obs.get(), &ObsWrapper::recordStatusChanged, this, [&](const int status)
     {
         auto style = QString("QPushButton{"
@@ -52,7 +53,7 @@ MinimizedRecordingWindow::MinimizedRecordingWindow(const QSharedPointer<ObsWrapp
     ui->CurrentVolume->setChannelCount(m_obs->micChannelCount());
     ui->CurrentVolume->setAudioChannel(audioChannel);
     connect(ui->recoverButton,&QPushButton::clicked,this,&MinimizedRecordingWindow::onRecover);
-    connect(ui->recordingButton,&QPushButton::click,this,[&]()
+    connect(ui->recordingButton,&QPushButton::clicked,this,[&]()
     {
        emit onRecordAct();
     });

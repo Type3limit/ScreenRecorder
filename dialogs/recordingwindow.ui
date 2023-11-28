@@ -533,13 +533,32 @@ background-color:#212126;
               </layout>
              </item>
              <item>
-              <layout class="QHBoxLayout" name="horizontalLayout_11">
+              <layout class="QVBoxLayout" name="verticalLayout_4">
+               <property name="spacing">
+                <number>0</number>
+               </property>
                <property name="topMargin">
-                <number>18</number>
+                <number>0</number>
                </property>
                <property name="bottomMargin">
                 <number>10</number>
                </property>
+               <item>
+                <widget class="QLabel" name="micphoneLabel">
+                 <property name="minimumSize">
+                  <size>
+                   <width>0</width>
+                   <height>18</height>
+                  </size>
+                 </property>
+                 <property name="text">
+                  <string/>
+                 </property>
+                 <property name="alignment">
+                  <set>Qt::AlignCenter</set>
+                 </property>
+                </widget>
+               </item>
                <item>
                 <widget class="VolumeControl" name="micphoneVolume" native="true">
                  <property name="sizePolicy">
@@ -631,13 +650,32 @@ background-color:#212126;
               </layout>
              </item>
              <item>
-              <layout class="QHBoxLayout" name="horizontalLayout_16">
+              <layout class="QVBoxLayout" name="verticalLayout_5">
+               <property name="spacing">
+                <number>0</number>
+               </property>
                <property name="topMargin">
-                <number>18</number>
+                <number>0</number>
                </property>
                <property name="bottomMargin">
                 <number>10</number>
                </property>
+               <item>
+                <widget class="QLabel" name="playerLabel">
+                 <property name="minimumSize">
+                  <size>
+                   <width>0</width>
+                   <height>18</height>
+                  </size>
+                 </property>
+                 <property name="text">
+                  <string/>
+                 </property>
+                 <property name="alignment">
+                  <set>Qt::AlignCenter</set>
+                 </property>
+                </widget>
+               </item>
                <item>
                 <widget class="VolumeControl" name="playerVolume" native="true">
                  <property name="minimumSize">
@@ -777,6 +815,14 @@ background-color:#212126;
                   </property>
                   <item>
                    <widget class="QLabel" name="statusLabel">
+                    <property name="styleSheet">
+                     <string notr="true">QLabel
+{
+color:#99A1B0;
+font-size:16px;
+font-family:Microsoft YaHei UI;
+}</string>
+                    </property>
                     <property name="text">
                      <string/>
                     </property>
