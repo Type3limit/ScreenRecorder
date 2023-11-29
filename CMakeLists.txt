@@ -78,7 +78,12 @@ elseif(UNIX)
             helper/qhotkey_x11.cpp
     )
 endif()
-add_executable(screenRecorder ${RESOURCES} main.cpp)
+
+if(WIN32)
+    add_executable(screenRecorder WIN32 ${RESOURCES} main.cpp)
+else()
+    add_executable(screenRecorder  ${RESOURCES} main.cpp)
+endif()
 
 target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE obs)
 
