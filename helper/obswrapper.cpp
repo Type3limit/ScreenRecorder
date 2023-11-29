@@ -5,7 +5,7 @@
 #include <QDateTime>
 #include <QMutex>
 #include <QDebug>
-
+#define M_INFINITE 3.4e38f
 #define DL_D3D11  "libobs-d3d11.dll"
 #define DL_OPENGL  "libobs-opengl.dll"
 
@@ -13,7 +13,7 @@
 #define VIDEO_ENCODER_NAME         "libx264"
 #define RECORD_OUTPUT_FORMAT       "mp4"
 #define RECORD_OUTPUT_FORMAT_MIME  "video/mp4"
-#define AUDIO_BITRATE 256
+#define AUDIO_BITRATE 192
 #define USE_GS  1
 
 #ifdef _WIN32
@@ -21,11 +21,12 @@
 #define get_os_text(mod, win, mac, linux) obs_module_get_locale_text(mod, win)
 #define INPUT_AUDIO_SOURCE "wasapi_input_capture"
 #define OUTPUT_AUDIO_SOURCE "wasapi_output_capture"
-
+#define INPUT_AUDIO_PROP_NAME "device_id"
+#define OUTPUT_AUDIO_PROP_NAME "device_id"
 #if USE_GS
-#define PROP_NAME "monitor_id"
+#define DESKTOP_PROP_NAME "monitor_id"
 #else
-#define PROP_NAME "monitor"
+#define DESKTOP_PROP_NAME "monitor"
 #endif
 
 #define IS_INT false
@@ -34,14 +35,14 @@
 #define get_os_text(mod, win, mac, linux) obs_module_get_locale_text(mod, mac)
 #define INPUT_AUDIO_SOURCE "coreaudio_input_capture"
 #define OUTPUT_AUDIO_SOURCE "coreaudio_output_capture"
-#define PROP_NAME "display_uuid";
+#define DESKTOP_PROP_NAME "display_uuid";
 #define IS_INT false;
 #else
 #define get_os_module(win, mac, linux) obs_get_module(linux)
 #define get_os_text(mod, win, mac, linux) obs_module_get_locale_text(mod, linux)
 #define INPUT_AUDIO_SOURCE "pulse_input_capture"
 #define OUTPUT_AUDIO_SOURCE "pulse_output_capture"
-#define PROP_NAME  "screen"
+#define DESKTOP_PROP_NAME  "screen"
 #define IS_INT true
 #endif
 
@@ -77,46 +78,40 @@ ObsWrapper::ObsWrapper()
 ObsWrapper::~ObsWrapper()
 {
 
-
-
 }
 
 void ObsWrapper::release()
 {
     obs_output_stop(fileOutput);
-    obs_fader_remove_callback(this->mic_obs_fader, OBSVolumeChanged, this);
-    obs_volmeter_remove_callback(this->mic_obs_volmeter, OBSVolumeLevel, this);
-    obs_fader_remove_callback(this->player_obs_fader, OBSVolumeChanged, this);
-    obs_volmeter_remove_callback(this->player_obs_volmeter, OBSVolumeLevel, this);
-    // obs_fader_destroy(this->mic_obs_fader);
-    // obs_volmeter_destroy(this->mic_obs_volmeter);
-    // obs_fader_destroy(this->player_obs_fader);
-    // obs_volmeter_destroy(this->player_obs_volmeter);
-    // obs_source_release(this->micSource);
-    // obs_source_release(this->playerSource);
-    // obs_source_release(this->captureSource);
+    obs_fader_remove_callback(this->mic_obs_fader, oBSVolumeChanged, this);
+    obs_volmeter_remove_callback(this->mic_obs_volmeter, oBSVolumeLevel, this);
+    obs_fader_remove_callback(this->player_obs_fader, oBSVolumeChanged, this);
+    obs_volmeter_remove_callback(this->player_obs_volmeter, oBSVolumeLevel, this);
+
     obs_set_output_source(SOURCE_CHANNEL_TRANSITION,nullptr);
     obs_set_output_source(SOURCE_CHANNEL_AUDIO_INPUT,nullptr);
     obs_set_output_source(SOURCE_CHANNEL_AUDIO_OUTPUT,nullptr);
+
     for (int i = 0; i < MAX_CHANNELS; i++)
         obs_set_output_source(i, nullptr);
+
     auto cb = [](void *, obs_source_t *source) {
         obs_source_remove(source);
         return true;
     };
+
     obs_enum_scenes(cb, nullptr);
     obs_enum_sources(cb, nullptr);
-    // delete this->micIdentifier;
-    // delete this->playerIndentifier;
+
 }
 
-void ObsWrapper::OBSVolumeChanged(void *data, float db)
+void ObsWrapper::oBSVolumeChanged(void *data, float db)
 {
     SoundDeviceIdentifier *curIdentifier = static_cast<SoundDeviceIdentifier *>(data);
     //todo:check some
 }
 
-void ObsWrapper::OBSVolumeLevel(void *data,
+void ObsWrapper::oBSVolumeLevel(void *data,
                                 const float magnitude[MAX_AUDIO_CHANNELS],
                                 const float peak[MAX_AUDIO_CHANNELS],
                                 const float inputPeak[MAX_AUDIO_CHANNELS])
@@ -130,7 +125,7 @@ void ObsWrapper::OBSVolumeLevel(void *data,
                     curIdentifier->data->currentPeakMic[channelNr] = peak[channelNr];
                     curIdentifier->data->currentInputPeakMic[channelNr] = inputPeak[channelNr];
                 }
-                emit curIdentifier->data->MicVolumeDataChange(
+                emit curIdentifier->data->micVolumeDataChange(
                     curIdentifier->data->currentMagnitudeMic,
                     curIdentifier->data->currentPeakMic,
                     curIdentifier->data->currentInputPeakMic);
@@ -144,7 +139,7 @@ void ObsWrapper::OBSVolumeLevel(void *data,
                     curIdentifier->data->currentPeakPlayer[channelNr] = peak[channelNr];
                     curIdentifier->data->currentInputPeakPlayer[channelNr] = inputPeak[channelNr];
                 }
-                emit curIdentifier->data->PlayerVolumeDataChange(
+                emit curIdentifier->data->playerVolumeDataChange(
                     curIdentifier->data->currentMagnitudePlayer,
                     curIdentifier->data->currentPeakPlayer,
                     curIdentifier->data->currentInputPeakPlayer);
@@ -152,11 +147,6 @@ void ObsWrapper::OBSVolumeLevel(void *data,
 
         }
     }
-}
-
-void ObsWrapper::VolumeChanged()
-{
-
 }
 
 int ObsWrapper::micChannelCount()
@@ -195,10 +185,10 @@ bool ObsWrapper::initObs(int srcWidth,int srcHeight,int fps)
 
 
         //reset audio
-        if (!ResetAudio())
+        if (!resetAudio())
             return false;
         //reset video to enter graphcis model
-        if (ResetVideo(srcWidth,srcHeight,srcWidth,srcHeight,fps) != OBS_VIDEO_SUCCESS)
+        if (resetVideo(srcWidth,srcHeight,srcWidth,srcHeight,fps) != OBS_VIDEO_SUCCESS)
             return false;
         obs_load_all_modules();
     }
@@ -217,10 +207,10 @@ bool ObsWrapper::initObs(int srcWidth,int srcHeight,int fps)
     player_obs_volmeter = obs_volmeter_create(OBS_FADER_LOG);
     micIdentifier = QSharedPointer<SoundDeviceIdentifier>(new SoundDeviceIdentifier(SoundDeviceIdentifier::Type::Micphone, this, mic_obs_volmeter));
     playerIndentifier = QSharedPointer<SoundDeviceIdentifier>(new SoundDeviceIdentifier(SoundDeviceIdentifier::Type::Player, this, player_obs_volmeter));
-    obs_fader_add_callback(mic_obs_fader, OBSVolumeChanged, micIdentifier.get());
-    obs_volmeter_add_callback(mic_obs_volmeter, OBSVolumeLevel, micIdentifier.get());
-    obs_fader_add_callback(player_obs_fader, OBSVolumeChanged, playerIndentifier.get());
-    obs_volmeter_add_callback(player_obs_volmeter, OBSVolumeLevel, playerIndentifier.get());
+    obs_fader_add_callback(mic_obs_fader, oBSVolumeChanged, micIdentifier.get());
+    obs_volmeter_add_callback(mic_obs_volmeter, oBSVolumeLevel, micIdentifier.get());
+    obs_fader_add_callback(player_obs_fader, oBSVolumeChanged, playerIndentifier.get());
+    obs_volmeter_add_callback(player_obs_volmeter, oBSVolumeLevel, playerIndentifier.get());
 
     obs_fader_attach_source(mic_obs_fader, micSource);
     obs_volmeter_attach_source(mic_obs_volmeter, micSource);
@@ -235,11 +225,14 @@ bool ObsWrapper::initObs(int srcWidth,int srcHeight,int fps)
 
 int ObsWrapper::startRecording()
 {
+    emit recordStatusChanged(RecordingStatus::Recording);
     if (!obs_output_start(fileOutput))
+    {
+        emit recordStatusChanged(RecordingStatus::Stoped);
         return -1;
+    }
     isRecordingStarted=  true;
     isPaused = false;
-    emit recordStatusChanged(RecordingStatus::Recording);
     return 0;
 }
 
@@ -332,16 +325,36 @@ int ObsWrapper::addSceneSource(const REC_TYPE type)
 }
 
 
-void ResetAudioDevice(const char *sourceId, const char *deviceId,
+void ObsWrapper::ResetAudioDevice(const char *sourceId, const char *deviceId,
                       const char *deviceDesc, int channel)
 {
     bool disable = deviceId && strcmp(deviceId, "disabled") == 0;
-    OBSSource source = getSoundSource(sourceId, deviceId, deviceDesc, channel);
+    if (disable) {
+        obs_set_output_source(channel, nullptr);
+        if(channel==SOURCE_CHANNELS::SOURCE_CHANNEL_AUDIO_INPUT)
+        {
+            memset(currentMagnitudeMic,0,sizeof(float)*8);
+            memset(currentPeakMic,0,sizeof(float)*8);
+            memset(currentInputPeakMic,0,sizeof(float)*8);
+            emit micVolumeDataChange(
+                            currentMagnitudeMic,
+                            currentPeakMic,
+                            currentInputPeakMic);
+        }
+        if(channel==SOURCE_CHANNEL_AUDIO_OUTPUT)
+        {
+            memset(currentMagnitudePlayer,0,sizeof(float)*8);
+            memset(currentPeakPlayer,0,sizeof(float)*8);
+            memset(currentInputPeakPlayer,0,sizeof(float)*8);
+            emit playerVolumeDataChange(
+                            currentMagnitudePlayer,
+                            currentPeakPlayer,
+                            currentInputPeakPlayer);
+        }
 
-    if (source) {
-        if (disable) {
-            obs_set_output_source(channel, nullptr);
-        } else {
+    } else {
+        OBSSource source = getSoundSource(sourceId, deviceId, deviceDesc, channel);
+        if (source) {
             obs_set_output_source(channel, source);
             OBSData settings = obs_source_get_settings(source);
             const char *oldId =
@@ -351,11 +364,7 @@ void ResetAudioDevice(const char *sourceId, const char *deviceId,
                                     deviceId);
                 obs_source_update(source, settings);
             }
-            obs_data_release(settings);
         }
-        obs_source_release(source);
-    } else {
-        qDebug() << "get null source";
     }
 }
 
@@ -379,6 +388,7 @@ static bool HasAudioDevices(const char *source_id)
 
 
 
+
 static bool CreateAACEncoder(OBSEncoder &res, std::string &id,
                              const char *name, size_t idx)
 {
@@ -394,24 +404,105 @@ static bool CreateAACEncoder(OBSEncoder &res, std::string &id,
     return false;
 }
 
-void ObsWrapper::recSystemAudio(bool enable)
+void ObsWrapper::recPlayerAudio(bool enable,const QString& target)
 {
     bool hasDesktopAudio = HasAudioDevices(OUTPUT_AUDIO_SOURCE);
 
     if (hasDesktopAudio)
-        ResetAudioDevice(OUTPUT_AUDIO_SOURCE, enable?"default":"disable",
-                         "Default Desktop Audio", SOURCE_CHANNEL_AUDIO_OUTPUT);
+        ResetAudioDevice(OUTPUT_AUDIO_SOURCE, enable?target.toUtf8().data():"disabled",
+                         "Desktop Audio", SOURCE_CHANNEL_AUDIO_OUTPUT);
 }
 
-void ObsWrapper::recOutAudio(bool enable)
+void ObsWrapper::recMicAudio(bool enable,const QString& target)
 {
     bool hasInputAudio = HasAudioDevices(INPUT_AUDIO_SOURCE);
     if (hasInputAudio)
-        ResetAudioDevice(INPUT_AUDIO_SOURCE, enable?"default":"disable",
-                         "Default Mic/Aux", SOURCE_CHANNEL_AUDIO_INPUT);
+        ResetAudioDevice(INPUT_AUDIO_SOURCE, enable?target.toUtf8().data():"disabled",
+                         "Mic/Aux", SOURCE_CHANNEL_AUDIO_INPUT);
 }
 
-void ObsWrapper::SearchRecTargets(REC_TYPE type)
+QString ObsWrapper::micDeviceId(const QString& name)
+{
+    for(int i =0;i < m_micPhoneTargets.count();i++)
+    {
+        if(m_micPhoneTargets[i]==name)
+        {
+            return m_micPhoneTargetIds[i];
+        }
+    }
+    return "default";
+}
+
+QString ObsWrapper::playerDeviceId(const QString& name)
+{
+    for(int i =0;i < m_playerTargets.count();i++)
+    {
+        if(m_playerTargets[i]==name)
+        {
+            return m_playerTargetIds[i];
+        }
+    }
+    return "default";
+}
+
+void ObsWrapper::resetMicphoneVolumeLevelCallback(const QString& target)
+{
+    if(micSource)
+    {
+        obs_fader_detach_source(mic_obs_fader);
+        obs_volmeter_detach_source(mic_obs_volmeter);
+        obs_set_output_source(SOURCE_CHANNEL_AUDIO_INPUT, nullptr);
+        obs_source_release(micSource);
+        obs_fader_remove_callback(mic_obs_fader,oBSVolumeChanged,micIdentifier.get());
+        obs_volmeter_remove_callback(mic_obs_volmeter,oBSVolumeLevel,micIdentifier.get());
+        micSource = nullptr;
+    }
+    obs_fader_add_callback(mic_obs_fader, oBSVolumeChanged, micIdentifier.get());
+    obs_volmeter_add_callback(mic_obs_volmeter, oBSVolumeLevel, micIdentifier.get());
+    micSource = getSoundSource(INPUT_AUDIO_SOURCE, target.toStdString().c_str(), "Mic/Aux", SOURCE_CHANNEL_AUDIO_INPUT);
+    obs_fader_attach_source(mic_obs_fader, micSource);
+    obs_volmeter_attach_source(mic_obs_volmeter, micSource);
+    obs_source_active(micSource);
+    obs_set_output_source(SOURCE_CHANNEL_AUDIO_INPUT, micSource);
+    memset(currentMagnitudeMic,0,sizeof(float)*8);
+    memset(currentPeakMic,0,sizeof(float)*8);
+    memset(currentInputPeakMic,0,sizeof(float)*8);
+    emit micVolumeDataChange(
+                    currentMagnitudeMic,
+                    currentPeakMic,
+                    currentInputPeakMic);
+}
+
+void ObsWrapper::resetPlayerVolumeLevelCallback(const QString& target)
+{
+    if(playerSource)
+    {
+
+        obs_fader_detach_source(player_obs_fader);
+        obs_volmeter_detach_source(player_obs_volmeter);
+        obs_set_output_source(SOURCE_CHANNEL_AUDIO_OUTPUT, nullptr);
+        obs_source_release(playerSource);
+        obs_fader_remove_callback(player_obs_fader,oBSVolumeChanged,playerIndentifier.get());
+        obs_volmeter_remove_callback(player_obs_volmeter,oBSVolumeLevel,playerIndentifier.get());
+        playerSource = nullptr;
+    }
+    obs_fader_add_callback(player_obs_fader, oBSVolumeChanged, playerIndentifier.get());
+    obs_volmeter_add_callback(player_obs_volmeter, oBSVolumeLevel, playerIndentifier.get());
+    playerSource = getSoundSource(OUTPUT_AUDIO_SOURCE, target.toStdString().c_str(), "Desktop Audio", SOURCE_CHANNEL_AUDIO_OUTPUT);
+    obs_fader_attach_source(player_obs_fader, playerSource);
+    obs_volmeter_attach_source(player_obs_volmeter, playerSource);
+    obs_source_active(playerSource);
+    obs_set_output_source(SOURCE_CHANNEL_AUDIO_OUTPUT, playerSource);
+    memset(currentMagnitudePlayer,0,sizeof(float)*8);
+    memset(currentPeakPlayer,0,sizeof(float)*8);
+    memset(currentInputPeakPlayer,0,sizeof(float)*8);
+    emit playerVolumeDataChange(
+                    currentMagnitudePlayer,
+                    currentPeakPlayer,
+                    currentInputPeakPlayer);
+}
+
+void ObsWrapper::searchRecTargets(REC_TYPE type)
 {
     //start search record targets
     m_vecRecTargets.clear();
@@ -422,7 +513,7 @@ void ObsWrapper::SearchRecTargets(REC_TYPE type)
     if (type == REC_WINDOWS) {
         prop_name = "window";
     } else {
-        prop_name = PROP_NAME;
+        prop_name = DESKTOP_PROP_NAME;
     }
 
     OBSDataAutoRelease settings = obs_source_get_settings(captureSource);
@@ -459,14 +550,19 @@ void ObsWrapper::SearchRecTargets(REC_TYPE type)
     obs_properties_destroy(properties);
 }
 
-bool ObsWrapper::UpdateRecItem(const char *target, REC_TYPE type, bool useCrop,
-    int LeftCrop ,
-    int RightCrop ,
-    int TopCrop ,
-    int BottomCrop)
+QList<QString> ObsWrapper::getRecTargets()
+{
+    return m_vecRecTargets;
+}
+
+bool ObsWrapper::updateRecItem(const char *target, REC_TYPE type, bool useCrop,
+                               int LeftCrop ,
+                               int RightCrop ,
+                               int TopCrop ,
+                               int BottomCrop)
 {
     bool isFind = false;
-    std::string prop_name = PROP_NAME;
+    std::string prop_name = DESKTOP_PROP_NAME;
     int index = 0;
     for (const auto &ele: m_vecRecTargets) {
         if (ele == QString(target)) {
@@ -520,7 +616,7 @@ bool ObsWrapper::UpdateRecItem(const char *target, REC_TYPE type, bool useCrop,
 
 }
 
-bool ObsWrapper::ResetAudio()
+bool ObsWrapper::resetAudio()
 {
     obs_audio_info ai{};
     ai.samples_per_sec = 48000;
@@ -529,7 +625,7 @@ bool ObsWrapper::ResetAudio()
     return obs_reset_audio(&ai);
 }
 
-int ObsWrapper::ResetVideo(int srcWidth,int srcHeight,int outPutWidth,int outOutHeight,int fps)
+int ObsWrapper::resetVideo(int srcWidth,int srcHeight,int outPutWidth,int outOutHeight,int fps)
 {
     obs_video_info ovi{};
     ovi.fps_num = fps;
@@ -592,12 +688,6 @@ void ObsWrapper::setupFFmpeg(const QString& storePath,int srcWidth,int srcHeight
     obs_data_set_string(settings, "video_encoder", VIDEO_ENCODER_NAME);
     obs_data_set_int(settings, "video_encoder_id", VIDEO_ENCODER_ID);
 
-    // if (VIDEO_ENCODER_ID == AV_CODEC_ID_H264)
-    // {
-    //     obs_data_set_string(settings, "video_settings", "profile=main x264-params=crf=0");
-    //
-    // }
-
     obs_data_set_int(settings, "video_bitrate", bitRate * 1024);
 
     obs_data_set_int(settings, "audio_bitrate", AUDIO_BITRATE);
@@ -615,22 +705,81 @@ void ObsWrapper::setupFFmpeg(const QString& storePath,int srcWidth,int srcHeight
     obs_output_update(fileOutput, settings);
 }
 
-
-
-
-
-QString ObsWrapper::playerDeviceName()
+void ObsWrapper::searchMicDevice()
 {
-    if (!playerSource)
-        return "无设备";
-    return obs_source_get_display_name(obs_source_get_id(playerSource));
+    obs_properties_t *props = obs_get_source_properties(INPUT_AUDIO_SOURCE);
+    if (!props)
+        return ;
+    obs_property_t *devices = obs_properties_get(props,INPUT_AUDIO_PROP_NAME );
+    if (!devices)
+        return;
+    size_t count = obs_property_list_item_count(devices);
+    bool is_int = IS_INT;
+    std::string str;
+    for (size_t i = 0; i < count; i++)
+    {
+        str = obs_property_list_item_name(devices, i);
+        std::string id;
+        if (is_int) {
+            id = std::to_string(obs_property_list_item_int(devices, i));
+        } else {
+            const char *val = obs_property_list_item_string(devices, i);
+            id = val ? val : "";
+        }
+        m_micPhoneTargetIds.push_back(QString::fromStdString(id));
+        m_micPhoneTargets.push_back(QString::fromStdString(str));
+    }
+    if(m_micPhoneTargets.isEmpty())
+    {
+        m_micPhoneTargets.push_back(u8"无设备");
+        m_micPhoneTargetIds.push_back("default");
+    }
 }
 
-QString ObsWrapper::micphoneDeviceName()
+void ObsWrapper::searchPlayerDevice()
+{
+    obs_properties_t *props = obs_get_source_properties(OUTPUT_AUDIO_SOURCE);
+    if (!props)
+        return ;
+    obs_property_t *devices = obs_properties_get(props, OUTPUT_AUDIO_PROP_NAME);
+    if (!devices)
+        return;
+    size_t count = obs_property_list_item_count(devices);
+    bool is_int = IS_INT;
+    std::string str;
+    for (size_t i = 0; i < count; i++)
+    {
+        str = obs_property_list_item_name(devices, i);
+        std::string id;
+        if (is_int) {
+            id = std::to_string(obs_property_list_item_int(devices, i));
+        } else {
+            const char *val = obs_property_list_item_string(devices, i);
+            id = val ? val : "";
+        }
+        m_playerTargetIds.push_back(QString::fromStdString(id));
+        m_playerTargets.push_back(QString::fromStdString(str));
+    }
+    if(m_playerTargets.isEmpty())
+    {
+        m_playerTargets.push_back(u8"无设备");
+        m_playerTargetIds.push_back("default");
+    }
+}
+
+
+QList<QString> ObsWrapper::playerDeviceName()
+{
+    if (!playerSource)
+        return {"无设备"};
+   return m_playerTargets;
+}
+
+QList<QString> ObsWrapper::micphoneDeviceName()
 {
     if (!micSource)
-        return "无设备";
-    return obs_source_get_display_name(obs_source_get_id(micSource));
+        return {"无设备"};
+    return m_micPhoneTargets;
 }
 
 bool ObsWrapper::isRecordingStart() const

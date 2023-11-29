@@ -39,12 +39,12 @@ MinimizedRecordingWindow::MinimizedRecordingWindow(const QSharedPointer<ObsWrapp
             ui->recordingButton->setStyleSheet(style.replace("{iconName}", "start"));
         }
     });
-    connect(m_obs.get(), &ObsWrapper::MicVolumeDataChange, this, [&]
+    connect(m_obs.get(), &ObsWrapper::micVolumeDataChange, this, [&]
         (const float* magnitude, const float* peak, const float* inputPeak)
             {
                 onAudioFrame(magnitude, peak, inputPeak, true);
             });
-    connect(m_obs.get(), &ObsWrapper::PlayerVolumeDataChange, this, [&]
+    connect(m_obs.get(), &ObsWrapper::playerVolumeDataChange, this, [&]
         (const float* magnitude, const float* peak, const float* inputPeak)
             {
                 onAudioFrame(magnitude, peak, inputPeak, false);

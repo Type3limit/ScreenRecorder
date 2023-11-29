@@ -16,7 +16,6 @@
 testwindow::testwindow(const QSharedPointer<ObsWrapper>& obs, QWidget *parent) :
 m_obs(obs),QDialog(parent), ui(new Ui::testwindow) {
     ui->setupUi(this);
-    setWindowFlags(Qt::SubWindow);
     setWindowIcon(QIcon(QString(":/icons/images/recording.svg")));
     setWindowTitle(u8"采集预览");
 }

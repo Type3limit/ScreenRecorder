@@ -33,9 +33,14 @@ void VolumeControl::setAudioChannel(int channel)
 	this->audioChannelCount = channel;
 }
 
+void VolumeControl::setInverting(bool inverting)
+{
+	m_isInverting = inverting;
+}
+
 void VolumeControl::setLevels(const float* magnitude,
-	const float* peak,
-	const float* inputPeak)
+                              const float* peak,
+                              const float* inputPeak)
 {
 	
 	QMutexLocker locker(&dataMutex);
@@ -117,11 +122,15 @@ void VolumeControl::paintEvent(QPaintEvent* event)
 		qreal usedPeakHolder = currentInputPeak[0];
 	
 		qreal scale = width / minimumLevel;
-		int magnitudePos = width - usedMagnitude * scale;
-		int peakPos =  width - convertToInt(usedPeak * scale);
-		int peakHolderPos = width- convertToInt(usedPeakHolder * scale);
+		int magnitudePos = m_isInverting? (width - convertToInt(usedMagnitude * scale)):convertToInt(usedMagnitude * scale);
+		int peakPos = m_isInverting? (width - convertToInt(usedPeak * scale)):convertToInt(usedPeak * scale);
+		int peakHolderPos = m_isInverting?(width- convertToInt(usedPeakHolder * scale)):convertToInt(usedPeakHolder * scale);
 		//draw magnitude
 		drawCount = magnitudePos / (ITEM_DISTANCE + COLUMN_WIDTH);
+		if(drawCount*(ITEM_DISTANCE + COLUMN_WIDTH)>width)
+		{
+			drawCount = width/(ITEM_DISTANCE+COLUMN_WIDTH);
+		}
 		painter.setBrush(QColor(89, 103, 242));
 		for (int i = 1; i <= drawCount; i++)
 		{

@@ -2,3 +2,5 @@
 /.clang-tidy
 /CMakePresets.json
 /CMakeUserPresets.json
+.idea
+.vs

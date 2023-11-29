@@ -13,6 +13,7 @@ public:
 public:
 	void setChannelCount(int channelCount);
 	void setAudioChannel(int channel);
+	void setInverting(bool inverting);
 	void setLevels(const float* magnitude, const float* peak, const float* inputPeak);
 protected:
 	void resetLevels();
@@ -26,6 +27,7 @@ private:
 private:
 	int channelCount = 8;
 	int audioChannelCount = 0;
+	bool m_isInverting = false;
 	//音频绘制
 	float currentMagnitude[MAX_AUDIO_CHANNELS]{-90};
 	float currentPeak[MAX_AUDIO_CHANNELS]{-90};
