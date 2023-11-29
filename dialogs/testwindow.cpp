@@ -37,7 +37,7 @@ void testwindow::createDisplayer()
     if (!QTToGSWindow(windowHandle(), info.window))
         return;
     obs_source_inc_showing(m_obs->captureSource);
-    m_displayer = obs_display_create(&info, 0xFF4C4C4C);
+    m_displayer = obs_display_create(&info, 0xFF000000);
     obs_display_add_draw_callback(m_displayer,
                   testwindow::DrawPreview,
                   this);

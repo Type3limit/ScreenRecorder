@@ -56,6 +56,7 @@ private:
     Config m_config;
     QHotkey* m_recordHotKey;
     QHotkey* m_pauseHotKey;
+    QHotkey* m_showCaptureKey;
     QTcpServer * m_server;
     QTimer m_timer;
     qint64 m_seconds = 0;

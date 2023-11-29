@@ -52,6 +52,7 @@ MinimizedRecordingWindow::MinimizedRecordingWindow(const QSharedPointer<ObsWrapp
     int audioChannel = m_obs->audioChannel();
     ui->CurrentVolume->setChannelCount(m_obs->micChannelCount());
     ui->CurrentVolume->setAudioChannel(audioChannel);
+    ui->CurrentVolume->setInverting(true);
     connect(ui->recoverButton,&QPushButton::clicked,this,&MinimizedRecordingWindow::onRecover);
     connect(ui->recordingButton,&QPushButton::clicked,this,[&]()
     {

@@ -49,14 +49,14 @@ bool isValidFilePath(const QString& filePath)
 RecordingWindow::RecordingWindow(QWidget* parent) :
     QMainWindow(parent), ui(new Ui::RecordingWindow),
     m_obs(QSharedPointer<ObsWrapper>(new ObsWrapper())),
-    m_recordHotKey(new QHotkey(nullptr)),
-    m_pauseHotKey(new QHotkey(nullptr))
+    m_recordHotKey(new QHotkey(this)),
+    m_pauseHotKey(new QHotkey(this))
 {
     ui->setupUi(this);
     // hide title bar
     setWindowFlags(Qt::FramelessWindowHint);
     setAttribute(Qt::WA_TranslucentBackground);
-    //setAttribute(Qt::WA_DeleteOnClose);
+
     setWindowIcon(QIcon(QString(":/icons/images/recording.svg")));
     setWindowTitle(u8"录屏");
     init();
@@ -499,8 +499,12 @@ void RecordingWindow::init()
     //save path
     connect(ui->pathSelectionButton, &QPushButton::clicked, this, [&]()
     {
-        auto curStr = QFileDialog::getExistingDirectory(this, tr("Open Directory"), "./");
-        ui->savePathEdit->setText(curStr);
+        auto curStr = QFileDialog::getExistingDirectory(this, tr("Open Directory"),
+            ui->savePathEdit->text().isEmpty()?".":ui->savePathEdit->text());
+        if(!curStr.isEmpty())
+        {
+            ui->savePathEdit->setText(curStr);
+        }
     });
     //recording button
     connect(ui->RecordingButton, &QPushButton::clicked, this, [&]()
@@ -525,12 +529,26 @@ void RecordingWindow::init()
         m_obs->recPlayerAudio(m_isPlayerEnable,curId);
     });
 
+    //debug preview window
     if (m_config.showPreviewWindow)
     {
         m_test = new testwindow(m_obs);
         m_test->show();
         m_test->createDisplayer();
     }
+    m_showCaptureKey = new QHotkey(QKeySequence("Alt+S"),true);
+    connect(m_showCaptureKey,&QHotkey::activated,this,[&]()
+    {
+        if(m_test!=nullptr)
+        {
+            m_test->close();
+            delete m_test;
+
+        }
+        m_test = new testwindow(m_obs);
+        m_test->show();
+        m_test->createDisplayer();
+    });
 }
 
 void RecordingWindow::mousePressEvent(QMouseEvent* e)
