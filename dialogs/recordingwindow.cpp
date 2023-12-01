@@ -3,7 +3,7 @@
 //
 
 #include "recordingwindow.h"
-#include "dialog/ui_RecordingWindow.h"
+#include "dialogs/ui_recordingwindow.h"
 #include <QMouseEvent>
 #include <QMessageBox>
 #include <QStringListModel>

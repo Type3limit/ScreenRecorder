@@ -36,6 +36,8 @@
 #define INPUT_AUDIO_SOURCE "coreaudio_input_capture"
 #define OUTPUT_AUDIO_SOURCE "coreaudio_output_capture"
 #define DESKTOP_PROP_NAME "display_uuid";
+#define INPUT_AUDIO_PROP_NAME "device_id"
+#define OUTPUT_AUDIO_PROP_NAME "device_id"
 #define IS_INT false;
 #else
 #define get_os_module(win, mac, linux) obs_get_module(linux)
@@ -43,6 +45,8 @@
 #define INPUT_AUDIO_SOURCE "pulse_input_capture"
 #define OUTPUT_AUDIO_SOURCE "pulse_output_capture"
 #define DESKTOP_PROP_NAME  "screen"
+#define INPUT_AUDIO_PROP_NAME "device_id"
+#define OUTPUT_AUDIO_PROP_NAME "device_id"
 #define IS_INT true
 #endif
 

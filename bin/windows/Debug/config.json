@@ -1,0 +1,11 @@
+{
+    "bitRateInUse": "4MB",
+    "countDownEnable": false,
+    "countDownSeconds": 3,
+    "frameRateInUse": "25FPS",
+    "pauseRecordShortCut": "F8",
+    "savePath": "G:/Code/screenRecord-git/ScreenRecorder/bin/Debug",
+    "showPreviewWindow": false,
+    "startRecordShortCut": "F7",
+    "tcpPort": 29989
+}
