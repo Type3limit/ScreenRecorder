@@ -1,6 +1,0 @@
-[ 2023-12-01 14:03:18.027 ] WARN Unable to enumerate family ' "Droid Sans Mono Dotted for Powerline" '
-[ 2023-12-01 14:03:18.029 ] WARN Unable to enumerate family ' "Droid Sans Mono Slashed for Powerline" '
-[ 2023-12-01 14:03:18.161 ] WARN Unable to enumerate family ' "Roboto Mono Medium for Powerline" '
-[ 2023-12-01 14:03:19.109 ] WARN Unable to enumerate family ' "Ubuntu Mono derivative Powerline" '
-[ 2023-12-01 14:03:20.094 ] DEBUG tcp server start listen at [ 29989 ]
-[ 2023-12-01 14:04:54.249 ] WARN QHotkeyPrivate destroyed with registered shortcuts!

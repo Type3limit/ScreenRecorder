@@ -4,3 +4,13 @@
 /CMakeUserPresets.json
 .idea
 .vs
+/bin/windows/Debug/screenRecorder.pdb
+/bin/windows/Debug/desktop_rec_cfg
+/bin/windows/Debug/log
+/bin/windows/Debug/config.json
+/bin/windows/Debug/screenRecorder.exe
+/bin/windows/Debug/screenRecorder.ilk
+/bin/windows/Release/screenRecorder.exe
+/bin/windows/Release/desktop_rec_cfg
+/bin/windows/Release/log
+/bin/windows/Release/config.json
