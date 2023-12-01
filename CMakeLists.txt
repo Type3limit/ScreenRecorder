@@ -36,6 +36,7 @@ find_package(Qt5 COMPONENTS
 link_directories(${CMAKE_CURRENT_LIST_DIR}/obs/lib/${BUILD_TYPE})
 
 include_directories(
+        ${CMAKE_CURRENT_LIST_DIR}
         ${CMAKE_CURRENT_LIST_DIR}/obs/include
         ${CMAKE_CURRENT_LIST_DIR}/obs-plugins/include
         ${CMAKE_CURRENT_LIST_DIR}/dialogs

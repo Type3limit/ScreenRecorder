@@ -6,6 +6,7 @@
 #define CONFIG_H
 #include <QJsonObject>
 #include <QJsonDocument>
+#include <QJsonArray>
 #include "extensionmethods.h"
 
 using StrEx = ExtensionMethods::QStringExtension;
@@ -19,6 +20,8 @@ public:
     QString savePath;
     QString startRecordShortCut;
     QString pauseRecordShortCut;
+    QList<QString> bitRatesPresets{"2MB","4MB","8MB"};
+    QList<QString> frameRatePresets{"25FPS","30FPS","50FPS","60FPS"};
     int tcpPort = 29989;
     bool countDownEnable = false;
     int countDownSeconds = 3;
@@ -26,15 +29,17 @@ public:
 
     bool isDefault() const
     {
-        return (StrEx::isNullOrEmpty(bitRateInUse)
+        return (bitRatesPresets.isEmpty()||frameRatePresets.isEmpty())||((StrEx::isNullOrEmpty(bitRateInUse)
             && StrEx::isNullOrEmpty(frameRateInUse) && StrEx::isNullOrEmpty(savePath)
-            && StrEx::isNullOrEmpty(startRecordShortCut) && StrEx::isNullOrEmpty(pauseRecordShortCut));
+            && StrEx::isNullOrEmpty(startRecordShortCut) && StrEx::isNullOrEmpty(pauseRecordShortCut)));
     }
 
     const QString ConfigPath = "./config.json";
     void writeJson()
     {
-        QJsonObject obj = {
+        QJsonArray bitArr = QJsonArray::fromStringList(bitRatesPresets);
+        QJsonArray fraArr = QJsonArray::fromStringList(frameRatePresets);
+        const QJsonObject obj = {
             {"bitRateInUse", bitRateInUse},
             {"frameRateInUse", frameRateInUse},
             {"savePath", savePath},
@@ -43,13 +48,15 @@ public:
             {"countDownEnable", countDownEnable},
             {"countDownSeconds", countDownSeconds},
             {"tcpPort", tcpPort},
-            {"showPreviewWindow", showPreviewWindow}
+            {"showPreviewWindow", showPreviewWindow},
+            {"bitRatesPresets",bitArr},
+            {"frameRatePresets",fraArr}
         };
         StrEx::writeAllText(ConfigPath, QJsonDocument(obj).toJson());
     }
     void readJson()
     {
-        auto doc = QJsonDocument::fromJson(StrEx::readAllText(ConfigPath).toUtf8());
+        const auto doc = QJsonDocument::fromJson(StrEx::readAllText(ConfigPath).toUtf8());
         if (doc.isEmpty())
             return;
         auto obj = doc.object();
@@ -62,6 +69,18 @@ public:
         this->countDownSeconds = obj["countDownSeconds"].toInt();
         this->tcpPort = obj["tcpPort"].toInt();
         this->showPreviewWindow = obj["showPreviewWindow"].toBool();
+        auto bitArr = obj["bitRatesPresets"].toArray();
+        this->bitRatesPresets.clear();
+        for(const auto& itr:bitArr)
+        {
+            this->bitRatesPresets.append(itr.toString());
+        }
+        auto fraArr = obj["frameRatePresets"].toArray();
+        this->frameRatePresets.clear();
+        for(const auto& itr:fraArr)
+        {
+            this->frameRatePresets.append(itr.toString());
+        }
     }
 };
 

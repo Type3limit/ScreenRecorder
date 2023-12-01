@@ -216,14 +216,16 @@ void RecordingWindow::init()
         m_config.countDownSeconds = 3;
         m_config.tcpPort = 29989;
         m_config.showPreviewWindow = false;
+        m_config.bitRatesPresets = {"2MB", "4MB", "8MB"};
+        m_config.frameRatePresets = {"25FPS", "30FPS", "50FPS", "60FPS"};
         m_config.writeJson();
     }
     ui->nameEdit->setText(QDateTime::currentDateTime().toString("yyyy.MM.dd-hh.mm"));
     POPVIEW(bitrateComboBox)
-    ui->bitrateComboBox->setModel(new QStringListModel({"2MB", "4MB", "8MB"}, this));
+    ui->bitrateComboBox->setModel(new QStringListModel(m_config.bitRatesPresets, this));
     ui->bitrateComboBox->setCurrentText(m_config.bitRateInUse);
     POPVIEW(frameRateComboBox)
-    ui->frameRateComboBox->setModel(new QStringListModel({"25FPS", "30FPS", "50FPS", "60FPS"}, this));
+    ui->frameRateComboBox->setModel(new QStringListModel(m_config.frameRatePresets, this));
     ui->frameRateComboBox->setCurrentText(m_config.frameRateInUse);
     ui->savePathEdit->setText(m_config.savePath);
     ui->StartShortCut->setKeySequence(QKeySequence::fromString(m_config.startRecordShortCut));
