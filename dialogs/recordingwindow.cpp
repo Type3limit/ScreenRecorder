@@ -442,9 +442,8 @@ void RecordingWindow::init()
                     if (socket != nullptr)
                     {
                         socket->write(
-                            QString(ui->savePathEdit->text() + ui->nameEdit->text() + ".mp4").toUtf8().data());
+                            QString(ui->savePathEdit->text()+"/" + ui->nameEdit->text() + ".mp4").toUtf8().data());
                         socket->flush();
-                        socket->close();
                     }
                 }
                 while (socket != nullptr);
