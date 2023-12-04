@@ -5,7 +5,6 @@
 #include "recordingwindow.h"
 #include "dialogs/ui_recordingwindow.h"
 #include <QMouseEvent>
-#include <QMessageBox>
 #include <QStringListModel>
 #include <QScreen>
 #include <QStyledItemDelegate>
@@ -13,7 +12,7 @@
 #include <QTcpSocket>
 #include <QFileDialog>
 #include <QStandardItemModel>
-
+#include "usermessagebox.h"
 #include "backgroundwindow.h"
 #include "countdowndialog.h"
 
@@ -46,7 +45,7 @@ bool isValidFilePath(const QString& filePath)
 }
 
 
-RecordingWindow::RecordingWindow(QWidget* parent) :
+RecordingWindow::RecordingWindow(int port,QWidget* parent) :
     QMainWindow(parent), ui(new Ui::RecordingWindow),
     m_obs(QSharedPointer<ObsWrapper>(new ObsWrapper())),
     m_recordHotKey(new QHotkey(this)),
@@ -56,10 +55,9 @@ RecordingWindow::RecordingWindow(QWidget* parent) :
     // hide title bar
     setWindowFlags(Qt::FramelessWindowHint);
     setAttribute(Qt::WA_TranslucentBackground);
-
     setWindowIcon(QIcon(QString(":/icons/images/recording.svg")));
     setWindowTitle(u8"录屏");
-    init();
+    init(port);
 }
 
 RecordingWindow::~RecordingWindow()
@@ -89,7 +87,7 @@ RecordingWindow::~RecordingWindow()
     delete ui;
 }
 
-void RecordingWindow::init()
+void RecordingWindow::init(int defaultPort)
 {
     //init obs
     auto firstScreen = QGuiApplication::primaryScreen();
@@ -99,7 +97,7 @@ void RecordingWindow::init()
                         firstScreen->geometry().height() * pix, 60))
     {
         qWarning() << "init obs failed!";
-        QMessageBox::warning(this, u8"警告", u8"初始化OBS失败！");
+        UserMessageBox::warning(this, u8"警告", u8"初始化OBS失败！");
         exit(-1);
     }
 
@@ -125,7 +123,7 @@ void RecordingWindow::init()
                                                    ui->frameRateComboBox->currentText().remove("FPS").toInt()))
         {
             qWarning() << u8"reset video failed!";
-            QMessageBox::warning(this, u8"警告", u8"输出重置失败!");
+            UserMessageBox::warning(this, u8"警告", u8"输出重置失败!");
         }
     };
 
@@ -137,6 +135,7 @@ void RecordingWindow::init()
     {
         m_miniWindow->hide();
         this->show();
+        this->setFocus();
     });
     connect(m_miniWindow, &MinimizedRecordingWindow::closed, this, [&]()
     {
@@ -169,8 +168,8 @@ void RecordingWindow::init()
     {
         if (m_isRecordingStarted)
         {
-            auto res = QMessageBox::question(this, "提示", "当前正在录制，确认退出？");
-            if (res == QMessageBox::StandardButton::Yes)
+            auto res = UserMessageBox::question(this, "提示", "当前正在录制，确认退出？");
+            if (res == UserMessageBox::ButtonType::Ok)
             {
                 stopRecord();
                 close();
@@ -220,7 +219,7 @@ void RecordingWindow::init()
         m_config.frameRatePresets = {"25FPS", "30FPS", "50FPS", "60FPS"};
         m_config.writeJson();
     }
-    ui->nameEdit->setText(QDateTime::currentDateTime().toString("yyyy.MM.dd-hh.mm"));
+    ui->nameEdit->setText(QDateTime::currentDateTime().toString("yyyy.MM.dd-hh.mm.ss"));
     POPVIEW(bitrateComboBox)
     ui->bitrateComboBox->setModel(new QStringListModel(m_config.bitRatesPresets, this));
     ui->bitrateComboBox->setCurrentText(m_config.bitRateInUse);
@@ -240,15 +239,7 @@ void RecordingWindow::init()
 
 
     //init server for communicate between different process
-    m_server = new QTcpServer(this);
-    m_server->setMaxPendingConnections(50);
-    if (!m_server->listen(QHostAddress::Any, m_config.tcpPort))
-    {
-        qWarning() << "tcp server start listen at [" << m_config.tcpPort << "] failed!";
-        QMessageBox::warning(this, u8"警告", u8"tcp服务监听端口：" + QString::number(m_config.tcpPort) + u8"失败！");
-        exit(-1);
-    }
-    qDebug() << "tcp server start listen at [" << m_config.tcpPort << "]";
+    setupPort(defaultPort<0?m_config.tcpPort:defaultPort);
     //timer for display recording status
     m_seconds = 0;
     m_timer.setInterval(1000);
@@ -439,12 +430,13 @@ void RecordingWindow::init()
                 do
                 {
                     socket = m_server->nextPendingConnection();
-                    if (socket != nullptr)
+                    if(socket!=nullptr&&socket->isValid())
                     {
-                        socket->write(
-                            QString(ui->savePathEdit->text()+"/" + ui->nameEdit->text() + ".mp4").toUtf8().data());
-                        socket->flush();
+                      QString data = ui->savePathEdit->text()+"/"+ui->nameEdit->text()+".mp4";
+                      socket->write(data.toUtf8().data());
+                      socket->flush();
                     }
+    
                 }
                 while (socket != nullptr);
             }
@@ -586,6 +578,26 @@ bool RecordingWindow::isFullScreenMode() const
     return ui->areaComboBox->currentText() == u8"全屏";
 }
 
+void RecordingWindow::setupPort(int port)
+{
+    if(m_server!=nullptr)
+    {
+        m_server->close();
+        m_server->disconnect();
+        m_server->deleteLater();
+        m_server = nullptr;
+    }
+    m_server = new QTcpServer(this);
+    m_server->setMaxPendingConnections(50);
+    if (!m_server->listen(QHostAddress::Any, port))
+    {
+        qWarning() << "tcp server start listen at [" << port << "] failed!";
+        UserMessageBox::warning(this, u8"警告", u8"tcp服务监听端口：" + QString::number(port) + u8"失败！");
+        exit(-1);
+    }
+    qDebug() << "tcp server start listen at [" << port << "]";
+}
+
 
 void RecordingWindow::closeEvent(QCloseEvent* event)
 {
@@ -617,13 +629,13 @@ void RecordingWindow::startRecord()
                                                    cropRect.height() * devicePixelRatio, fps))
         {
             qDebug() << u8"reset video failed!";
-            QMessageBox::warning(this, u8"警告", u8"输出重置失败!");
+            UserMessageBox::warning(this, u8"警告", u8"输出重置失败!");
             return;
         }
 
         if(ui->savePathEdit->text().isEmpty())
         {
-            QMessageBox::warning(this, u8"警告", u8"当前存储路径为空!");
+            UserMessageBox::warning(this, u8"警告", u8"当前存储路径为空!");
             return;
         }
         auto dir = QDir(ui->savePathEdit->text());
@@ -635,7 +647,7 @@ void RecordingWindow::startRecord()
         if (!dir.exists())
         {
             qDebug() << u8"save path" << ui->savePathEdit->text() << "invalid!";
-            QMessageBox::warning(this, u8"警告", u8"当前存储路径不合法!");
+            UserMessageBox::warning(this, u8"警告", u8"当前存储路径不合法!");
             return;
         }
 
@@ -645,7 +657,7 @@ void RecordingWindow::startRecord()
         if (!isValidFilePath(fileName))
         {
             qDebug() << u8"name " << ui->nameEdit->text() << "invalid!";
-            QMessageBox::warning(this, u8"警告", u8"文件名称或路径非法!");
+            UserMessageBox::warning(this, u8"警告", u8"文件名称或路径非法!");
             return;
         }
 
@@ -675,10 +687,12 @@ void RecordingWindow::startRecord()
         }
         else // else, start immediately
         {
-            if (0 != m_obs->startRecording())
+            auto res = m_obs->startRecording();
+            qDebug()<<"start with status:"<<res;
+            if (0 != res)
             {
                 qDebug() << u8"start recording" << fileName + ".mp4" << "falied!";
-                QMessageBox::warning(this, u8"警告", u8"开始录屏失败!");
+                UserMessageBox::warning(this, u8"警告", u8"开始录屏失败!");
                 return;
             }
         }
@@ -694,6 +708,11 @@ void RecordingWindow::pauseRecord()
 {
     if (m_obs->isRecordingStart())
     {
+        if(m_seconds<=1)
+        {
+            UserMessageBox::warning(this,u8"警告",u8"录制时长过短，请稍后再试");
+            return;
+        }
         m_obs->pauseRecording();
     }
 }
@@ -702,8 +721,17 @@ void RecordingWindow::stopRecord()
 {
     if (m_obs->isRecordingStart())
     {
-        m_isRecordingStarted = false;
-        m_obs->stopRecording();
+       
+        if(m_seconds<=1)
+        {
+            UserMessageBox::warning(this,u8"警告",u8"录制时长过短，请稍后再试");
+            return;
+        }
+         m_isRecordingStarted = false;
+        auto res = m_obs->stopRecording();
+        qDebug()<<"stop with status:"<<res;
+        //rename current recording
+        ui->nameEdit->setText(QDateTime::currentDateTime().toString("yyyy.MM.dd-hh.mm.ss"));
     }
 }
 

@@ -22,7 +22,7 @@ static QMutex s_logFileMutex;
 
 QString logDir()
 {
-    return QApplication::applicationDirPath() + "/log/" + LOG_NAME;
+    return QApplication::applicationDirPath() + "/log/";
 }
 
 void deleteOldLogs()
@@ -69,7 +69,7 @@ void rollLogFile()
         s_logFile->rename(rollingLogFileName);
     }
 
-    s_logFile.reset(new QFile(appLogDir + "/" + LOG_NAME + ".log"));
+    s_logFile.reset(new QFile(rollingLogFileName));
     s_logFile->open(QFile::Append | QFile::Text);
 }
 

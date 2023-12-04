@@ -235,7 +235,12 @@ int ObsWrapper::startRecording()
         emit recordStatusChanged(RecordingStatus::Stoped);
         return -1;
     }
-    isRecordingStarted=  true;
+    handler = obs_output_get_signal_handler(fileOutput);
+    if(handler!=nullptr)
+    {    
+        signal_handler_connect(handler, "stop", outPutStopedCallback,this);
+    }
+    isRecordingStarted=true;
     isPaused = false;
     return 0;
 }
@@ -250,6 +255,18 @@ int ObsWrapper::pauseRecording()
     return 0 ;
 }
 
+void ObsWrapper::outPutStopedCallback(void* my_data, calldata_t* cd)
+{
+    const auto cur = static_cast<ObsWrapper*>(my_data);
+    if(cur!=nullptr&&cur->handler!=nullptr)
+    {
+        cur->emit recordStatusChanged(RecordingStatus::Stoped);
+        signal_handler_disconnect(cur->handler,"stop",outPutStopedCallback,my_data);
+        //signal_handler_destroy(cur->handler);
+        cur->handler = nullptr;
+    }
+}
+
 int ObsWrapper::stopRecording(bool isForceStop)
 {
     if (isForceStop)
@@ -258,7 +275,6 @@ int ObsWrapper::stopRecording(bool isForceStop)
         obs_output_stop(fileOutput);
     isRecordingStarted = false;
     isPaused = false;
-    emit recordStatusChanged(RecordingStatus::Stoped);
     return 0;
 }
 

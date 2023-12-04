@@ -71,6 +71,11 @@ set(RESOURCES resource.qrc
         dialogs/testwindow.cpp
         dialogs/testwindow.h
         dialogs/testwindow.ui
+        dialogs/usermessagebox.h
+        dialogs/usermessagebox.cpp
+        dialogs/usermessagebox.ui
+        dialogs/framelessdialog.h
+        dialogs/framelessdialog.cpp
         helper/qoperationhelper.h
         helper/qoperationhelper.h
 )

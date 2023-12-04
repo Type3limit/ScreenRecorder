@@ -90,6 +90,8 @@ public:
 	int  stopRecording(bool isForceStop = false);
 	///recording pause
     int pauseRecording();
+	///obs output callback
+	static void outPutStopedCallback(void *my_data, calldata_t *cd);
 	///to find window/minotor device
 	void searchRecTargets(REC_TYPE type);
 	///get recording items based on searchRecTargets
@@ -140,6 +142,9 @@ private:
 	OBSDisplay displayer;
 	///ffmpeg aac encoder tracks
 	OBSEncoder aacTrack[MAX_AUDIO_MIXES];
+	///signal handler
+	signal_handler_t *handler = nullptr;
+
 	std::string aacEncoderID[MAX_AUDIO_MIXES];
 
 	OBSFader mic_obs_fader;
