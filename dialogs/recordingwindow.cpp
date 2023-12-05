@@ -12,8 +12,10 @@
 #include <QTcpSocket>
 #include <QFileDialog>
 #include <QStandardItemModel>
+#ifdef _WIN32
+#else
 #include <X11/Xlib.h>
-
+#endif
 #include "usermessagebox.h"
 #include "backgroundwindow.h"
 #include "countdowndialog.h"
@@ -99,7 +101,7 @@ QScreen* RecordingWindow::findScreen() const
     auto curIndex = ui->screenDeviceComboBox->currentIndex();
     if (curIndex < 0)
         curIndex = 0;
-    auto curScreen = screens.at(curIndex);
+    return curScreens.at(curIndex);
 #else
     return ExtensionMethods::SourcesExtension<QScreen*>::firstOf(curScreens,[&](const QScreen* curSc)
     {
@@ -110,6 +112,8 @@ QScreen* RecordingWindow::findScreen() const
 
 void RecordingWindow::init(int defaultPort)
 {
+    if(m_alreadyInited)
+        return;
     //init obs
     auto firstScreen = QGuiApplication::primaryScreen();
     auto pix = qApp->devicePixelRatio();
@@ -563,6 +567,7 @@ void RecordingWindow::init(int defaultPort)
         m_test->show();
         m_test->createDisplayer();
     });
+    m_alreadyInited = true;
 }
 
 void RecordingWindow::mousePressEvent(QMouseEvent* e)
@@ -630,11 +635,9 @@ void RecordingWindow::startRecord()
 {
     if (!m_isRecordingStarted)
     {
-#ifdef _WIN32
-        auto sc = QGuiApplication::screens().at(ui->screenDeviceComboBox->currentIndex());
-#else
+
         auto sc = findScreen();
-#endif
+
         qreal devicePixelRatio = sc->devicePixelRatio();
         auto left = m_startPos.x() * devicePixelRatio;
         auto right = (sc->geometry().width() - m_endPos.x()) * devicePixelRatio;
