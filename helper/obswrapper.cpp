@@ -185,15 +185,9 @@ bool ObsWrapper::initObs(int srcWidth,int srcHeight,int fps)
         }
 
         //plugin pathes
-#ifdef _WIN32
         std::string plugin_path = path_str + "/obs-plugins/64bit";
 
         std::string data_path = path_str + "/data/obs-plugins/%module%";
-#else
-        std::string plugin_path = "/usr/local/lib/obs-plugins";
-
-        std::string data_path = path_str + "/usr/local/share/obs/obs-plugins/%module%";
-#endif
 
 
         obs_add_module_path(plugin_path.c_str(), data_path.c_str());
@@ -205,7 +199,10 @@ bool ObsWrapper::initObs(int srcWidth,int srcHeight,int fps)
         //reset video to enter graphcis model
         if (resetVideo(srcWidth,srcHeight,srcWidth,srcHeight,fps) != OBS_VIDEO_SUCCESS)
             return false;
+
         obs_load_all_modules();
+
+
     }
 
     if (!createOutputMode())
