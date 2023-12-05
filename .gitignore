@@ -15,12 +15,12 @@
 /bin/windows/Release/log
 /bin/windows/Release/config.json
 
-/bin/Linux/Debug/desktop_rec_cfg
-/bin/Linux/Debug/log
-/bin/Linux/Debug/config.json
-/bin/Linux/Debug/screenRecorder
+/bin/linux/Debug/desktop_rec_cfg
+/bin/linux/Debug/log
+/bin/linux/Debug/config.json
+/bin/linux/Debug/screenRecorder
 
-/bin/Linux/Release/desktop_rec_cfg
-/bin/Linux/Release/log
-/bin/Linux/Release/config.json
-/bin/Linux/Release/screenRecorder
+/bin/linux/Release/desktop_rec_cfg
+/bin/linux/Release/log
+/bin/linux/Release/config.json
+/bin/linux/Release/screenRecorder
