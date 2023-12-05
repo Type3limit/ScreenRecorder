@@ -6,6 +6,9 @@
 #define QOPERATIONHELPER_H
 #include <QWindow>
 #include "graphics/graphics.h"
+#ifdef Q_OS_UNIX
+#include "obs-nix-platform.h"
+#endif
 #include <QColor>
 
 static inline QSize GetPixelSize(const QWidget *widget)
@@ -23,7 +26,7 @@ inline bool QTToGSWindow(const QWindow *window, gs_window &gswindow)
     gswindow.view = (id)window->winId();
 #else
     switch (obs_get_nix_platform()) {
-    case OBS_NIX_PLATFORM_X11_EGL:
+    case OBS_NIX_PLATFORM_X11_GLX:
         gswindow.id = window->winId();
         gswindow.display = obs_get_nix_platform_display();
         break;

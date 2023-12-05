@@ -29,8 +29,9 @@ BackgroundWindow::BackgroundWindow(bool isFullScreenModel, QWidget* parent, cons
 {
     m_renderer.load(QString(":/icons/images/centerAnchor.svg"));
     m_drawingColor = QColor(255, 154, 0);
-    setWindowFlags(Qt::FramelessWindowHint|Qt::WindowStaysOnTopHint|Qt::SubWindow);
+    setAttribute(Qt::WA_TransparentForMouseEvents, true);
     setAttribute(Qt::WA_TranslucentBackground);
+    setWindowFlags(Qt::FramelessWindowHint|Qt::WindowStaysOnTopHint|Qt::SubWindow);
     resetStatus(isFullScreenModel,curScreen);
     setMouseTracking(true);
     setWindowIcon(QIcon(QString(":/icons/images/recording.svg")));

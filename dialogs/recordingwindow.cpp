@@ -3,7 +3,7 @@
 //
 
 #include "recordingwindow.h"
-#include "dialog/ui_RecordingWindow.h"
+#include "dialogs/ui_recordingwindow.h"
 #include <QMouseEvent>
 #include <QMessageBox>
 #include <QStringListModel>
@@ -106,7 +106,13 @@ void RecordingWindow::init()
     //reset video func
     auto resetVideo = [&]()
     {
-        auto curScreen = QGuiApplication::screens().at(ui->screenDeviceComboBox->currentIndex());
+        auto curScreens = QGuiApplication::screens();
+        int curIndex = ui->screenDeviceComboBox->currentIndex();
+        if(curIndex>curScreens.length()||curIndex<0)
+        {
+            curIndex = 0;
+        }
+        auto curScreen = curScreens.at(curIndex);
         qreal devicePixelRatio = curScreen->devicePixelRatio();
         QRect cropRect = isFullScreenMode()
                              ? (QRect{0, 0, curScreen->geometry().width(), curScreen->geometry().height()})

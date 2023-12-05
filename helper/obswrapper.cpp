@@ -6,8 +6,7 @@
 #include <QMutex>
 #include <QDebug>
 #define M_INFINITE 3.4e38f
-#define DL_D3D11  "libobs-d3d11.dll"
-#define DL_OPENGL  "libobs-opengl.dll"
+
 
 #define VIDEO_ENCODER_ID           AV_CODEC_ID_H264
 #define VIDEO_ENCODER_NAME         "libx264"
@@ -23,6 +22,8 @@
 #define OUTPUT_AUDIO_SOURCE "wasapi_output_capture"
 #define INPUT_AUDIO_PROP_NAME "device_id"
 #define OUTPUT_AUDIO_PROP_NAME "device_id"
+#define DL_D3D11  "libobs-d3d11.dll"
+#define DL_OPENGL  "libobs-opengl.dll"
 #if USE_GS
 #define DESKTOP_PROP_NAME "monitor_id"
 #else
@@ -36,6 +37,8 @@
 #define INPUT_AUDIO_SOURCE "coreaudio_input_capture"
 #define OUTPUT_AUDIO_SOURCE "coreaudio_output_capture"
 #define DESKTOP_PROP_NAME "display_uuid";
+#define INPUT_AUDIO_PROP_NAME "device_id"
+#define OUTPUT_AUDIO_PROP_NAME "device_id"
 #define IS_INT false;
 #else
 #define get_os_module(win, mac, linux) obs_get_module(linux)
@@ -43,6 +46,10 @@
 #define INPUT_AUDIO_SOURCE "pulse_input_capture"
 #define OUTPUT_AUDIO_SOURCE "pulse_output_capture"
 #define DESKTOP_PROP_NAME  "screen"
+#define INPUT_AUDIO_PROP_NAME "device_id"
+#define OUTPUT_AUDIO_PROP_NAME "device_id"
+#define DL_D3D11  "libobs-d3d11.so"
+#define DL_OPENGL  "libobs-opengl.so"
 #define IS_INT true
 #endif
 
@@ -178,8 +185,16 @@ bool ObsWrapper::initObs(int srcWidth,int srcHeight,int fps)
         }
 
         //plugin pathes
+#ifdef _WIN32
         std::string plugin_path = path_str + "/obs-plugins/64bit";
+
         std::string data_path = path_str + "/data/obs-plugins/%module%";
+#else
+        std::string plugin_path = "/usr/local/lib/obs-plugins";
+
+        std::string data_path = path_str + "/usr/local/share/obs/obs-plugins/%module%";
+#endif
+
 
         obs_add_module_path(plugin_path.c_str(), data_path.c_str());
 
@@ -302,8 +317,13 @@ int ObsWrapper::addSceneSource(const REC_TYPE type)
 
     //to create monitor capture
     if (type == REC_DESKTOP) {
+#ifdef _Win32
         //auto sets = obs_get_source_defaults("monitor_capture");
         captureSource = obs_source_create("monitor_capture", "Computer_Monitor_Capture", NULL, nullptr);
+#else
+        captureSource = obs_source_create("xshm_input", "Computer_Monitor_Capture", NULL, nullptr);
+#endif
+
     } else {
         //auto sets = obs_get_source_defaults("window_capture");
         captureSource = obs_source_create("window_capture", "Window_Capture", NULL, nullptr);
@@ -631,7 +651,11 @@ int ObsWrapper::resetVideo(int srcWidth,int srcHeight,int outPutWidth,int outOut
     ovi.fps_num = fps;
     ovi.fps_den = 1;
 
+#ifdef _WIN32
     ovi.graphics_module = DL_D3D11;
+#else
+    ovi.graphics_module = DL_OPENGL;
+#endif
     ovi.base_width = srcWidth;
     ovi.base_height = srcHeight;
     ovi.output_width = outPutWidth;
