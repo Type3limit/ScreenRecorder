@@ -14,3 +14,11 @@
 /bin/windows/Release/desktop_rec_cfg
 /bin/windows/Release/log
 /bin/windows/Release/config.json
+/bin/linux/Debug/log
+/bin/linux/Debug/config.json
+/bin/linux/Debug/screenRecorder
+/bin/linux/Debug/desktop_rec_cfg
+/bin/linux/Release/log/
+/bin/linux/Release/config.json
+/bin/linux/Release/screenRecorder
+/bin/linux/Release/desktop_rec_cfg

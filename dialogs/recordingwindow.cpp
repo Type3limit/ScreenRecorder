@@ -12,9 +12,12 @@
 #include <QTcpSocket>
 #include <QFileDialog>
 #include <QStandardItemModel>
+#include <X11/Xlib.h>
+
 #include "usermessagebox.h"
 #include "backgroundwindow.h"
 #include "countdowndialog.h"
+#include "optionnalchain.h"
 
 
 #define POPVIEW(styledItem) ui->styledItem->setView(new QListView(ui->styledItem));
@@ -87,6 +90,24 @@ RecordingWindow::~RecordingWindow()
     delete ui;
 }
 
+
+
+QScreen* RecordingWindow::findScreen() const
+{
+    auto curScreens = QGuiApplication::screens();
+#ifdef _WIN32
+    auto curIndex = ui->screenDeviceComboBox->currentIndex();
+    if (curIndex < 0)
+        curIndex = 0;
+    auto curScreen = screens.at(curIndex);
+#else
+    return ExtensionMethods::SourcesExtension<QScreen*>::firstOf(curScreens,[&](const QScreen* curSc)
+    {
+        return ui->screenDeviceComboBox->currentText().contains(curSc->name());
+    },nullptr);
+#endif
+}
+
 void RecordingWindow::init(int defaultPort)
 {
     //init obs
@@ -101,16 +122,11 @@ void RecordingWindow::init(int defaultPort)
         exit(-1);
     }
 
+
     //reset video func
     auto resetVideo = [&]()
     {
-        auto curScreens = QGuiApplication::screens();
-        int curIndex = ui->screenDeviceComboBox->currentIndex();
-        if(curIndex>curScreens.length()||curIndex<0)
-        {
-            curIndex = 0;
-        }
-        auto curScreen = curScreens.at(curIndex);
+        auto curScreen = findScreen();
         qreal devicePixelRatio = curScreen->devicePixelRatio();
         QRect cropRect = isFullScreenMode()
                              ? (QRect{0, 0, curScreen->geometry().width(), curScreen->geometry().height()})
@@ -154,7 +170,7 @@ void RecordingWindow::init(int defaultPort)
     connect(m_backgroundWindow, &BackgroundWindow::areaChanged, this, [&, resetVideo](
             int x1, int y1, int x2, int y2)
             {
-                auto curScreen = QGuiApplication::screens().at(ui->screenDeviceComboBox->currentIndex());
+                auto curScreen = findScreen();
                 qreal devicePixelRatio = curScreen->devicePixelRatio();
                 m_startPos = {x1, y1};
                 m_endPos = {x2, y2};
@@ -304,8 +320,7 @@ void RecordingWindow::init(int defaultPort)
                                           : style.replace("{iconName}", "areas"));
         ui->areaWidthEdit->setDisabled(isFullScreenMode());
         ui->areaHeightEdit->setDisabled(isFullScreenMode());
-        auto screens = QGuiApplication::screens();
-        auto curScreen = screens.at(ui->screenDeviceComboBox->currentIndex());
+        auto curScreen = findScreen();
         if (isFullScreenMode())
         {
             ui->areaWidthEdit->blockSignals(true);
@@ -327,7 +342,7 @@ void RecordingWindow::init(int defaultPort)
     connect(ui->screenDeviceComboBox, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
             [&, resetVideo](int curIndex)
             {
-                auto curScreen = QGuiApplication::screens().at(curIndex);
+                auto curScreen = findScreen();
                 ui->areaWidthEdit->blockSignals(true);
                 ui->areaHeightEdit->blockSignals(true);
                 qreal devicePixelRatio = curScreen->devicePixelRatio();
@@ -456,7 +471,7 @@ void RecordingWindow::init(int defaultPort)
     {
         if (isFullScreenMode())
             return;
-        auto sc = QGuiApplication::screens().at(ui->screenDeviceComboBox->currentIndex());
+        auto sc= findScreen();
         m_backgroundWindow->resetSelectionPos(sc->geometry().width(), sc->geometry().height());
     });
 
@@ -464,7 +479,7 @@ void RecordingWindow::init(int defaultPort)
     {
         if (isFullScreenMode())
             return;
-        auto sc = QGuiApplication::screens().at(ui->screenDeviceComboBox->currentIndex());
+        auto sc = findScreen();
         qreal devicePixelRatio = sc->devicePixelRatio();
         m_backgroundWindow->setSize(ui->areaWidthEdit->text().toInt() / devicePixelRatio,
                                     ui->areaHeightEdit->text().toInt() / devicePixelRatio);
@@ -615,7 +630,11 @@ void RecordingWindow::startRecord()
 {
     if (!m_isRecordingStarted)
     {
+#ifdef _WIN32
         auto sc = QGuiApplication::screens().at(ui->screenDeviceComboBox->currentIndex());
+#else
+        auto sc = findScreen();
+#endif
         qreal devicePixelRatio = sc->devicePixelRatio();
         auto left = m_startPos.x() * devicePixelRatio;
         auto right = (sc->geometry().width() - m_endPos.x()) * devicePixelRatio;
@@ -756,11 +775,8 @@ void RecordingWindow::saveConfig()
 
 void RecordingWindow::rebuildBackgroundWindow()
 {
-    auto screens = QGuiApplication::screens();
-    auto curIndex = ui->screenDeviceComboBox->currentIndex();
-    if (curIndex < 0)
-        curIndex = 0;
-    auto curScreen = screens.at(curIndex);
+    auto curScreen = findScreen();
+    qDebug()<<"get Screen"<<curScreen->name();
     m_backgroundWindow->resetStatus(isFullScreenMode(), curScreen);
     m_backgroundWindow->showFullScreen();
 }

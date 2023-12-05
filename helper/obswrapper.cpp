@@ -176,7 +176,7 @@ bool ObsWrapper::initObs(int srcWidth,int srcHeight,int fps)
     QString path = qApp->applicationDirPath();
     std::string path_str = path.toStdString();
 
-    std::string cfg_path = path_str+"./desktop_rec_cfg";
+    std::string cfg_path = path_str+"/desktop_rec_cfg";
 
     if (!obs_initialized()) {
         //init
@@ -598,9 +598,14 @@ void ObsWrapper::searchRecTargets(REC_TYPE type)
                 const char *val = obs_property_list_item_string(property, i);
                 id = val ? val : "";
             }
-           
+#ifdef _Win32
             m_vecRecTargets.push_back(QString::fromStdString(str));
             m_vecRecTargetIds.push_back(QString::fromStdString(id));
+#else
+            m_vecRecTargets.insert(0,QString::fromStdString(str));
+            m_vecRecTargetIds.insert(0,QString::fromStdString(id));
+#endif
+
             
         }
     }
