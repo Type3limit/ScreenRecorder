@@ -25,6 +25,7 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/lib/${PLATFORM}/${B
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/lib/${PLATFORM}/${BUILD_TYPE})
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/bin/${PLATFORM}/${BUILD_TYPE})
 
+
 find_package(Qt5 COMPONENTS
         Core
         Gui
@@ -79,6 +80,13 @@ set(RESOURCES resource.qrc
         helper/qoperationhelper.h
         helper/qoperationhelper.h
 )
+set(LinkLib
+        obs
+        Qt5::Core
+        Qt5::Gui
+        Qt5::Svg
+        Qt5::Widgets
+        Qt5::Network)
 if(WIN32)
     list(APPEND RESOURCES
             helper/qhotkey_win.cpp
@@ -89,6 +97,19 @@ elseif(APPLE)
             helper/qhotkey_mac.cpp
     )
 elseif(UNIX)
+
+
+    find_package(X11 REQUIRED)
+
+    find_package(Qt${QT_DEFAULT_MAJOR_VERSION} COMPONENTS X11Extras REQUIRED)
+
+    include_directories(${X11_INCLUDE_DIR})
+    include_directories(${Qt5Gui_PRIVATE_INCLUDE_DIRS})
+
+    list(APPEND LinkLib
+            ${X11_LIBRARIES}
+            Qt${QT_DEFAULT_MAJOR_VERSION}::X11Extras)
+
 
     list(APPEND RESOURCES
             helper/qhotkey_x11.cpp
@@ -101,12 +122,5 @@ else()
     add_executable(screenRecorder  ${RESOURCES} main.cpp)
 endif()
 
-target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE obs)
-
-target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE
-        Qt5::Core
-        Qt5::Gui
-        Qt5::Svg
-        Qt5::Widgets
-        Qt5::Network
+target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE ${LinkLib}
 )

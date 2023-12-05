@@ -24,7 +24,8 @@ Q_OBJECT
 public:
     explicit RecordingWindow(int port = -1,QWidget *parent = nullptr);
     ~RecordingWindow() override;
-    void mousePressEvent(QMouseEvent *e) override;
+QScreen* findScreen() const;
+void mousePressEvent(QMouseEvent *e) override;
     void mouseMoveEvent(QMouseEvent *e) override;
     void mouseReleaseEvent(QMouseEvent *e) override;
     void closeEvent(QCloseEvent *event) override;

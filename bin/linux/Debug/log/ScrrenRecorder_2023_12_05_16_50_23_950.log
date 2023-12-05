@@ -1,0 +1,9 @@
+[ 2023-12-05 16:50:24.777 ] DEBUG set geometry 0 : 0 : 1920 : 1080
+[ 2023-12-05 16:50:24.779 ] DEBUG tcp server start listen at [ 29989 ]
+[ 2023-12-05 16:50:24.800 ] DEBUG get Screen "DP-2"
+[ 2023-12-05 16:50:24.800 ] DEBUG set geometry 0 : 0 : 1920 : 1080
+[ 2023-12-05 16:50:26.943 ] DEBUG get Screen "DP-2"
+[ 2023-12-05 16:50:26.944 ] DEBUG set geometry 0 : 0 : 1920 : 1080
+[ 2023-12-05 16:50:26.953 ] DEBUG get Screen "DP-2"
+[ 2023-12-05 16:50:26.953 ] DEBUG set geometry 0 : 0 : 1920 : 1080
+[ 2023-12-05 16:52:03.713 ] WARN QHotkeyPrivate destroyed with registered shortcuts!

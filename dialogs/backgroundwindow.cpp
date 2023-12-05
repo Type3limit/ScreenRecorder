@@ -29,8 +29,7 @@ BackgroundWindow::BackgroundWindow(bool isFullScreenModel, QWidget* parent, cons
 {
     m_renderer.load(QString(":/icons/images/centerAnchor.svg"));
     m_drawingColor = QColor(255, 154, 0);
-    setWindowFlags(Qt::FramelessWindowHint|Qt::WindowStaysOnTopHint|Qt::SubWindow);
-    setAttribute(Qt::WA_TranslucentBackground);
+
     resetStatus(isFullScreenModel,curScreen);
     setMouseTracking(true);
     setWindowIcon(QIcon(QString(":/icons/images/recording.svg")));
@@ -118,6 +117,10 @@ void BackgroundWindow::mousePressEvent(QMouseEvent* event)
             {
                 m_dragModel = DragModel::rightTop;
             }
+            else
+            {
+                m_dragModel = DragModel::none;
+            }
         };
         if (m_isFullScreen)
         {
@@ -169,7 +172,11 @@ void BackgroundWindow::mouseReleaseEvent(QMouseEvent* event)
         auto endY = max(m_endPos.y(), m_startPos.y());
         m_startPos = {startX,startY};
         m_endPos = {endX,endY};
-        emit areaChanged(m_startPos.x(),m_startPos.y(),m_endPos.x(),m_endPos.y());
+        if(m_dragModel!=DragModel::none)
+        {
+            emit areaChanged(m_startPos.x(),m_startPos.y(),m_endPos.x(),m_endPos.y());
+        }
+
         update();
     }
 }
@@ -264,6 +271,9 @@ void BackgroundWindow::resetStatus(bool isFullScreenModel, const QScreen*  curSc
 {
     QMutexLocker locker(&dataMutex);
     m_isFullScreen = isFullScreenModel;
+    setAttribute(Qt::WA_TransparentForMouseEvents, m_isFullScreen);
+    setAttribute(Qt::WA_TranslucentBackground);
+    setWindowFlags(Qt::FramelessWindowHint|Qt::WindowStaysOnTopHint|Qt::SubWindow);
     auto sRegion = curScreen->geometry();
     qreal devicePixelRatio = curScreen->devicePixelRatio();
     QRect FullScreenRegion = {
@@ -272,12 +282,17 @@ void BackgroundWindow::resetStatus(bool isFullScreenModel, const QScreen*  curSc
         sRegion.width(),
         sRegion.height()
     };
+    qDebug()<<"set geometry"<<FullScreenRegion.left()<<":"
+    <<FullScreenRegion.top()<<":"<<FullScreenRegion.width()
+    <<":"<<FullScreenRegion.height();
     m_scrrenRegion = FullScreenRegion;
     setFixedWidth(FullScreenRegion.width());
     setFixedHeight(FullScreenRegion.height());
     //设置两次相同的geometry会导致问题？
-    setGeometry((FullScreenRegion));
+    //setGeometry((FullScreenRegion));
+
     resetSelectionPos(FullScreenRegion.width(),FullScreenRegion.height());
+    move(FullScreenRegion.topLeft());
     locker.unlock();
 }
 

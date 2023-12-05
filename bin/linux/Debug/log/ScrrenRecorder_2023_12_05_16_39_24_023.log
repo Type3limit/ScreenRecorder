@@ -1,0 +1,25 @@
+[ 2023-12-05 16:39:25.325 ] DEBUG set geometry 0 : 0 : 1920 : 1080
+[ 2023-12-05 16:39:25.327 ] DEBUG tcp server start listen at [ 29989 ]
+[ 2023-12-05 16:39:25.392 ] DEBUG get Screen "DP-2"
+[ 2023-12-05 16:39:25.392 ] DEBUG set geometry 0 : 0 : 1920 : 1080
+[ 2023-12-05 16:39:31.650 ] DEBUG get Screen "DP-2"
+[ 2023-12-05 16:39:31.650 ] DEBUG set geometry 0 : 0 : 1920 : 1080
+[ 2023-12-05 16:39:31.652 ] DEBUG get Screen "DP-2"
+[ 2023-12-05 16:39:31.652 ] DEBUG set geometry 0 : 0 : 1920 : 1080
+[ 2023-12-05 16:41:44.324 ] DEBUG get Screen "DP-2"
+[ 2023-12-05 16:41:44.324 ] DEBUG set geometry 0 : 0 : 1920 : 1080
+[ 2023-12-05 16:41:44.326 ] DEBUG get Screen "DP-2"
+[ 2023-12-05 16:41:44.326 ] DEBUG set geometry 0 : 0 : 1920 : 1080
+[ 2023-12-05 16:41:46.257 ] DEBUG get Screen "DP-2"
+[ 2023-12-05 16:41:46.257 ] DEBUG set geometry 0 : 0 : 1920 : 1080
+[ 2023-12-05 16:41:46.258 ] DEBUG get Screen "DP-2"
+[ 2023-12-05 16:41:46.258 ] DEBUG set geometry 0 : 0 : 1920 : 1080
+[ 2023-12-05 16:42:19.023 ] DEBUG get Screen "DP-2"
+[ 2023-12-05 16:42:19.023 ] DEBUG set geometry 0 : 0 : 1920 : 1080
+[ 2023-12-05 16:42:19.025 ] DEBUG get Screen "DP-2"
+[ 2023-12-05 16:42:19.025 ] DEBUG set geometry 0 : 0 : 1920 : 1080
+[ 2023-12-05 16:42:20.939 ] DEBUG get Screen "DP-2"
+[ 2023-12-05 16:42:20.939 ] DEBUG set geometry 0 : 0 : 1920 : 1080
+[ 2023-12-05 16:42:20.941 ] DEBUG get Screen "DP-2"
+[ 2023-12-05 16:42:20.941 ] DEBUG set geometry 0 : 0 : 1920 : 1080
+[ 2023-12-05 16:43:09.182 ] WARN QHotkeyPrivate destroyed with registered shortcuts!

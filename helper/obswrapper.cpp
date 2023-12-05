@@ -5,16 +5,6 @@
 #include <QDateTime>
 #include <QMutex>
 #include <QDebug>
-#define M_INFINITE 3.4e38f
-#define DL_D3D11  "libobs-d3d11.dll"
-#define DL_OPENGL  "libobs-opengl.dll"
-
-#define VIDEO_ENCODER_ID           AV_CODEC_ID_H264
-#define VIDEO_ENCODER_NAME         "libx264"
-#define RECORD_OUTPUT_FORMAT       "mp4"
-#define RECORD_OUTPUT_FORMAT_MIME  "video/mp4"
-#define AUDIO_BITRATE 192
-#define USE_GS  1
 
 #ifdef _WIN32
 #define get_os_module(win, mac, linux) obs_get_module(win)
@@ -23,6 +13,8 @@
 #define OUTPUT_AUDIO_SOURCE "wasapi_output_capture"
 #define INPUT_AUDIO_PROP_NAME "device_id"
 #define OUTPUT_AUDIO_PROP_NAME "device_id"
+#define DL_D3D11  "libobs-d3d11.dll"
+#define DL_OPENGL  "libobs-opengl.dll"
 #if USE_GS
 #define DESKTOP_PROP_NAME "monitor_id"
 #else
@@ -40,6 +32,8 @@
 #define OUTPUT_AUDIO_PROP_NAME "device_id"
 #define IS_INT false;
 #else
+#include <obs-nix-platform.h>
+#include <qpa/qplatformnativeinterface.h>
 #define get_os_module(win, mac, linux) obs_get_module(linux)
 #define get_os_text(mod, win, mac, linux) obs_module_get_locale_text(mod, linux)
 #define INPUT_AUDIO_SOURCE "pulse_input_capture"
@@ -47,9 +41,18 @@
 #define DESKTOP_PROP_NAME  "screen"
 #define INPUT_AUDIO_PROP_NAME "device_id"
 #define OUTPUT_AUDIO_PROP_NAME "device_id"
+#define DL_D3D11  "libobs-d3d11.so"
+#define DL_OPENGL  "libobs-opengl.so"
 #define IS_INT true
 #endif
+#define M_INFINITE 3.4e38f
 
+#define VIDEO_ENCODER_ID           AV_CODEC_ID_H264
+#define VIDEO_ENCODER_NAME         "libx264"
+#define RECORD_OUTPUT_FORMAT       "mp4"
+#define RECORD_OUTPUT_FORMAT_MIME  "video/mp4"
+#define AUDIO_BITRATE 192
+#define USE_GS  1
 
 enum SOURCE_CHANNELS {
     SOURCE_CHANNEL_TRANSITION,
@@ -173,7 +176,7 @@ bool ObsWrapper::initObs(int srcWidth,int srcHeight,int fps)
     QString path = qApp->applicationDirPath();
     std::string path_str = path.toStdString();
 
-    std::string cfg_path = path_str+"./desktop_rec_cfg";
+    std::string cfg_path = path_str+"/desktop_rec_cfg";
 
     if (!obs_initialized()) {
         //init
@@ -183,7 +186,9 @@ bool ObsWrapper::initObs(int srcWidth,int srcHeight,int fps)
 
         //plugin pathes
         std::string plugin_path = path_str + "/obs-plugins/64bit";
+
         std::string data_path = path_str + "/data/obs-plugins/%module%";
+
 
         obs_add_module_path(plugin_path.c_str(), data_path.c_str());
 
@@ -194,7 +199,10 @@ bool ObsWrapper::initObs(int srcWidth,int srcHeight,int fps)
         //reset video to enter graphcis model
         if (resetVideo(srcWidth,srcHeight,srcWidth,srcHeight,fps) != OBS_VIDEO_SUCCESS)
             return false;
+
         obs_load_all_modules();
+
+
     }
 
     if (!createOutputMode())
@@ -237,7 +245,7 @@ int ObsWrapper::startRecording()
     }
     handler = obs_output_get_signal_handler(fileOutput);
     if(handler!=nullptr)
-    {    
+    {
         signal_handler_connect(handler, "stop", outPutStopedCallback,this);
     }
     isRecordingStarted=true;
@@ -293,37 +301,63 @@ int ObsWrapper::addSceneSource(const REC_TYPE type)
 
     size_t idx = 0;
     const char *id;
-
-    while (obs_enum_transition_types(idx++, &id)) {
-        const char* name = obs_source_get_display_name(id);
-
-        if (!obs_is_source_configurable(id)) {
-            OBSSource tr = obs_source_create_private(id, name, NULL);
-
-            if (strcmp(id, "fade_transition") == 0)
-                fadeTransition = tr;
-
-        }
+#ifndef _WIN32
+#ifndef __APPLE__
+    if (QApplication::platformName() == "xcb") {
+        obs_set_nix_platform(OBS_NIX_PLATFORM_X11_EGL);
+        blog(LOG_INFO, "Using EGL/X11");
     }
 
-    if (!fadeTransition)
-    {
-        return -1;
+#ifdef ENABLE_WAYLAND
+    if (QApplication::platformName().contains("wayland")) {
+        obs_set_nix_platform(OBS_NIX_PLATFORM_WAYLAND);
+        setAttribute(Qt::AA_DontCreateNativeWidgetSiblings);
+        blog(LOG_INFO, "Platform: Wayland");
     }
+#endif
+    QPlatformNativeInterface *native =
+    QGuiApplication::platformNativeInterface();
+    obs_set_nix_platform_display(
+        native->nativeResourceForIntegration("display"));
+#endif
+#endif
+    // while (obs_enum_transition_types(idx++, &id)) {
+    //
+    //
+    //     if (!obs_is_source_configurable(id)) {
+    //         const char* name = obs_source_get_display_name(id);
+    //         OBSSource tr = obs_source_create_private(id, name, NULL);
+    //
+    //         if (strcmp(id, "fade_transition") == 0)
+    //             fadeTransition = tr;
+    //
+    //     }
+    // }
+    //
+    // if (!fadeTransition)
+    // {
+    //     return -1;
+    // }
 
-    obs_set_output_source(SOURCE_CHANNEL_TRANSITION, fadeTransition);
+
 
     scene = obs_scene_create("CurrentDesktopCapture");
     if (!scene) {
         return -2;
     }
-    OBSSource s = obs_get_output_source(SOURCE_CHANNEL_TRANSITION);
-    obs_transition_set(s, obs_scene_get_source(scene));
+    // obs_set_output_source(SOURCE_CHANNEL_TRANSITION, fadeTransition);
+    // OBSSource s = obs_get_output_source(SOURCE_CHANNEL_TRANSITION);
+    // obs_transition_set(s, obs_scene_get_source(scene));
 
     //to create monitor capture
     if (type == REC_DESKTOP) {
+#ifdef _Win32
         //auto sets = obs_get_source_defaults("monitor_capture");
         captureSource = obs_source_create("monitor_capture", "Computer_Monitor_Capture", NULL, nullptr);
+#else
+        captureSource = obs_source_create("xshm_input", "Computer_Monitor_Capture", NULL, nullptr);
+#endif
+
     } else {
         //auto sets = obs_get_source_defaults("window_capture");
         captureSource = obs_source_create("window_capture", "Window_Capture", NULL, nullptr);
@@ -561,9 +595,14 @@ void ObsWrapper::searchRecTargets(REC_TYPE type)
                 const char *val = obs_property_list_item_string(property, i);
                 id = val ? val : "";
             }
-           
+#ifdef _Win32
             m_vecRecTargets.push_back(QString::fromStdString(str));
             m_vecRecTargetIds.push_back(QString::fromStdString(id));
+#else
+            m_vecRecTargets.insert(0,QString::fromStdString(str));
+            m_vecRecTargetIds.insert(0,QString::fromStdString(id));
+#endif
+
             
         }
     }
@@ -589,6 +628,8 @@ bool ObsWrapper::updateRecItem(const char *target, REC_TYPE type, bool useCrop,
             OBSDataAutoRelease setting_source = obs_source_get_settings(captureSource);
             if (type == REC_DESKTOP)
             {
+
+#ifdef _Win32
 #if USE_GS
                 obs_data_set_string(setting_source, prop_name.c_str(), m_vecRecTargetIds.at(index).toStdString().c_str());
                 obs_data_set_int(setting_source,"method",0);
@@ -596,37 +637,59 @@ bool ObsWrapper::updateRecItem(const char *target, REC_TYPE type, bool useCrop,
                 obs_data_set_int(setting_source, prop_name.c_str(), index);
                  obs_data_set_bool(setting_source,"compatibility",true);
 #endif
+#else
+                obs_data_set_int(setting_source,prop_name.c_str(),index);
+#endif
             }
             else
+            {
                 obs_data_set_string(setting_source, "window", ele.toStdString().c_str());
-           
-            obs_data_set_bool(setting_source, "capture_cursor", true);
+            }
 
-            obs_source_update(captureSource, setting_source);
+#ifdef _Win32
+            obs_data_set_bool(setting_source, "capture_cursor", true);
             QString name = obs_source_get_display_name("crop_filter");
             auto existingFilter = obs_source_get_filter_by_name(captureSource, name.toStdString().c_str());
             if (existingFilter) {
-                    obs_source_filter_remove(captureSource, existingFilter);
-                    obs_source_release(existingFilter);
-                }
-            if (useCrop) {
-               
-                    auto curCrop = obs_source_create("crop_filter", name.toUtf8().data(), nullptr, nullptr);
-                    if (curCrop) {
-                        obs_source_filter_add(captureSource, curCrop);
-                    }
-                    auto cropV = obs_data_create();
-                    obs_data_set_bool(cropV, "relative", true);
-                    obs_data_set_int(cropV, "left", LeftCrop);
-                    obs_data_set_int(cropV, "top", TopCrop);
-                    obs_data_set_int(cropV, "right", RightCrop);
-                    obs_data_set_int(cropV, "bottom", BottomCrop);
-                    obs_data_set_int(cropV, "cx", 0);
-                    obs_data_set_int(cropV, "cy", 0);
-                    obs_source_update(curCrop, cropV);
-                    obs_source_release(curCrop);
-                
+                obs_source_filter_remove(captureSource, existingFilter);
+                obs_source_release(existingFilter);
             }
+            if (useCrop) {
+
+                auto curCrop = obs_source_create("crop_filter", name.toUtf8().data(), nullptr, nullptr);
+                if (curCrop) {
+                    obs_source_filter_add(captureSource, curCrop);
+                }
+                auto cropV = obs_data_create();
+                obs_data_set_bool(cropV, "relative", true);
+                obs_data_set_int(cropV, "left", LeftCrop);
+                obs_data_set_int(cropV, "top", TopCrop);
+                obs_data_set_int(cropV, "right", RightCrop);
+                obs_data_set_int(cropV, "bottom", BottomCrop);
+                obs_data_set_int(cropV, "cx", 0);
+                obs_data_set_int(cropV, "cy", 0);
+                obs_source_update(curCrop, cropV);
+                obs_source_release(curCrop);
+
+            }
+#else
+            obs_data_set_bool(setting_source, "show_cursor", true);
+            if(useCrop)
+            {
+                obs_data_set_int(setting_source,"cut_top",TopCrop);
+                obs_data_set_int(setting_source,"cut_left",LeftCrop);
+                obs_data_set_int(setting_source,"cut_right",RightCrop);
+                obs_data_set_int(setting_source,"cut_bot",BottomCrop);
+            }
+            else
+            {
+                obs_data_set_int(setting_source,"cut_top",0);
+                obs_data_set_int(setting_source,"cut_left",0);
+                obs_data_set_int(setting_source,"cut_right",0);
+                obs_data_set_int(setting_source,"cut_bot",0);
+            }
+#endif
+            obs_source_update(captureSource, setting_source);
             isFind = true;
             break;
         }
@@ -651,7 +714,11 @@ int ObsWrapper::resetVideo(int srcWidth,int srcHeight,int outPutWidth,int outOut
     ovi.fps_num = fps;
     ovi.fps_den = 1;
 
+#ifdef _WIN32
     ovi.graphics_module = DL_D3D11;
+#else
+    ovi.graphics_module = DL_OPENGL;
+#endif
     ovi.base_width = srcWidth;
     ovi.base_height = srcHeight;
     ovi.output_width = outPutWidth;

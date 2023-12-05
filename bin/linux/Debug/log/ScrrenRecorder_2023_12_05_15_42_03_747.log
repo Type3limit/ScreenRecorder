@@ -1,0 +1,6 @@
+[ 2023-12-05 15:42:04.507 ] DEBUG set geometry 1920 : 0 : 1920 : 1080
+[ 2023-12-05 15:42:04.509 ] DEBUG tcp server start listen at [ 29989 ]
+[ 2023-12-05 15:42:04.532 ] DEBUG get Screen "DP-4"
+[ 2023-12-05 15:42:04.532 ] DEBUG set geometry 0 : 0 : 1920 : 1080
+[ 2023-12-05 15:42:07.730 ] DEBUG get Screen "DP-2"
+[ 2023-12-05 15:42:07.730 ] DEBUG set geometry 1920 : 0 : 1920 : 1080
