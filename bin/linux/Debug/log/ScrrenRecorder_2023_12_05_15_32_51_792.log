@@ -1,6 +1,0 @@
-[ 2023-12-05 15:32:52.817 ] DEBUG tcp server start listen at [ 29989 ]
-[ 2023-12-05 15:32:52.852 ] DEBUG get Screen "DP-4"
-[ 2023-12-05 15:33:22.862 ] DEBUG get Screen "DP-2"
-[ 2023-12-05 15:33:24.846 ] DEBUG get Screen "DP-4"
-[ 2023-12-05 15:33:26.666 ] DEBUG get Screen "DP-2"
-[ 2023-12-05 15:33:28.090 ] DEBUG get Screen "DP-4"
