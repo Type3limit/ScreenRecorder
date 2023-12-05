@@ -22,14 +22,14 @@ class RecordingWindow : public QMainWindow {
 Q_OBJECT
 
 public:
-    explicit RecordingWindow(QWidget *parent = nullptr);
+    explicit RecordingWindow(int port = -1,QWidget *parent = nullptr);
     ~RecordingWindow() override;
     void mousePressEvent(QMouseEvent *e) override;
     void mouseMoveEvent(QMouseEvent *e) override;
     void mouseReleaseEvent(QMouseEvent *e) override;
     void closeEvent(QCloseEvent *event) override;
     bool isFullScreenMode() const;
-
+    void setupPort(int port);
     void startRecord();
     void pauseRecord();
     void stopRecord();
@@ -37,7 +37,7 @@ public:
 public slots:
     void rebuildBackgroundWindow();
 protected:
-    void init();
+    void init(int defaultPort = -1);
 
 private:
     QPoint m_pos = {0,0};
@@ -57,7 +57,7 @@ private:
     QHotkey* m_recordHotKey;
     QHotkey* m_pauseHotKey;
     QHotkey* m_showCaptureKey;
-    QTcpServer * m_server;
+    QTcpServer * m_server = nullptr;
     QTimer m_timer;
     qint64 m_seconds = 0;
     QPoint m_startPos = {0,0};

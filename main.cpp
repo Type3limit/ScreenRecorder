@@ -22,9 +22,9 @@ int main(int argc, char* argv[])
     QLibraryInfo::location(QLibraryInfo::TranslationsPath));
     QApplication a(argc, argv);
     initializeLogger();
-
-    RecordingWindow window(nullptr);
+   
+    RecordingWindow window(argc<2?-1:QString(argv[1]).toInt(),nullptr);
     window.show();
-
+    
     return QApplication::exec();
 }
