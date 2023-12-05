@@ -617,6 +617,11 @@ QList<QString> ObsWrapper::getRecTargets()
     return m_vecRecTargets;
 }
 
+QList<QString> ObsWrapper::getRecTargetIds()
+{
+    return m_vecRecTargetIds;
+}
+
 bool ObsWrapper::updateRecItem(const char *target, REC_TYPE type, bool useCrop,
                                int LeftCrop ,
                                int RightCrop ,

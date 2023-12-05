@@ -96,6 +96,8 @@ public:
 	void searchRecTargets(REC_TYPE type);
 	///get recording items based on searchRecTargets
 	QList<QString> getRecTargets();
+	///get recording item ids
+	QList<QString> getRecTargetIds();
 	///use target as recording source,and also update clip region inneed
 	bool updateRecItem(const char* target, REC_TYPE type,bool useCrop = false,
 		int LeftCrop = 0,

@@ -567,6 +567,8 @@ void RecordingWindow::init(int defaultPort)
         m_test->show();
         m_test->createDisplayer();
     });
+    m_obs->recMicAudio(true,"default");
+    m_obs->recPlayerAudio(true,"default");
     m_alreadyInited = true;
 }
 
@@ -688,12 +690,6 @@ void RecordingWindow::startRecord()
             UserMessageBox::warning(this, u8"警告", u8"文件名称或路径非法!");
             return;
         }
-
-        auto micId =m_obs->micDeviceId(ui->micphoneDeviceComboBox->currentText());
-        m_obs->recMicAudio(m_isMicphoneEnable,micId);
-        auto playerId =m_obs->micDeviceId(ui->playerDeviceComboBox->currentText());
-        m_obs->recPlayerAudio(m_isPlayerEnable,playerId);
-
 
         m_obs->setupFFmpeg(fileName,
                            cropRect.width() * devicePixelRatio,
