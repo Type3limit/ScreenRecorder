@@ -104,7 +104,7 @@ elseif(UNIX)
     find_package(Qt${QT_DEFAULT_MAJOR_VERSION} COMPONENTS X11Extras REQUIRED)
 
     include_directories(${X11_INCLUDE_DIR})
-
+    include_directories(${Qt5Gui_PRIVATE_INCLUDE_DIRS})
 
     list(APPEND LinkLib
             ${X11_LIBRARIES}
