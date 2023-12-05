@@ -3,7 +3,7 @@
 
 #include <QStyleOption>
 #include <QPainter>
-#include <10.0.22621.0/um/windows.h>
+
 
 UserMessageBox::UserMessageBox(QWidget* parent) :
     FramelessDialog(parent),
