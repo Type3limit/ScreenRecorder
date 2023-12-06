@@ -173,11 +173,9 @@ int ObsWrapper::audioChannel()
 
 bool ObsWrapper::initObs(int srcWidth,int srcHeight,int fps)
 {
-    QString path = qApp->applicationDirPath();
-    std::string path_str = path.toStdString();
 
+    std::string path_str = qApp->applicationDirPath().toStdString();
     std::string cfg_path = path_str+"/desktop_rec_cfg";
-
     if (!obs_initialized()) {
         //init
         if (!obs_startup("zh-CN", cfg_path.c_str(), NULL)) {
@@ -211,7 +209,7 @@ bool ObsWrapper::initObs(int srcWidth,int srcHeight,int fps)
     if (!createOutputMode())
         return false;
 
-    //connect player and micphone wave callback
+    //connect player and micphone wave callback by default
     micSource = getSoundSource(INPUT_AUDIO_SOURCE, "default", "Default Mic/Aux", SOURCE_CHANNEL_AUDIO_INPUT);
 
     playerSource = getSoundSource(OUTPUT_AUDIO_SOURCE, "default", "Default Desktop Audio", SOURCE_CHANNEL_AUDIO_OUTPUT);
@@ -602,11 +600,11 @@ void ObsWrapper::searchRecTargets(REC_TYPE type)
             m_vecRecTargets.push_back(QString::fromStdString(str));
             m_vecRecTargetIds.push_back(QString::fromStdString(id));
 #else
-            m_vecRecTargets.insert(0,QString::fromStdString(str));
+            m_vecRecTargets.insert(0,QString::fromStdString(str));//Linux use reversered order of screens
             m_vecRecTargetIds.insert(0,QString::fromStdString(id));
 #endif
 
-            
+
         }
     }
     obs_properties_destroy(properties);
