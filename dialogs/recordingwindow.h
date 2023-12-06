@@ -53,6 +53,7 @@ private:
     CountDownDialog* m_countDownDialog = nullptr;
     volatile bool m_isMicphoneEnable = true;
     volatile bool m_isPlayerEnable = true;
+    volatile bool m_alreadyInited = false;
     testwindow* m_test = nullptr;
     Config m_config;
     QHotkey* m_recordHotKey;

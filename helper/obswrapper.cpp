@@ -5,7 +5,7 @@
 #include <QDateTime>
 #include <QMutex>
 #include <QDebug>
-
+#define USE_GS  1
 #ifdef _WIN32
 #define get_os_module(win, mac, linux) obs_get_module(win)
 #define get_os_text(mod, win, mac, linux) obs_module_get_locale_text(mod, win)
@@ -52,7 +52,7 @@
 #define RECORD_OUTPUT_FORMAT       "mp4"
 #define RECORD_OUTPUT_FORMAT_MIME  "video/mp4"
 #define AUDIO_BITRATE 192
-#define USE_GS  1
+
 
 enum SOURCE_CHANNELS {
     SOURCE_CHANNEL_TRANSITION,
@@ -185,9 +185,12 @@ bool ObsWrapper::initObs(int srcWidth,int srcHeight,int fps)
         }
 
         //plugin pathes
+
         std::string plugin_path = path_str + "/obs-plugins/64bit";
 
         std::string data_path = path_str + "/data/obs-plugins/%module%";
+
+
 
 
         obs_add_module_path(plugin_path.c_str(), data_path.c_str());
@@ -321,23 +324,23 @@ int ObsWrapper::addSceneSource(const REC_TYPE type)
         native->nativeResourceForIntegration("display"));
 #endif
 #endif
-    // while (obs_enum_transition_types(idx++, &id)) {
-    //
-    //
-    //     if (!obs_is_source_configurable(id)) {
-    //         const char* name = obs_source_get_display_name(id);
-    //         OBSSource tr = obs_source_create_private(id, name, NULL);
-    //
-    //         if (strcmp(id, "fade_transition") == 0)
-    //             fadeTransition = tr;
-    //
-    //     }
-    // }
-    //
-    // if (!fadeTransition)
-    // {
-    //     return -1;
-    // }
+    while (obs_enum_transition_types(idx++, &id)) {
+
+
+        if (!obs_is_source_configurable(id)) {
+            const char* name = obs_source_get_display_name(id);
+            OBSSource tr = obs_source_create_private(id, name, NULL);
+
+            if (strcmp(id, "fade_transition") == 0)
+                fadeTransition = tr;
+
+        }
+    }
+
+    if (!fadeTransition)
+    {
+        return -1;
+    }
 
 
 
@@ -345,13 +348,13 @@ int ObsWrapper::addSceneSource(const REC_TYPE type)
     if (!scene) {
         return -2;
     }
-    // obs_set_output_source(SOURCE_CHANNEL_TRANSITION, fadeTransition);
-    // OBSSource s = obs_get_output_source(SOURCE_CHANNEL_TRANSITION);
-    // obs_transition_set(s, obs_scene_get_source(scene));
+    obs_set_output_source(SOURCE_CHANNEL_TRANSITION, fadeTransition);
+    OBSSource s = obs_get_output_source(SOURCE_CHANNEL_TRANSITION);
+    obs_transition_set(s, obs_scene_get_source(scene));
 
     //to create monitor capture
     if (type == REC_DESKTOP) {
-#ifdef _Win32
+#ifdef _WIN32
         //auto sets = obs_get_source_defaults("monitor_capture");
         captureSource = obs_source_create("monitor_capture", "Computer_Monitor_Capture", NULL, nullptr);
 #else
@@ -595,7 +598,7 @@ void ObsWrapper::searchRecTargets(REC_TYPE type)
                 const char *val = obs_property_list_item_string(property, i);
                 id = val ? val : "";
             }
-#ifdef _Win32
+#ifdef _WIN32
             m_vecRecTargets.push_back(QString::fromStdString(str));
             m_vecRecTargetIds.push_back(QString::fromStdString(id));
 #else
@@ -614,6 +617,11 @@ QList<QString> ObsWrapper::getRecTargets()
     return m_vecRecTargets;
 }
 
+QList<QString> ObsWrapper::getRecTargetIds()
+{
+    return m_vecRecTargetIds;
+}
+
 bool ObsWrapper::updateRecItem(const char *target, REC_TYPE type, bool useCrop,
                                int LeftCrop ,
                                int RightCrop ,
@@ -629,7 +637,7 @@ bool ObsWrapper::updateRecItem(const char *target, REC_TYPE type, bool useCrop,
             if (type == REC_DESKTOP)
             {
 
-#ifdef _Win32
+#ifdef _WIN32
 #if USE_GS
                 obs_data_set_string(setting_source, prop_name.c_str(), m_vecRecTargetIds.at(index).toStdString().c_str());
                 obs_data_set_int(setting_source,"method",0);
@@ -646,7 +654,7 @@ bool ObsWrapper::updateRecItem(const char *target, REC_TYPE type, bool useCrop,
                 obs_data_set_string(setting_source, "window", ele.toStdString().c_str());
             }
 
-#ifdef _Win32
+#ifdef _WIN32
             obs_data_set_bool(setting_source, "capture_cursor", true);
             QString name = obs_source_get_display_name("crop_filter");
             auto existingFilter = obs_source_get_filter_by_name(captureSource, name.toStdString().c_str());

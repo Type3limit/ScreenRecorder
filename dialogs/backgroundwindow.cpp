@@ -172,10 +172,8 @@ void BackgroundWindow::mouseReleaseEvent(QMouseEvent* event)
         auto endY = max(m_endPos.y(), m_startPos.y());
         m_startPos = {startX,startY};
         m_endPos = {endX,endY};
-        if(m_dragModel!=DragModel::none)
-        {
-            emit areaChanged(m_startPos.x(),m_startPos.y(),m_endPos.x(),m_endPos.y());
-        }
+
+        emit areaChanged(m_startPos.x(),m_startPos.y(),m_endPos.x(),m_endPos.y());
 
         update();
     }
