@@ -81,7 +81,6 @@ set(RESOURCES resource.qrc
         helper/qoperationhelper.h
 )
 set(LinkLib
-        obs
         Qt5::Core
         Qt5::Gui
         Qt5::Svg
@@ -91,13 +90,14 @@ if(WIN32)
     list(APPEND RESOURCES
             helper/qhotkey_win.cpp
     )
+    list(APPEND  LinkLib obs)
+
 elseif(APPLE)
 
     list(APPEND RESOURCES
             helper/qhotkey_mac.cpp
     )
 elseif(UNIX)
-
 
     find_package(X11 REQUIRED)
 
@@ -114,13 +114,17 @@ elseif(UNIX)
     list(APPEND RESOURCES
             helper/qhotkey_x11.cpp
     )
+
 endif()
 
 if(WIN32)
-    add_executable(screenRecorder WIN32 ${RESOURCES} main.cpp)
+    add_executable(${CMAKE_PROJECT_NAME} WIN32 ${RESOURCES} main.cpp)
 else()
-    add_executable(screenRecorder  ${RESOURCES} main.cpp)
+    add_executable(${CMAKE_PROJECT_NAME}  ${RESOURCES} main.cpp)
 endif()
 
 target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE ${LinkLib}
 )
+if(UNIX)
+  target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/libobs.so)
+endif ()
