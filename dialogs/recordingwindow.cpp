@@ -116,7 +116,7 @@ void RecordingWindow::init(int defaultPort)
         return;
     //init obs
     auto firstScreen = QGuiApplication::primaryScreen();
-    auto pix = qApp->devicePixelRatio();
+    auto pix = devicePixelRatio();
 
     if (!m_obs->initObs(firstScreen->geometry().width() * pix,
                         firstScreen->geometry().height() * pix, 60))
@@ -318,7 +318,10 @@ void RecordingWindow::init(int defaultPort)
             "qproperty-iconSize:44px;"
             "background-color:#2F2F34;"
             "border-radius:4px;"
-            "}");
+            "}"
+            "QPushButton:hover"
+            "{"
+            "background-color:#212126;}");
         ui->areaButton->setStyleSheet(isFullScreenMode()
                                           ? style.replace("{iconName}", "fullscreen")
                                           : style.replace("{iconName}", "areas"));
