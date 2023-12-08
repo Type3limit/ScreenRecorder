@@ -735,7 +735,7 @@ void RecordingWindow::pauseRecord()
 {
     if (m_obs->isRecordingStart())
     {
-        if(m_seconds<=1)
+        if(m_seconds<1)//too short cause crash
         {
             UserMessageBox::warning(this,u8"警告",u8"录制时长过短，请稍后再试");
             return;
@@ -749,7 +749,7 @@ void RecordingWindow::stopRecord()
     if (m_obs->isRecordingStart())
     {
        
-        if(m_seconds<=1)
+        if(m_seconds<1)//too short cause crash
         {
             UserMessageBox::warning(this,u8"警告",u8"录制时长过短，请稍后再试");
             return;

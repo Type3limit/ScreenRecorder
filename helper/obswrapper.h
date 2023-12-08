@@ -145,7 +145,7 @@ private:
 	///ffmpeg aac encoder tracks
 	OBSEncoder aacTrack[MAX_AUDIO_MIXES];
 	///signal handler
-	signal_handler_t *handler = nullptr;
+	OBSSignal handler;
 
 	std::string aacEncoderID[MAX_AUDIO_MIXES];
 
