@@ -43,12 +43,12 @@ MinimizedRecordingWindow::MinimizedRecordingWindow(const QSharedPointer<ObsWrapp
         (const float* magnitude, const float* peak, const float* inputPeak)
             {
                 onAudioFrame(magnitude, peak, inputPeak, true);
-            });
+            },Qt::QueuedConnection);
     connect(m_obs.get(), &ObsWrapper::playerVolumeDataChange, this, [&]
         (const float* magnitude, const float* peak, const float* inputPeak)
             {
                 onAudioFrame(magnitude, peak, inputPeak, false);
-            });
+            },Qt::QueuedConnection);
     int audioChannel = m_obs->audioChannel();
     ui->CurrentVolume->setChannelCount(m_obs->micChannelCount());
     ui->CurrentVolume->setAudioChannel(audioChannel);

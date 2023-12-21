@@ -282,8 +282,8 @@ void RecordingWindow::init(int defaultPort)
     });
     //widgets connection
     //audio signal display
-    connect(m_obs.get(), &ObsWrapper::micVolumeDataChange, ui->micphoneVolume, &VolumeControl::setLevels);
-    connect(m_obs.get(), &ObsWrapper::playerVolumeDataChange, ui->playerVolume, &VolumeControl::setLevels);
+    connect(m_obs.get(), &ObsWrapper::micVolumeDataChange, ui->micphoneVolume, &VolumeControl::setLevels,Qt::QueuedConnection);
+    connect(m_obs.get(), &ObsWrapper::playerVolumeDataChange, ui->playerVolume, &VolumeControl::setLevels,Qt::QueuedConnection);
     int audioChannel = m_obs->audioChannel();
     ui->micphoneVolume->setChannelCount(m_obs->micChannelCount());
     ui->micphoneVolume->setAudioChannel(audioChannel);
@@ -570,8 +570,8 @@ void RecordingWindow::init(int defaultPort)
         m_test->show();
         m_test->createDisplayer();
     });
-    m_obs->recMicAudio(true,"default");
-    m_obs->recPlayerAudio(true,"default");
+//    m_obs->recMicAudio(true,"default");
+//    m_obs->recPlayerAudio(true,"default");
     m_alreadyInited = true;
 }
 

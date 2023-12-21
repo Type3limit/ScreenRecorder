@@ -7,6 +7,7 @@
 #include <QMutex>
 #include <QList>
 #include <QSharedPointer>
+#include <QTimer>
 using namespace std;
 
 enum REC_TYPE
@@ -144,6 +145,14 @@ private:
 	OBSDisplay displayer;
 	///ffmpeg aac encoder tracks
 	OBSEncoder aacTrack[MAX_AUDIO_MIXES];
+
+    OBSEncoder streamAudioEnc;
+
+    OBSEncoder streamArchiveEnc;
+
+    ///to draw audio callback
+    QTimer m_audioCallbackNotifyTimer;
+
 	///signal handler
 	OBSSignal handler;
 

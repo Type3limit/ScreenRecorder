@@ -5,7 +5,7 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
-
+set(QT_DEFAULT_MAJOR_VERSION 5)
 set(BUILD_TYPE "Release")
 if(CMAKE_BUILD_TYPE AND (CMAKE_BUILD_TYPE STREQUAL "Debug"))
     set(BUILD_TYPE "Debug")
@@ -26,7 +26,7 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/lib/${PLATFORM}/${B
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/bin/${PLATFORM}/${BUILD_TYPE})
 
 
-find_package(Qt5 COMPONENTS
+find_package(Qt${QT_DEFAULT_MAJOR_VERSION} COMPONENTS
         Core
         Gui
         Svg
@@ -81,11 +81,11 @@ set(RESOURCES resource.qrc
         helper/qoperationhelper.h
 )
 set(LinkLib
-        Qt5::Core
-        Qt5::Gui
-        Qt5::Svg
-        Qt5::Widgets
-        Qt5::Network)
+        Qt${QT_DEFAULT_MAJOR_VERSION}::Core
+        Qt${QT_DEFAULT_MAJOR_VERSION}::Gui
+        Qt${QT_DEFAULT_MAJOR_VERSION}::Svg
+        Qt${QT_DEFAULT_MAJOR_VERSION}::Widgets
+        Qt${QT_DEFAULT_MAJOR_VERSION}::Network)
 if(WIN32)
     list(APPEND RESOURCES
             helper/qhotkey_win.cpp

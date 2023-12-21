@@ -34,6 +34,8 @@
 #else
 #include <obs-nix-platform.h>
 #include <qpa/qplatformnativeinterface.h>
+#include <thread>
+
 #define get_os_module(win, mac, linux) obs_get_module(linux)
 #define get_os_text(mod, win, mac, linux) obs_module_get_locale_text(mod, linux)
 #define INPUT_AUDIO_SOURCE "pulse_input_capture"
@@ -41,7 +43,6 @@
 #define DESKTOP_PROP_NAME  "screen"
 #define INPUT_AUDIO_PROP_NAME "device_id"
 #define OUTPUT_AUDIO_PROP_NAME "device_id"
-#define DL_D3D11  "libobs-d3d11.so"
 #define DL_OPENGL  "libobs-opengl.so"
 #define IS_INT true
 #endif
@@ -109,7 +110,7 @@ void ObsWrapper::release()
 
     obs_enum_scenes(cb, nullptr);
     obs_enum_sources(cb, nullptr);
-
+    m_audioCallbackNotifyTimer.stop();
 }
 
 void ObsWrapper::oBSVolumeChanged(void *data, float db)
@@ -132,42 +133,35 @@ void ObsWrapper::oBSVolumeLevel(void *data,
                     curIdentifier->data->currentPeakMic[channelNr] = peak[channelNr];
                     curIdentifier->data->currentInputPeakMic[channelNr] = inputPeak[channelNr];
                 }
-                emit curIdentifier->data->micVolumeDataChange(
-                    curIdentifier->data->currentMagnitudeMic,
-                    curIdentifier->data->currentPeakMic,
-                    curIdentifier->data->currentInputPeakMic);
             }
 
         } else {
             if (curIdentifier->data != nullptr) {
-
                 for (int channelNr = 0; channelNr < MAX_AUDIO_CHANNELS; channelNr++) {
                     curIdentifier->data->currentMagnitudePlayer[channelNr] = magnitude[channelNr];
                     curIdentifier->data->currentPeakPlayer[channelNr] = peak[channelNr];
                     curIdentifier->data->currentInputPeakPlayer[channelNr] = inputPeak[channelNr];
                 }
-                emit curIdentifier->data->playerVolumeDataChange(
-                    curIdentifier->data->currentMagnitudePlayer,
-                    curIdentifier->data->currentPeakPlayer,
-                    curIdentifier->data->currentInputPeakPlayer);
             }
-
         }
     }
 }
 
 int ObsWrapper::micChannelCount()
 {
+    return 6;
     return obs_volmeter_get_nr_channels(mic_obs_volmeter);
 }
 
 int ObsWrapper::playerChannelCount()
 {
+    return 6;
     return obs_volmeter_get_nr_channels(player_obs_volmeter);
 }
 
 int ObsWrapper::audioChannel()
 {
+    return 6;
     return (int) audio_output_get_channels(obs_get_audio());
 }
 
@@ -177,6 +171,26 @@ bool ObsWrapper::initObs(int srcWidth,int srcHeight,int fps)
     std::string path_str = qApp->applicationDirPath().toStdString();
     std::string cfg_path = path_str+"/desktop_rec_cfg";
     if (!obs_initialized()) {
+#ifndef _WIN32
+#ifndef __APPLE__
+        if (QApplication::platformName() == "xcb") {
+            obs_set_nix_platform(OBS_NIX_PLATFORM_X11_EGL);
+            blog(LOG_INFO, "Using EGL/X11");
+        }
+
+#ifdef ENABLE_WAYLAND
+        if (QApplication::platformName().contains("wayland")) {
+        obs_set_nix_platform(OBS_NIX_PLATFORM_WAYLAND);
+        setAttribute(Qt::AA_DontCreateNativeWidgetSiblings);
+        blog(LOG_INFO, "Platform: Wayland");
+    }
+#endif
+        QPlatformNativeInterface *native =
+            QGuiApplication::platformNativeInterface();
+        obs_set_nix_platform_display(
+            native->nativeResourceForIntegration("display"));
+#endif
+#endif
         //init
         if (!obs_startup("zh-CN", cfg_path.c_str(), NULL)) {
             return false;
@@ -214,25 +228,38 @@ bool ObsWrapper::initObs(int srcWidth,int srcHeight,int fps)
 
     playerSource = getSoundSource(OUTPUT_AUDIO_SOURCE, "default", "Default Desktop Audio", SOURCE_CHANNEL_AUDIO_OUTPUT);
 
-    mic_obs_fader = obs_fader_create(OBS_FADER_LOG);
-    mic_obs_volmeter = obs_volmeter_create(OBS_FADER_LOG);
-    player_obs_fader = obs_fader_create(OBS_FADER_LOG);
-    player_obs_volmeter = obs_volmeter_create(OBS_FADER_LOG);
-    micIdentifier = QSharedPointer<SoundDeviceIdentifier>(new SoundDeviceIdentifier(SoundDeviceIdentifier::Type::Micphone, this, mic_obs_volmeter));
-    playerIndentifier = QSharedPointer<SoundDeviceIdentifier>(new SoundDeviceIdentifier(SoundDeviceIdentifier::Type::Player, this, player_obs_volmeter));
-    obs_fader_add_callback(mic_obs_fader, oBSVolumeChanged, micIdentifier.get());
-    obs_volmeter_add_callback(mic_obs_volmeter, oBSVolumeLevel, micIdentifier.get());
-    obs_fader_add_callback(player_obs_fader, oBSVolumeChanged, playerIndentifier.get());
-    obs_volmeter_add_callback(player_obs_volmeter, oBSVolumeLevel, playerIndentifier.get());
-
-    obs_fader_attach_source(mic_obs_fader, micSource);
-    obs_volmeter_attach_source(mic_obs_volmeter, micSource);
-    obs_fader_attach_source(player_obs_fader, playerSource);
-    obs_volmeter_attach_source(player_obs_volmeter, playerSource);
-    obs_source_active(micSource);
-    obs_source_active(playerSource);
-    obs_set_output_source(SOURCE_CHANNEL_AUDIO_INPUT, micSource);
-    obs_set_output_source(SOURCE_CHANNEL_AUDIO_OUTPUT, playerSource);
+//
+//    mic_obs_fader = obs_fader_create(OBS_FADER_LOG);
+//    mic_obs_volmeter = obs_volmeter_create(OBS_FADER_LOG);
+//    player_obs_fader = obs_fader_create(OBS_FADER_LOG);
+//    player_obs_volmeter = obs_volmeter_create(OBS_FADER_LOG);
+//    micIdentifier = QSharedPointer<SoundDeviceIdentifier>(new SoundDeviceIdentifier(SoundDeviceIdentifier::Type::Micphone, this, mic_obs_volmeter));
+//    playerIndentifier = QSharedPointer<SoundDeviceIdentifier>(new SoundDeviceIdentifier(SoundDeviceIdentifier::Type::Player, this, player_obs_volmeter));
+//    obs_fader_add_callback(mic_obs_fader, oBSVolumeChanged, micIdentifier.get());
+//    obs_volmeter_add_callback(mic_obs_volmeter, oBSVolumeLevel, micIdentifier.get());
+//    obs_fader_add_callback(player_obs_fader, oBSVolumeChanged, playerIndentifier.get());
+//    obs_volmeter_add_callback(player_obs_volmeter, oBSVolumeLevel, playerIndentifier.get());
+//
+//    obs_fader_attach_source(mic_obs_fader, micSource);
+//    obs_volmeter_attach_source(mic_obs_volmeter, micSource);
+//    obs_fader_attach_source(player_obs_fader, playerSource);
+//    obs_volmeter_attach_source(player_obs_volmeter, playerSource);
+//
+//    //60fps?
+//    m_audioCallbackNotifyTimer.setInterval(1000/60);
+//    connect(&m_audioCallbackNotifyTimer,&QTimer::timeout,this,[&]()
+//    {
+//        emit micVolumeDataChange(
+//        currentMagnitudeMic,
+//        currentPeakMic,
+//        currentInputPeakMic);
+//
+//        emit playerVolumeDataChange(
+//        currentMagnitudePlayer,
+//        currentPeakPlayer,
+//        currentInputPeakPlayer);
+//    });
+//    m_audioCallbackNotifyTimer.start();
     return true;
 }
 
@@ -296,26 +323,7 @@ int ObsWrapper::addSceneSource(const REC_TYPE type)
 
     size_t idx = 0;
     const char *id;
-#ifndef _WIN32
-#ifndef __APPLE__
-    if (QApplication::platformName() == "xcb") {
-        obs_set_nix_platform(OBS_NIX_PLATFORM_X11_EGL);
-        blog(LOG_INFO, "Using EGL/X11");
-    }
 
-#ifdef ENABLE_WAYLAND
-    if (QApplication::platformName().contains("wayland")) {
-        obs_set_nix_platform(OBS_NIX_PLATFORM_WAYLAND);
-        setAttribute(Qt::AA_DontCreateNativeWidgetSiblings);
-        blog(LOG_INFO, "Platform: Wayland");
-    }
-#endif
-    QPlatformNativeInterface *native =
-    QGuiApplication::platformNativeInterface();
-    obs_set_nix_platform_display(
-        native->nativeResourceForIntegration("display"));
-#endif
-#endif
     while (obs_enum_transition_types(idx++, &id)) {
 
 
@@ -496,6 +504,8 @@ QString ObsWrapper::playerDeviceId(const QString& name)
 
 void ObsWrapper::resetMicphoneVolumeLevelCallback(const QString& target)
 {
+
+
     if(micSource)
     {
         obs_fader_detach_source(mic_obs_fader);
@@ -524,6 +534,8 @@ void ObsWrapper::resetMicphoneVolumeLevelCallback(const QString& target)
 
 void ObsWrapper::resetPlayerVolumeLevelCallback(const QString& target)
 {
+
+
     if(playerSource)
     {
 
@@ -701,11 +713,19 @@ bool ObsWrapper::updateRecItem(const char *target, REC_TYPE type, bool useCrop,
 
 bool ObsWrapper::resetAudio()
 {
+#ifdef _WIN32
     obs_audio_info ai{};
     ai.samples_per_sec = 48000;
-    ai.speakers = SPEAKERS_STEREO;
-
+    ai.speakers =SPEAKERS_STEREO;
     return obs_reset_audio(&ai);
+#else
+    obs_audio_info2 ai{};
+    ai.samples_per_sec = 48000;
+    ai.speakers = SPEAKERS_STEREO;
+    ai.max_buffering_ms = 960;
+    ai.fixed_buffering = false;
+    obs_reset_audio2(&ai);
+#endif
 }
 
 int ObsWrapper::resetVideo(int srcWidth,int srcHeight,int outPutWidth,int outOutHeight,int fps)
@@ -719,11 +739,12 @@ int ObsWrapper::resetVideo(int srcWidth,int srcHeight,int outPutWidth,int outOut
 #else
     ovi.graphics_module = DL_OPENGL;
 #endif
+    ovi.output_format = VIDEO_FORMAT_I420;
     ovi.base_width = srcWidth;
     ovi.base_height = srcHeight;
     ovi.output_width = outPutWidth;
     ovi.output_height = outOutHeight;
-    ovi.output_format = VIDEO_FORMAT_I420;
+
     ovi.colorspace = VIDEO_CS_709;
     ovi.range = VIDEO_RANGE_FULL;
     ovi.adapter = 0;
@@ -751,15 +772,29 @@ bool ObsWrapper::createOutputMode()
         if (!CreateAACEncoder(aacTrack[i], aacEncoderID[i], name, i)) {
             return false;
         }
-
-        obs_encoder_set_audio(aacTrack[i], obs_get_audio());
     }
+    streamAudioEnc = obs_audio_encoder_create("ffmpeg_aac",
+                                              "adv_stream_audio", nullptr,
+                                              0, nullptr);
+    if(streamAudioEnc)
+        obs_encoder_release(streamAudioEnc);
+
+    streamArchiveEnc = obs_audio_encoder_create("ffmpeg_aac",
+                                                "adv_archive_audio", nullptr,
+                                                1, nullptr);
+    if(streamArchiveEnc)
+        obs_encoder_release(streamArchiveEnc);
 
     return true;
 }
 
 void ObsWrapper::setupFFmpeg(const QString& storePath,int srcWidth,int srcHeight,int fps,int bitRate)
 {
+    for(int i =0 ;i<MAX_AUDIO_MIXES;i++)
+        obs_encoder_set_audio(aacTrack[i], obs_get_audio());
+    obs_encoder_set_audio(streamAudioEnc, obs_get_audio());
+    obs_encoder_set_audio(streamArchiveEnc, obs_get_audio());
+
     qDebug()<<"set up ffpmeg with storePath:["
         <<storePath<<"] srcWidth:["<<srcWidth<<"] srcHeight:["
         <<srcHeight<<"] fps:["<<fps<<"] bitRate:["<<bitRate<<"]";
@@ -770,7 +805,7 @@ void ObsWrapper::setupFFmpeg(const QString& storePath,int srcWidth,int srcHeight
     obs_data_set_string(settings, "url", out_file_name.toUtf8().data());
     obs_data_set_string(settings, "format_name", RECORD_OUTPUT_FORMAT);
     obs_data_set_string(settings, "format_mime_type", RECORD_OUTPUT_FORMAT_MIME);
-    obs_data_set_string(settings, "muxer_settings", "movflags=faststart");
+    obs_data_set_string(settings, "muxer_settings", nullptr);
     obs_data_set_int(settings, "gop_size", fps * 10);
     obs_data_set_string(settings, "video_encoder", VIDEO_ENCODER_NAME);
     obs_data_set_int(settings, "video_encoder_id", VIDEO_ENCODER_ID);

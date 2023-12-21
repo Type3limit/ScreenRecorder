@@ -273,6 +273,7 @@ void BackgroundWindow::resetStatus(bool isFullScreenModel, const QScreen*  curSc
     setAttribute(Qt::WA_TranslucentBackground);
     setWindowFlags(Qt::FramelessWindowHint|Qt::WindowStaysOnTopHint|Qt::SubWindow);
     auto sRegion = curScreen->geometry();
+#ifdef _WIN32
     qreal devicePixelRatio = curScreen->devicePixelRatio();
     QRect FullScreenRegion = {
         (int)(sRegion.x() / devicePixelRatio),
@@ -280,6 +281,14 @@ void BackgroundWindow::resetStatus(bool isFullScreenModel, const QScreen*  curSc
         sRegion.width(),
         sRegion.height()
     };
+#else
+    QRect FullScreenRegion = {
+        (int)(sRegion.x()),
+        (int)(sRegion.y()),
+        sRegion.width(),
+        sRegion.height()
+    };
+#endif
     qDebug()<<"set geometry"<<FullScreenRegion.left()<<":"
     <<FullScreenRegion.top()<<":"<<FullScreenRegion.width()
     <<":"<<FullScreenRegion.height();
@@ -287,10 +296,10 @@ void BackgroundWindow::resetStatus(bool isFullScreenModel, const QScreen*  curSc
     setFixedWidth(FullScreenRegion.width());
     setFixedHeight(FullScreenRegion.height());
     //设置两次相同的geometry会导致问题？
-    //setGeometry((FullScreenRegion));
+    setGeometry((FullScreenRegion));
 
     resetSelectionPos(FullScreenRegion.width(),FullScreenRegion.height());
-    move(FullScreenRegion.topLeft());
+    //move(FullScreenRegion.topLeft());
     locker.unlock();
 }
 
