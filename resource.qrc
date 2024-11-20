@@ -21,5 +21,10 @@
         <file>images/question.svg</file>
         <file>images/information.svg</file>
         <file>images/error.svg</file>
+        <file>images/folder.svg</file>
+        <file>images/rightarrow.svg</file>
+        <file>images/downarrow.svg</file>
+        <file>images/expand_down.svg</file>
+        <file>images/expand_up.svg</file>
     </qresource>
 </RCC>

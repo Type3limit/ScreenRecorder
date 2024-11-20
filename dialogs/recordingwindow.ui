@@ -819,7 +819,7 @@ background-color:#212126;
                      <string notr="true">QLabel
 {
 color:#99A1B0;
-font-size:16px;
+font-size:12px;
 font-family:Microsoft YaHei UI;
 }</string>
                     </property>
@@ -828,6 +828,9 @@ font-family:Microsoft YaHei UI;
                     </property>
                     <property name="alignment">
                      <set>Qt::AlignCenter</set>
+                    </property>
+                    <property name="wordWrap">
+                     <bool>true</bool>
                     </property>
                    </widget>
                   </item>
@@ -1072,6 +1075,40 @@ QPushButton:hover
               </property>
               <property name="text">
                <string>选择</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="uploadButton">
+              <property name="minimumSize">
+               <size>
+                <width>50</width>
+                <height>0</height>
+               </size>
+              </property>
+              <property name="styleSheet">
+               <string notr="true">QPushButton
+{
+  selection-background-color: #40404A;
+  selection-color: #3B3B41;
+  color: #99A1B0;
+  height:24px;
+  background-color: #212126;
+  border-style: solid;
+  border: 1px solid #0F0F0F;
+  border-radius: 4;
+  padding: 1px 0px 1px 2px;
+  font-size: 12px;
+  font-family:Microsoft YaHei UI;
+  padding-left:0px;
+}
+QPushButton:hover
+{
+ background-color: #2F2F34;
+}</string>
+              </property>
+              <property name="text">
+               <string>上传到...</string>
               </property>
              </widget>
             </item>

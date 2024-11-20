@@ -1,0 +1,697 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>NetworkColumnAndFoklerWidget</class>
+ <widget class="QWidget" name="NetworkColumnAndFoklerWidget">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>793</width>
+    <height>502</height>
+   </rect>
+  </property>
+  <property name="minimumSize">
+   <size>
+    <width>0</width>
+    <height>0</height>
+   </size>
+  </property>
+  <property name="windowTitle">
+   <string>Form</string>
+  </property>
+  <property name="styleSheet">
+   <string notr="true">
+QScrollArea
+{
+  border:none;
+}
+
+QScrollBar:horizontal {
+  height: 16px;
+  background: #1D1D20;
+  border-style: solid;
+  margin: 5px 0 5px 0px;
+}
+
+
+QScrollBar:vertical {
+  width: 16px;
+  background:  #1D1D20;
+  margin:0 5px 0 5px;
+  border-radius: 3px;
+}
+
+QScrollBar::handle:horizontal,
+QScrollBar::handle:vertical {
+  background: #4B5363;
+  border-radius:3px;
+}
+
+QScrollBar::handle:vertical:hover,
+QScrollBar::handle:horizontal:hover {
+  background: #99A1B0;
+}
+
+QScrollBar::sub-page:vertical,
+QScrollBar::add-page:vertical,
+QScrollBar::sub-page:horizontal,
+QScrollBar::add-page:horizontal {
+  background: #1D1D20;
+  border-radius: 3px;
+}
+
+QScrollBar::sub-line:horizontal {
+  width: 0px;
+  subcontrol-position: left;
+  subcontrol-origin: margin;
+}
+QScrollBar::add-line:horizontal {
+  width: 0px;
+  subcontrol-position: right;
+  subcontrol-origin: margin;
+}
+QScrollBar::sub-line:vertical {
+   height: 0px;
+   subcontrol-position: top;
+   subcontrol-origin: margin;
+ }
+QScrollBar::add-line:vertical {
+  height: 0px;
+  subcontrol-position: bottom;
+  subcontrol-origin: margin;
+}
+QTreeView::branch{
+  background-color: #17181A;
+}
+
+QTreeView QHeaderView::section {
+  border: none;
+}
+
+QHeaderView::section {
+  background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                                    stop:0 #616161, stop: 0.5 #505050,
+                                    stop: 0.6 #434343, stop:1 #656565);
+  color: white;
+  padding-left: 4px;
+  border: 1px solid #6c6c6c;
+}
+
+NetworkColumnAndFoklerWidget {
+  background-color: #17181A;
+}
+
+NetworkColumnAndFoklerWidget #m_columnWidget,
+NetworkColumnAndFoklerWidget #m_fliterWidget,
+NetworkColumnAndFoklerWidget #m_fileContentwidget,
+NetworkColumnAndFoklerWidget #m_columnScrollArea,
+NetworkColumnAndFoklerWidget #m_columnScrollAreaWidget {
+  background-color: #28282E;
+}
+
+NetworkColumnAndFoklerWidget #m_presonalMaterialButton,
+NetworkColumnAndFoklerWidget #m_publicMaterialButton {
+  background-color: #383841;
+  icon: url(:/icons/images/rightarrow.svg);
+  qproperty-iconSize: 6px 6px;
+  color: #99A1B0;
+  font-family: Microsoft YaHei UI;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 15px;
+  letter-spacing: 0px;
+  text-align: left;
+  padding-left: 8px;
+}
+
+NetworkColumnAndFoklerWidget #m_presonalMaterialButton:checked,
+NetworkColumnAndFoklerWidget #m_publicMaterialButton:checked {
+  background-color: #5967F2;
+  icon: url(:/icons/images/downarrow.svg);
+  color: #FFFFFF;
+}
+
+NetworkColumnAndFoklerWidget #m_presonalMaterialView,
+NetworkColumnAndFoklerWidget #m_publicMaterialView {
+  background: transparent;
+  border: none;
+}
+
+NetworkColumnAndFoklerWidget #m_presonalMaterialView::item,
+NetworkColumnAndFoklerWidget #m_publicMaterialView::item {
+  /*color: {{secondaryTextColor}};*/
+  height: 28px;
+  padding: 0px;
+  border: none;
+  background: transparent;
+  /*selection-color: {{primaryTextColor}};*/
+  selection-background-color: #40404A;
+}
+
+NetworkColumnAndFoklerWidget #m_presonalMaterialView::item:selected,
+NetworkColumnAndFoklerWidget #m_publicMaterialView::item:selected {
+  background: 40404A;
+}
+
+NetworkColumnAndFoklerWidget #m_presonalMaterialView::branch,
+NetworkColumnAndFoklerWidget #m_publicMaterialView::branch {
+  background: transparent;
+}
+
+NetworkColumnAndFoklerWidget #m_presonalMaterialView::branch:open:has-children:!has-siblings,
+NetworkColumnAndFoklerWidget #m_presonalMaterialView::branch:open:has-children:has-siblings,
+NetworkColumnAndFoklerWidget #m_publicMaterialView::branch:open:has-children:!has-siblings,
+NetworkColumnAndFoklerWidget #m_publicMaterialView::branch:open:has-children:has-siblings {
+  border-image: none;
+  image: url(:/icons/images/downarrow.svg);
+}
+
+NetworkColumnAndFoklerWidget #m_presonalMaterialView::branch:has-children:!has-siblings:closed,
+NetworkColumnAndFoklerWidget #m_presonalMaterialView::branch:closed:has-children:has-siblings,
+NetworkColumnAndFoklerWidget #m_publicMaterialView::branch:has-children:!has-siblings:closed,
+NetworkColumnAndFoklerWidget #m_publicMaterialView::branch:closed:has-children:has-siblings {
+  border-image: none;
+  image: url(:/icons/images/rightarrow.svg);
+}
+
+NetworkColumnAndFoklerWidget #m_searchLineEdit,
+NetworkColumnAndFoklerWidget #m_projectNameLineEdit {
+  font-family: Microsoft YaHei UI;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 15px;
+  letter-spacing: 0px;
+  text-align: left;
+  border: 1px solid #5B5B6A;
+  background: #212126;
+}
+
+NetworkColumnAndFoklerWidget #m_typeComboBox {
+  font-family: Microsoft YaHei UI;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 15px;
+  letter-spacing: 0px;
+  text-align: left;
+  border: 1px solid #5B5B6A;
+  border-radius: 2px;
+  background: #212126;
+  color: #99A1B0;
+}
+
+NetworkColumnAndFoklerWidget #m_typeComboBox:drop-down {
+  border: none;QComboBox::down-arrow
+}
+
+NetworkColumnAndFoklerWidget #m_typeComboBox::down-arrow {
+  image: url(:/icons/images/expand_down.svg);
+}
+
+NetworkColumnAndFoklerWidget #m_typeComboBox QAbstractItemView {
+  background: #28282E;
+  border: #454549;
+}
+
+NetworkColumnAndFoklerWidget #m_projectNameLabel {
+  color: #99A1B0;
+}
+
+NetworkColumnAndFoklerWidget #m_filePathWidget {
+  background-color: #28282E;
+}
+
+NetworkColumnAndFoklerWidget #m_fileTreeView {
+  background-color: #25252B;
+  border: 1px solid #141414;
+  border-radius: 0px;
+  padding: 0px;
+}
+
+NetworkColumnAndFoklerWidget #m_fileTreeView QHeaderView::section {
+  height: 34px;
+  background-color:#25252B;
+  border-bottom: 1px solid #141414;
+  text-align: left;
+  padding-left: 2px;
+}
+
+NetworkColumnAndFoklerWidget #m_fileTreeView::item {
+  height: 30px;
+  background-color: #25252B;
+  /*color: {{secondaryTextColor}};*/
+  selection-color: #FFFFFF;
+  font-family: Microsoft YaHei UI;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 12px;
+  letter-spacing: 0px;
+  text-align: left;
+  /*padding-top: -4px;
+  padding-bottom: -4px;*/
+}
+
+NetworkColumnAndFoklerWidget #m_fileTreeView::item:hover {
+  background-color: #40404A;
+}
+
+NetworkColumnAndFoklerWidget #m_fileTreeView::item:selected{
+  background-color: #40404A;
+}
+
+NetworkColumnAndFoklerWidget QScrollBar:vertical{
+  border: none;
+  background-color: #25252B;
+  margin: 0 1px 0 1px;
+  padding: 0 5px 0 5px;
+}
+
+NetworkColumnAndFoklerWidget QScrollBar:horizontal{
+  border: none;
+  background-color: #25252B;
+  margin: 1px 0 1px 0;
+  padding: 5px 0 5px 0;
+}
+
+NetworkColumnAndFoklerWidget QScrollBar::add-page:vertical,
+NetworkColumnAndFoklerWidget QScrollBar::sub-page:vertical,
+NetworkColumnAndFoklerWidget QScrollBar::add-page:horizontal,
+NetworkColumnAndFoklerWidget QScrollBar::sub-page:horizontal{
+  background: none;
+}
+
+NetworkColumnAndFoklerWidget #m_columnScrollArea QScrollBar:vertical,
+NetworkColumnAndFoklerWidget #m_columnScrollArea QScrollBar:horizontal{
+  background-color: #28282E;
+}</string>
+  </property>
+  <layout class="QHBoxLayout" name="horizontalLayout" stretch="0,0">
+   <property name="spacing">
+    <number>2</number>
+   </property>
+   <property name="leftMargin">
+    <number>0</number>
+   </property>
+   <property name="topMargin">
+    <number>0</number>
+   </property>
+   <property name="rightMargin">
+    <number>0</number>
+   </property>
+   <property name="bottomMargin">
+    <number>0</number>
+   </property>
+   <item>
+    <widget class="QWidget" name="m_columnWidget" native="true">
+     <property name="minimumSize">
+      <size>
+       <width>160</width>
+       <height>0</height>
+      </size>
+     </property>
+     <property name="maximumSize">
+      <size>
+       <width>160</width>
+       <height>16777215</height>
+      </size>
+     </property>
+     <layout class="QVBoxLayout" name="verticalLayout_4">
+      <property name="spacing">
+       <number>0</number>
+      </property>
+      <property name="leftMargin">
+       <number>0</number>
+      </property>
+      <property name="topMargin">
+       <number>0</number>
+      </property>
+      <property name="rightMargin">
+       <number>0</number>
+      </property>
+      <property name="bottomMargin">
+       <number>0</number>
+      </property>
+      <item>
+       <widget class="QScrollArea" name="m_columnScrollArea">
+        <property name="horizontalScrollBarPolicy">
+         <enum>Qt::ScrollBarAsNeeded</enum>
+        </property>
+        <property name="widgetResizable">
+         <bool>true</bool>
+        </property>
+        <widget class="QWidget" name="m_columnScrollAreaWidget">
+         <property name="geometry">
+          <rect>
+           <x>0</x>
+           <y>0</y>
+           <width>160</width>
+           <height>502</height>
+          </rect>
+         </property>
+         <layout class="QVBoxLayout" name="verticalLayout_6">
+          <property name="leftMargin">
+           <number>9</number>
+          </property>
+          <property name="topMargin">
+           <number>9</number>
+          </property>
+          <property name="rightMargin">
+           <number>9</number>
+          </property>
+          <property name="bottomMargin">
+           <number>9</number>
+          </property>
+          <item>
+           <widget class="QPushButton" name="m_presonalMaterialButton">
+            <property name="minimumSize">
+             <size>
+              <width>0</width>
+              <height>28</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>16777215</width>
+              <height>28</height>
+             </size>
+            </property>
+            <property name="text">
+             <string>个人素材</string>
+            </property>
+            <property name="iconSize">
+             <size>
+              <width>16</width>
+              <height>16</height>
+             </size>
+            </property>
+            <property name="checkable">
+             <bool>true</bool>
+            </property>
+            <property name="autoExclusive">
+             <bool>false</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QTreeView" name="m_presonalMaterialView">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>16777215</width>
+              <height>16777215</height>
+             </size>
+            </property>
+            <property name="verticalScrollBarPolicy">
+             <enum>Qt::ScrollBarAlwaysOff</enum>
+            </property>
+            <property name="horizontalScrollBarPolicy">
+             <enum>Qt::ScrollBarAlwaysOff</enum>
+            </property>
+            <property name="sizeAdjustPolicy">
+             <enum>QAbstractScrollArea::AdjustToContents</enum>
+            </property>
+            <property name="autoScroll">
+             <bool>false</bool>
+            </property>
+            <property name="editTriggers">
+             <set>QAbstractItemView::NoEditTriggers</set>
+            </property>
+            <property name="selectionBehavior">
+             <enum>QAbstractItemView::SelectRows</enum>
+            </property>
+            <property name="iconSize">
+             <size>
+              <width>6</width>
+              <height>4</height>
+             </size>
+            </property>
+            <property name="indentation">
+             <number>6</number>
+            </property>
+            <property name="rootIsDecorated">
+             <bool>true</bool>
+            </property>
+            <attribute name="headerVisible">
+             <bool>false</bool>
+            </attribute>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="m_publicMaterialButton">
+            <property name="minimumSize">
+             <size>
+              <width>0</width>
+              <height>28</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>16777215</width>
+              <height>28</height>
+             </size>
+            </property>
+            <property name="text">
+             <string>公共素材</string>
+            </property>
+            <property name="iconSize">
+             <size>
+              <width>16</width>
+              <height>16</height>
+             </size>
+            </property>
+            <property name="checkable">
+             <bool>true</bool>
+            </property>
+            <property name="autoExclusive">
+             <bool>false</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QTreeView" name="m_publicMaterialView">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="verticalScrollBarPolicy">
+             <enum>Qt::ScrollBarAlwaysOff</enum>
+            </property>
+            <property name="horizontalScrollBarPolicy">
+             <enum>Qt::ScrollBarAlwaysOff</enum>
+            </property>
+            <property name="sizeAdjustPolicy">
+             <enum>QAbstractScrollArea::AdjustToContents</enum>
+            </property>
+            <property name="editTriggers">
+             <set>QAbstractItemView::NoEditTriggers</set>
+            </property>
+            <property name="iconSize">
+             <size>
+              <width>6</width>
+              <height>4</height>
+             </size>
+            </property>
+            <property name="indentation">
+             <number>6</number>
+            </property>
+            <property name="rootIsDecorated">
+             <bool>true</bool>
+            </property>
+            <attribute name="headerVisible">
+             <bool>false</bool>
+            </attribute>
+           </widget>
+          </item>
+          <item>
+           <spacer name="verticalSpacer">
+            <property name="orientation">
+             <enum>Qt::Vertical</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>20</width>
+              <height>40</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+         </layout>
+        </widget>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <layout class="QVBoxLayout" name="verticalLayout_2">
+     <property name="spacing">
+      <number>2</number>
+     </property>
+     <item>
+      <widget class="QWidget" name="m_fliterWidget" native="true">
+       <property name="minimumSize">
+        <size>
+         <width>0</width>
+         <height>0</height>
+        </size>
+       </property>
+       <layout class="QHBoxLayout" name="horizontalLayout_2">
+        <item>
+         <widget class="QLineEdit" name="m_searchLineEdit">
+          <property name="minimumSize">
+           <size>
+            <width>233</width>
+            <height>26</height>
+           </size>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>233</width>
+            <height>26</height>
+           </size>
+          </property>
+          <property name="placeholderText">
+           <string>请输入关键词</string>
+          </property>
+          <property name="clearButtonEnabled">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QComboBox" name="m_typeComboBox">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="minimumSize">
+           <size>
+            <width>118</width>
+            <height>26</height>
+           </size>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>118</width>
+            <height>26</height>
+           </size>
+          </property>
+          <property name="sizeAdjustPolicy">
+           <enum>QComboBox::AdjustToContents</enum>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <spacer name="horizontalSpacer">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>40</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+        <item>
+         <widget class="QLabel" name="m_projectNameLabel">
+          <property name="text">
+           <string>工程名称</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLineEdit" name="m_projectNameLineEdit">
+          <property name="minimumSize">
+           <size>
+            <width>188</width>
+            <height>26</height>
+           </size>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>188</width>
+            <height>26</height>
+           </size>
+          </property>
+          <property name="placeholderText">
+           <string>我是工程名称</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+     </item>
+     <item>
+      <widget class="QWidget" name="m_fileContentwidget" native="true">
+       <layout class="QVBoxLayout" name="verticalLayout">
+        <item>
+         <widget class="UploadPathWidget" name="m_filePathWidget" native="true">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QTreeView" name="m_fileTreeView">
+          <property name="focusPolicy">
+           <enum>Qt::NoFocus</enum>
+          </property>
+          <property name="editTriggers">
+           <set>QAbstractItemView::NoEditTriggers</set>
+          </property>
+          <property name="showDropIndicator" stdset="0">
+           <bool>false</bool>
+          </property>
+          <property name="autoExpandDelay">
+           <number>0</number>
+          </property>
+          <property name="indentation">
+           <number>0</number>
+          </property>
+          <property name="rootIsDecorated">
+           <bool>false</bool>
+          </property>
+          <property name="itemsExpandable">
+           <bool>false</bool>
+          </property>
+          <property name="wordWrap">
+           <bool>true</bool>
+          </property>
+          <property name="expandsOnDoubleClick">
+           <bool>false</bool>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+     </item>
+    </layout>
+   </item>
+  </layout>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>UploadPathWidget</class>
+   <extends>QWidget</extends>
+   <header>uploadpathwidget.h</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
+ <resources>
+  <include location="../../resource.qrc"/>
+ </resources>
+ <connections/>
+</ui>

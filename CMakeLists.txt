@@ -41,8 +41,12 @@ include_directories(
         ${CMAKE_CURRENT_LIST_DIR}/obs/include
         ${CMAKE_CURRENT_LIST_DIR}/obs-plugins/include
         ${CMAKE_CURRENT_LIST_DIR}/dialogs
+        ${CMAKE_CURRENT_LIST_DIR}/dialogs/upload
         ${CMAKE_CURRENT_LIST_DIR}/widgets
-        ${CMAKE_CURRENT_LIST_DIR}/helper)
+        ${CMAKE_CURRENT_LIST_DIR}/helper
+        ${CMAKE_CURRENT_LIST_DIR}/../thirdpart/src/jsrt-api
+        ${CMAKE_CURRENT_LIST_DIR}/../thirdpart/src/jsrt-api/base
+        ${CMAKE_CURRENT_LIST_DIR}/../thirdpart/src/jsrt-api/helper)
 
 set(RESOURCES resource.qrc
         dialogs/recordingwindow.cpp
@@ -66,6 +70,25 @@ set(RESOURCES resource.qrc
         helper/qhotkey_p.h
         helper/debug.cpp
         helper/debug.h
+        dialogs/dragmovedialog.h
+        dialogs/dragmovedialog.cpp
+        dialogs/upload/disableview.h
+        dialogs/upload/disableview.cpp
+        dialogs/upload/disableview.ui
+        dialogs/upload/uploadpathwidget.h
+        dialogs/upload/uploadpathwidget.cpp
+        dialogs/upload/uploadoperator.h
+        dialogs/upload/uploadoperator.cpp
+        dialogs/upload/networkcolumnandfoklerwidget.h
+        dialogs/upload/networkcolumnandfoklerwidget.cpp
+        dialogs/upload/networkcolumnandfoklerwidget.ui
+        dialogs/upload/foldermodel.h
+        dialogs/upload/foldermodel.cpp
+        dialogs/upload/cloumnmodel.h
+        dialogs/upload/cloumnmodel.cpp
+        dialogs/upload/cloumnchoosenwidget.h
+        dialogs/upload/cloumnchoosenwidget.cpp
+        dialogs/upload/cloumnchoosenwidget.ui
         dialogs/countdowndialog.cpp
         dialogs/countdowndialog.h
         dialogs/countdowndialog.ui
@@ -79,6 +102,7 @@ set(RESOURCES resource.qrc
         dialogs/framelessdialog.cpp
         helper/qoperationhelper.h
         helper/qoperationhelper.h
+        commandlinedefinations.h
 )
 set(LinkLib
         Qt${QT_DEFAULT_MAJOR_VERSION}::Core
@@ -117,14 +141,18 @@ elseif(UNIX)
 
 endif()
 
+
+add_subdirectory(../thirdPart/src/jsrt-api jsrt-api)
+
 if(WIN32)
-    add_executable(${CMAKE_PROJECT_NAME} WIN32 ${RESOURCES} main.cpp)
+    add_executable(${CMAKE_PROJECT_NAME} WIN32 ${RESOURCES} main.cpp appicon.rc)
 else()
-    add_executable(${CMAKE_PROJECT_NAME}  ${RESOURCES} main.cpp)
+    add_executable(${CMAKE_PROJECT_NAME}  ${RESOURCES} main.cpp appicon.rc)
 endif()
 
 target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE ${LinkLib}
-)
+ jsrt_api)
+
 if(UNIX)
   target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/libobs.so)
 endif ()

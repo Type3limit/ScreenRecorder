@@ -1,0 +1,392 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>CloumnChoosenWidget</class>
+ <widget class="QWidget" name="CloumnChoosenWidget">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>735</width>
+    <height>590</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>CloumnChoosenWidget</string>
+  </property>
+  <property name="styleSheet">
+   <string notr="true">QFrame#contentFrame
+{
+background-color:#28282E;
+border-top : 0px solid #0F0F0F;
+border-left : 1px solid #0F0F0F;
+border-right : 1px solid #0F0F0F;
+border-bottom : 1px solid #0F0F0F;
+border-bottom-left-radius:10px;
+border-bottom-right-radius:10px;
+}
+
+QFrame#titleFrame
+{
+border-top : 1px solid #0F0F0F;
+border-left : 1px solid #0F0F0F;
+border-right : 1px solid #0F0F0F;
+border-bottom : 1px solid #0F0F0F;
+background-color:#212126;
+border-top-left-radius:10px;
+border-top-right-radius:10px;
+}
+
+QPushButton
+{
+  selection-background-color: #40404A;
+  selection-color: #3B3B41;
+  color: #99A1B0;
+  height:24px;
+  background-color: #212126;
+  border-style: solid;
+  border: 1px solid #0F0F0F;
+  border-radius: 4;
+  padding: 1px 0px 1px 2px;
+  font-size: 12px;
+  font-family:Microsoft YaHei UI;
+  padding-left:0px;
+}
+QPushButton:hover
+{
+ background-color: #2F2F34;
+}
+
+QCheckBox,
+QLabel
+{
+color:#99A1B0;
+font-size:12px;
+font-family:Microsoft YaHei UI;
+}
+QFrame#line,
+#line_1,
+#line_2,
+#line_3,
+#line_4
+{
+background-color:#353539;
+}
+QComboBox QAbstractItemView { outline: 0px;}
+QLineEdit,
+QComboBox{
+  subcontrol-origin: padding;
+  subcontrol-position: top right;
+  selection-background-color: #40404A;
+  selection-color: #3B3B41;
+  color: #99A1B0;
+  height:24px;
+  background-color: #212126;
+  border-style: solid;
+  border: 1px solid #0F0F0F;
+  border-radius: 4;
+  padding: 1px 0px 1px 2px;
+  font-size: 12px;
+  font-family:Microsoft YaHei UI;
+  padding-left:8px;
+  }
+
+
+  QComboBOx:hover
+  {
+  border: 1px #40404A;
+  background-color:#40404A;
+  color: white;
+  }
+
+
+  QComboBox:on
+  {
+  padding-top: 0px;
+  padding-left: 0px;
+  color: #99A1B0;
+  background-color: #40404A;
+  selection-background-color: #3B3B41;
+  }
+
+  QComboBox:!on
+  {
+  color: #99A1B0;
+  }
+
+
+  QComboBox QAbstractItemView
+  {
+  border: 0px solid darkgray;
+  color: white;
+  background-color:#212126;
+  selection-background-color: #454549;
+height:24px;
+  }
+
+
+  QComboBox QAbstractItemView::item
+  {
+  qproperty-elide-mode: '...';
+  height:24px;
+outline: 0px;
+  }
+
+
+  QComboBox::drop-down
+  {
+  subcontrol-origin: padding;
+  subcontrol-position: top right;
+  width: 15px;
+  color: white;
+  border-left-width: 0px;
+  border-left-color: darkgray;
+  border-left-style: solid;
+  border-top-right-radius: 2px;
+  border-bottom-right-radius: 2px;
+  padding-right: 0px;
+  }
+
+  QComboBox::down-arrow
+  {
+  image: url(:/icons/images/comboBoxExpander.svg);
+  width: 8px;
+  height: 4px;
+  }
+
+QListWidget{outline:0px;}
+QListView {
+  border-radius: 4px;
+  padding: 5px;
+  margin: 0px;
+}
+
+QTableView::item,
+QTreeView::item,
+QListView::item {
+  padding: 5px;
+  height: 22px;
+  color: #99A1B0;
+  selection-color: white;
+  border-color: transparent; 
+  border-radius: 4px;
+outline: 0px;
+}
+
+
+
+QTableView:item:selected,
+QTreeView::item:selected,
+QListView::item:selected {
+  background-color: #40404A;
+  selection-background-color:  #3B3B41;
+  color: #99A1B0;
+  selection-color:  white;
+  border-radius: 4px;
+}
+
+QTableView:item:selected:focus,
+QTreeView::item:selected:focus,
+QListView::item:selected:focus {
+  background-color: #40404A;
+  selection-background-color:#3B3B41;
+  color:  #99A1B0;
+  selection-color: white; 
+}
+</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <property name="spacing">
+    <number>0</number>
+   </property>
+   <property name="leftMargin">
+    <number>0</number>
+   </property>
+   <property name="topMargin">
+    <number>0</number>
+   </property>
+   <property name="rightMargin">
+    <number>0</number>
+   </property>
+   <property name="bottomMargin">
+    <number>0</number>
+   </property>
+   <item>
+    <widget class="QFrame" name="titleFrame">
+     <property name="frameShape">
+      <enum>QFrame::StyledPanel</enum>
+     </property>
+     <property name="frameShadow">
+      <enum>QFrame::Raised</enum>
+     </property>
+     <layout class="QHBoxLayout" name="horizontalLayout_2">
+      <property name="leftMargin">
+       <number>20</number>
+      </property>
+      <property name="rightMargin">
+       <number>20</number>
+      </property>
+      <item>
+       <widget class="QLabel" name="label">
+        <property name="text">
+         <string>选择上传栏目</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <spacer name="horizontalSpacer_3">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>40</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+      <item>
+       <widget class="QPushButton" name="closeButton">
+        <property name="minimumSize">
+         <size>
+          <width>24</width>
+          <height>24</height>
+         </size>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>24</width>
+          <height>24</height>
+         </size>
+        </property>
+        <property name="text">
+         <string/>
+        </property>
+        <property name="icon">
+         <iconset resource="../../resource.qrc">
+          <normaloff>:/icons/images/close.svg</normaloff>:/icons/images/close.svg</iconset>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QFrame" name="contentFrame">
+     <property name="frameShape">
+      <enum>QFrame::StyledPanel</enum>
+     </property>
+     <property name="frameShadow">
+      <enum>QFrame::Raised</enum>
+     </property>
+     <layout class="QVBoxLayout" name="verticalLayout_2">
+      <item>
+       <widget class="QStackedWidget" name="m_stackedContent">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">QStackedWidget &gt; QWidget{
+background: #00ff0000;
+}</string>
+        </property>
+        <property name="currentIndex">
+         <number>0</number>
+        </property>
+        <widget class="NetworkColumnAndFoklerWidget" name="m_uploader"/>
+        <widget class="DisableView" name="m_disableView"/>
+       </widget>
+      </item>
+      <item>
+       <layout class="QHBoxLayout" name="horizontalLayout">
+        <item>
+         <widget class="QLabel" name="m_bottomNotice">
+          <property name="text">
+           <string/>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <spacer name="horizontalSpacer">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>40</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+        <item>
+         <widget class="QPushButton" name="cancelButton">
+          <property name="minimumSize">
+           <size>
+            <width>80</width>
+            <height>26</height>
+           </size>
+          </property>
+          <property name="text">
+           <string>取消</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <spacer name="horizontalSpacer_2">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeType">
+           <enum>QSizePolicy::Fixed</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>20</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+        <item>
+         <widget class="QPushButton" name="sureButton">
+          <property name="minimumSize">
+           <size>
+            <width>80</width>
+            <height>26</height>
+           </size>
+          </property>
+          <property name="text">
+           <string>确认</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+     </layout>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>NetworkColumnAndFoklerWidget</class>
+   <extends>QWidget</extends>
+   <header>networkcolumnandfoklerwidget.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>DisableView</class>
+   <extends>QWidget</extends>
+   <header>disableview.h</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
+ <resources>
+  <include location="../../resource.qrc"/>
+ </resources>
+ <connections/>
+</ui>

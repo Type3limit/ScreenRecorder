@@ -149,19 +149,18 @@ void ObsWrapper::oBSVolumeLevel(void *data,
 
 int ObsWrapper::micChannelCount()
 {
-    return 6;
+
     return obs_volmeter_get_nr_channels(mic_obs_volmeter);
 }
 
 int ObsWrapper::playerChannelCount()
 {
-    return 6;
+
     return obs_volmeter_get_nr_channels(player_obs_volmeter);
 }
 
 int ObsWrapper::audioChannel()
 {
-    return 6;
     return (int) audio_output_get_channels(obs_get_audio());
 }
 
@@ -193,6 +192,7 @@ bool ObsWrapper::initObs(int srcWidth,int srcHeight,int fps)
 #endif
         //init
         if (!obs_startup("zh-CN", cfg_path.c_str(), NULL)) {
+            qCritical()<<"obs_startup failed!";
             return false;
         }
 
@@ -210,10 +210,19 @@ bool ObsWrapper::initObs(int srcWidth,int srcHeight,int fps)
 
         //reset audio
         if (!resetAudio())
+        {
+            qCritical()<<"obs reset audio failed!";
             return false;
+        }
+
         //reset video to enter graphcis model
-        if (resetVideo(srcWidth,srcHeight,srcWidth,srcHeight,fps) != OBS_VIDEO_SUCCESS)
+        auto resetResult = resetVideo(srcWidth,srcHeight,srcWidth,srcHeight,fps);
+        if ( resetResult!= OBS_VIDEO_SUCCESS)
+        {
+            qCritical()<<"obs reset video failed!with"<<resetResult;
             return false;
+        }
+
 
         obs_load_all_modules();
 
@@ -221,45 +230,49 @@ bool ObsWrapper::initObs(int srcWidth,int srcHeight,int fps)
     }
 
     if (!createOutputMode())
+    {
+        qCritical()<<"obs create output mode failed!";
         return false;
+    }
+
 
     //connect player and micphone wave callback by default
     micSource = getSoundSource(INPUT_AUDIO_SOURCE, "default", "Default Mic/Aux", SOURCE_CHANNEL_AUDIO_INPUT);
 
     playerSource = getSoundSource(OUTPUT_AUDIO_SOURCE, "default", "Default Desktop Audio", SOURCE_CHANNEL_AUDIO_OUTPUT);
 
-//
-//    mic_obs_fader = obs_fader_create(OBS_FADER_LOG);
-//    mic_obs_volmeter = obs_volmeter_create(OBS_FADER_LOG);
-//    player_obs_fader = obs_fader_create(OBS_FADER_LOG);
-//    player_obs_volmeter = obs_volmeter_create(OBS_FADER_LOG);
-//    micIdentifier = QSharedPointer<SoundDeviceIdentifier>(new SoundDeviceIdentifier(SoundDeviceIdentifier::Type::Micphone, this, mic_obs_volmeter));
-//    playerIndentifier = QSharedPointer<SoundDeviceIdentifier>(new SoundDeviceIdentifier(SoundDeviceIdentifier::Type::Player, this, player_obs_volmeter));
-//    obs_fader_add_callback(mic_obs_fader, oBSVolumeChanged, micIdentifier.get());
-//    obs_volmeter_add_callback(mic_obs_volmeter, oBSVolumeLevel, micIdentifier.get());
-//    obs_fader_add_callback(player_obs_fader, oBSVolumeChanged, playerIndentifier.get());
-//    obs_volmeter_add_callback(player_obs_volmeter, oBSVolumeLevel, playerIndentifier.get());
-//
-//    obs_fader_attach_source(mic_obs_fader, micSource);
-//    obs_volmeter_attach_source(mic_obs_volmeter, micSource);
-//    obs_fader_attach_source(player_obs_fader, playerSource);
-//    obs_volmeter_attach_source(player_obs_volmeter, playerSource);
-//
-//    //60fps?
-//    m_audioCallbackNotifyTimer.setInterval(1000/60);
-//    connect(&m_audioCallbackNotifyTimer,&QTimer::timeout,this,[&]()
-//    {
-//        emit micVolumeDataChange(
-//        currentMagnitudeMic,
-//        currentPeakMic,
-//        currentInputPeakMic);
-//
-//        emit playerVolumeDataChange(
-//        currentMagnitudePlayer,
-//        currentPeakPlayer,
-//        currentInputPeakPlayer);
-//    });
-//    m_audioCallbackNotifyTimer.start();
+    mic_obs_fader = obs_fader_create(OBS_FADER_LOG);
+    mic_obs_volmeter = obs_volmeter_create(OBS_FADER_LOG);
+    player_obs_fader = obs_fader_create(OBS_FADER_LOG);
+    player_obs_volmeter = obs_volmeter_create(OBS_FADER_LOG);
+    micIdentifier = QSharedPointer<SoundDeviceIdentifier>(new SoundDeviceIdentifier(SoundDeviceIdentifier::Type::Micphone, this, mic_obs_volmeter));
+    playerIndentifier = QSharedPointer<SoundDeviceIdentifier>(new SoundDeviceIdentifier(SoundDeviceIdentifier::Type::Player, this, player_obs_volmeter));
+    obs_fader_add_callback(mic_obs_fader, oBSVolumeChanged, micIdentifier.get());
+    obs_volmeter_add_callback(mic_obs_volmeter, oBSVolumeLevel, micIdentifier.get());
+    obs_fader_add_callback(player_obs_fader, oBSVolumeChanged, playerIndentifier.get());
+    obs_volmeter_add_callback(player_obs_volmeter, oBSVolumeLevel, playerIndentifier.get());
+
+    obs_fader_attach_source(mic_obs_fader, micSource);
+    obs_volmeter_attach_source(mic_obs_volmeter, micSource);
+    obs_fader_attach_source(player_obs_fader, playerSource);
+    obs_volmeter_attach_source(player_obs_volmeter, playerSource);
+    obs_source_active(micSource);
+    obs_source_active(playerSource);
+    obs_set_output_source(SOURCE_CHANNEL_AUDIO_INPUT, micSource);
+    obs_set_output_source(SOURCE_CHANNEL_AUDIO_OUTPUT, playerSource);
+    m_audioCallbackNotifyTimer.setInterval(1000/60);
+    connect(&m_audioCallbackNotifyTimer,&QTimer::timeout,this,[&]()
+    {
+        emit playerVolumeDataChange(
+                           currentMagnitudePlayer,
+                           currentPeakPlayer,
+                           currentInputPeakPlayer);
+        emit micVolumeDataChange(
+                           currentMagnitudeMic,
+                           currentPeakMic,
+                           currentInputPeakMic);
+    });
+    m_audioCallbackNotifyTimer.start();
     return true;
 }
 
@@ -730,6 +743,7 @@ bool ObsWrapper::resetAudio()
 
 int ObsWrapper::resetVideo(int srcWidth,int srcHeight,int outPutWidth,int outOutHeight,int fps)
 {
+    qDebug()<<"reset video with srcWidth"<<srcWidth<<"srcHeight"<<srcHeight<<"outPutWidth"<<outPutWidth<<"outOutHeight"<<outOutHeight<<"fps"<<fps;
     obs_video_info ovi{};
     ovi.fps_num = fps;
     ovi.fps_den = 1;
@@ -750,6 +764,11 @@ int ObsWrapper::resetVideo(int srcWidth,int srcHeight,int outPutWidth,int outOut
     ovi.adapter = 0;
     ovi.gpu_conversion = true;
     ovi.scale_type = OBS_SCALE_BICUBIC;
+
+    if(!obs_initialized())
+    {
+        qDebug()<<"obs not initialized!";
+    }
 
     return obs_reset_video(&ovi);
 }

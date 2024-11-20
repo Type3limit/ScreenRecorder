@@ -22,7 +22,7 @@ class RecordingWindow : public QMainWindow {
 Q_OBJECT
 
 public:
-    explicit RecordingWindow(int port = -1,QWidget *parent = nullptr);
+    explicit RecordingWindow(const QString& loginUrl,const QString& token,int port = -1,QWidget *parent = nullptr);
     ~RecordingWindow() override;
 QScreen* findScreen() const;
 void mousePressEvent(QMouseEvent *e) override;
@@ -37,6 +37,8 @@ void mousePressEvent(QMouseEvent *e) override;
     void saveConfig();
 public slots:
     void rebuildBackgroundWindow();
+void invokeUploadWindow(const QStringList& uploadedFiles);
+
 protected:
     void init(int defaultPort = -1);
 
@@ -64,6 +66,10 @@ private:
     qint64 m_seconds = 0;
     QPoint m_startPos = {0,0};
     QPoint m_endPos = {0,0};
+private:
+    QString m_url{};
+    QString m_token{};
+    QString m_currentRecordingFile{};
 };
 
 

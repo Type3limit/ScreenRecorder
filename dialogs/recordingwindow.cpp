@@ -16,13 +16,16 @@
 #else
 #include <X11/Xlib.h>
 #endif
+#include <QThread>
+
 #include "usermessagebox.h"
 #include "backgroundwindow.h"
+#include "cloumnchoosenwidget.h"
 #include "countdowndialog.h"
 #include "optionnalchain.h"
 
 
-#define POPVIEW(styledItem) ui->styledItem->setView(new QListView(ui->styledItem));
+#define SET_POP_VIEW(styledItem) ui->styledItem->setView(new QListView(ui->styledItem));
 
 
 enum ScreenArea
@@ -50,11 +53,13 @@ bool isValidFilePath(const QString& filePath)
 }
 
 
-RecordingWindow::RecordingWindow(int port,QWidget* parent) :
+RecordingWindow::RecordingWindow(const QString& url,const QString& token,int port,QWidget* parent) :
     QMainWindow(parent), ui(new Ui::RecordingWindow),
     m_obs(QSharedPointer<ObsWrapper>(new ObsWrapper())),
     m_recordHotKey(new QHotkey(this)),
-    m_pauseHotKey(new QHotkey(this))
+    m_pauseHotKey(new QHotkey(this)),
+    m_url(url),
+    m_token(token)
 {
     ui->setupUi(this);
     // hide title bar
@@ -246,10 +251,10 @@ void RecordingWindow::init(int defaultPort)
         m_config.writeJson();
     }
     ui->nameEdit->setText(QDateTime::currentDateTime().toString("yyyy.MM.dd-hh.mm.ss"));
-    POPVIEW(bitrateComboBox)
+    SET_POP_VIEW(bitrateComboBox)
     ui->bitrateComboBox->setModel(new QStringListModel(m_config.bitRatesPresets, this));
     ui->bitrateComboBox->setCurrentText(m_config.bitRateInUse);
-    POPVIEW(frameRateComboBox)
+    SET_POP_VIEW(frameRateComboBox)
     ui->frameRateComboBox->setModel(new QStringListModel(m_config.frameRatePresets, this));
     ui->frameRateComboBox->setCurrentText(m_config.frameRateInUse);
     ui->savePathEdit->setText(m_config.savePath);
@@ -298,7 +303,7 @@ void RecordingWindow::init(int defaultPort)
     m_obs->searchPlayerDevice();
     m_obs->searchMicDevice();
     //screen mode
-    POPVIEW(screenDeviceComboBox)
+    SET_POP_VIEW(screenDeviceComboBox)
     QStandardItemModel *curScModel = new QStandardItemModel(this);
     auto curScItems = m_obs->getRecTargets();
     for(int i = 0; i < curScItems.size(); ++i){
@@ -308,7 +313,7 @@ void RecordingWindow::init(int defaultPort)
     }
     ui->screenDeviceComboBox->setModel(curScModel);
     //area Init
-    POPVIEW(areaComboBox)
+    SET_POP_VIEW(areaComboBox)
     ui->areaComboBox->setModel(new QStringListModel({ScreenAreaStr[DeskTop], ScreenAreaStr[Customized]}, this));
     //capture type changed
     connect(ui->areaComboBox, QOverload<int>::of(&QComboBox::currentIndexChanged), this, [&](int curIndex)
@@ -376,7 +381,7 @@ void RecordingWindow::init(int defaultPort)
     ui->areaHeightEdit->blockSignals(false);
 
     //Sound device name
-    POPVIEW(micphoneDeviceComboBox)
+    SET_POP_VIEW(micphoneDeviceComboBox)
     QStandardItemModel *curMicModel = new QStandardItemModel(this);
     auto curMicItems = m_obs->micphoneDeviceName();
     for(int i = 0; i < curMicItems.size(); ++i){
@@ -392,7 +397,7 @@ void RecordingWindow::init(int defaultPort)
        m_obs->resetMicphoneVolumeLevelCallback(curId);
    });
     //player device name
-    POPVIEW(playerDeviceComboBox)
+    SET_POP_VIEW(playerDeviceComboBox)
     QStandardItemModel *curPlayerModel = new QStandardItemModel(this);
     auto curPlayerItems = m_obs->playerDeviceName();
     for(int i = 0; i < curPlayerItems.size(); ++i){
@@ -570,9 +575,28 @@ void RecordingWindow::init(int defaultPort)
         m_test->show();
         m_test->createDisplayer();
     });
-//    m_obs->recMicAudio(true,"default");
-//    m_obs->recPlayerAudio(true,"default");
+    m_obs->recMicAudio(true,"default");
+    m_obs->recPlayerAudio(true,"default");
     m_alreadyInited = true;
+
+    //upload window
+    connect(ui->uploadButton,&QPushButton::clicked,this,[&]()
+    {
+       auto curStrs =QFileDialog::getOpenFileNames(
+     this,
+     tr(u8"打开文件"),
+     ui->savePathEdit->text().isEmpty() ? "." : ui->savePathEdit->text(),
+     tr(u8"视频文件 (*.mp4 *.avi *.mkv *.mov *.wmv *.flv *.mpeg *.webm);;所有文件 (*.*)"));
+       if(!curStrs.isEmpty())
+       {
+           invokeUploadWindow(curStrs);
+       }
+    });
+
+    if(!m_url.isEmpty()&&!m_token.isEmpty())
+    {
+        ui->statusLabel->setText(u8"已设置在线登录信息,录制完成后即可上传");
+    }
 }
 
 void RecordingWindow::mousePressEvent(QMouseEvent* e)
@@ -693,7 +717,7 @@ void RecordingWindow::startRecord()
             UserMessageBox::warning(this, u8"警告", u8"文件名称或路径非法!");
             return;
         }
-
+        m_currentRecordingFile = fileName+".mp4";
         m_obs->setupFFmpeg(fileName,
                            cropRect.width() * devicePixelRatio,
                            cropRect.height() * devicePixelRatio,
@@ -759,6 +783,13 @@ void RecordingWindow::stopRecord()
         qDebug()<<"stop with status:"<<res;
         //rename current recording
         ui->nameEdit->setText(QDateTime::currentDateTime().toString("yyyy.MM.dd-hh.mm.ss"));
+
+        invokeUploadWindow({m_currentRecordingFile});
+    }
+
+    if(!m_url.isEmpty()&&!m_token.isEmpty())
+    {
+        ui->statusLabel->setText(u8"已设置在线登录信息,录制完成后即可上传");
     }
 }
 
@@ -781,4 +812,18 @@ void RecordingWindow::rebuildBackgroundWindow()
     qDebug()<<"get Screen"<<curScreen->name();
     m_backgroundWindow->resetStatus(isFullScreenMode(), curScreen);
     m_backgroundWindow->showFullScreen();
+}
+
+
+void RecordingWindow::invokeUploadWindow(const QStringList& uploadedFiles)
+{
+    if(m_url.isEmpty()||m_token.isEmpty())
+    {
+        qWarning()<<"url or token is empty! ignore upload option";
+        return;
+    }
+    CloumnChoosenDialog * dialog = new CloumnChoosenDialog(m_url,m_token,uploadedFiles,nullptr);
+    dialog->exec();
+
+    dialog->deleteLater();
 }
