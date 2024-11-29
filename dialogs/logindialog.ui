@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>CloumnChoosenWidget</class>
- <widget class="QWidget" name="CloumnChoosenWidget">
+ <class>LoginDialog</class>
+ <widget class="DragMoveDialog" name="LoginDialog">
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>735</width>
-    <height>590</height>
+    <width>539</width>
+    <height>391</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>CloumnChoosenWidget</string>
+   <string>LoginDialog</string>
   </property>
   <property name="styleSheet">
    <string notr="true">QFrame#contentFrame
@@ -212,34 +212,40 @@ QListView::item:selected:focus {
    </property>
    <item>
     <widget class="QFrame" name="titleFrame">
+     <property name="minimumSize">
+      <size>
+       <width>0</width>
+       <height>44</height>
+      </size>
+     </property>
+     <property name="maximumSize">
+      <size>
+       <width>16777215</width>
+       <height>44</height>
+      </size>
+     </property>
      <property name="frameShape">
       <enum>QFrame::StyledPanel</enum>
      </property>
      <property name="frameShadow">
       <enum>QFrame::Raised</enum>
      </property>
-     <layout class="QHBoxLayout" name="horizontalLayout_2">
-      <property name="leftMargin">
-       <number>20</number>
-      </property>
-      <property name="rightMargin">
-       <number>20</number>
-      </property>
+     <layout class="QHBoxLayout" name="horizontalLayout">
       <item>
        <widget class="QLabel" name="label">
         <property name="text">
-         <string>选择上传栏目</string>
+         <string>登录</string>
         </property>
        </widget>
       </item>
       <item>
-       <spacer name="horizontalSpacer_3">
+       <spacer name="horizontalSpacer">
         <property name="orientation">
          <enum>Qt::Horizontal</enum>
         </property>
         <property name="sizeHint" stdset="0">
          <size>
-          <width>40</width>
+          <width>456</width>
           <height>20</height>
          </size>
         </property>
@@ -263,7 +269,7 @@ QListView::item:selected:focus {
          <string/>
         </property>
         <property name="icon">
-         <iconset resource="../../resource.qrc">
+         <iconset resource="../resource.qrc">
           <normaloff>:/icons/images/close.svg</normaloff>:/icons/images/close.svg</iconset>
         </property>
        </widget>
@@ -280,39 +286,35 @@ QListView::item:selected:focus {
       <enum>QFrame::Raised</enum>
      </property>
      <layout class="QVBoxLayout" name="verticalLayout_2">
+      <property name="spacing">
+       <number>16</number>
+      </property>
+      <property name="rightMargin">
+       <number>15</number>
+      </property>
+      <property name="bottomMargin">
+       <number>0</number>
+      </property>
       <item>
-       <widget class="QStackedWidget" name="m_stackedContent">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
+       <widget class="QLabel" name="label_4">
         <property name="styleSheet">
-         <string notr="true">QStackedWidget &gt; QWidget{
-background: #00ff0000;
-}</string>
+         <string notr="true">color:#99A1B0;
+font-size:14px;</string>
         </property>
-        <property name="currentIndex">
-         <number>0</number>
+        <property name="text">
+         <string>用户信息：</string>
         </property>
-        <widget class="NetworkColumnAndFoklerWidget" name="m_uploader"/>
-        <widget class="DisableView" name="m_disableView"/>
        </widget>
       </item>
       <item>
-       <layout class="QHBoxLayout" name="horizontalLayout">
+       <layout class="QHBoxLayout" name="horizontalLayout_2">
         <item>
-         <widget class="QLabel" name="m_bottomNotice">
-          <property name="text">
-           <string/>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <spacer name="horizontalSpacer">
+         <spacer name="horizontalSpacer_4">
           <property name="orientation">
            <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeType">
+           <enum>QSizePolicy::Fixed</enum>
           </property>
           <property name="sizeHint" stdset="0">
            <size>
@@ -324,50 +326,36 @@ background: #00ff0000;
         </item>
         <item>
          <widget class="QLabel" name="label_2">
-          <property name="text">
-           <string>文件夹名称：</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QLineEdit" name="m_folderNameEditor"/>
-        </item>
-        <item>
-         <widget class="QPushButton" name="m_createFolderButton">
           <property name="minimumSize">
            <size>
-            <width>82</width>
+            <width>72</width>
             <height>0</height>
            </size>
           </property>
-          <property name="styleSheet">
-           <string notr="true">QPushButton
-{
-  selection-background-color: #40404A;
-  selection-color: #3B3B41;
-  color: white;
-  height:24px;
-  background-color: rgb(32, 160, 255);
-  border-style: solid;
-  border: 1px solid #0F0F0F;
-  border-radius: 4;
-  padding: 1px 0px 1px 2px;
-  font-size: 12px;
-  font-family:Microsoft YaHei UI;
-  padding-left:0px;
-}
-QPushButton:hover
-{
- background-color: rgb(32, 180, 255);
-}</string>
+          <property name="maximumSize">
+           <size>
+            <width>72</width>
+            <height>16777215</height>
+           </size>
           </property>
           <property name="text">
-           <string>创建文件夹</string>
+           <string>用户名：</string>
           </property>
          </widget>
         </item>
         <item>
-         <spacer name="horizontalSpacer_4">
+         <widget class="QLineEdit" name="userNameEditor">
+          <property name="placeholderText">
+           <string>请输入用户名</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <layout class="QHBoxLayout" name="horizontalLayout_3">
+        <item>
+         <spacer name="horizontalSpacer_3">
           <property name="orientation">
            <enum>Qt::Horizontal</enum>
           </property>
@@ -376,25 +364,75 @@ QPushButton:hover
           </property>
           <property name="sizeHint" stdset="0">
            <size>
-            <width>15</width>
+            <width>40</width>
             <height>20</height>
            </size>
           </property>
          </spacer>
         </item>
         <item>
-         <widget class="QPushButton" name="cancelButton">
+         <widget class="QLabel" name="label_3">
           <property name="minimumSize">
            <size>
-            <width>80</width>
-            <height>26</height>
+            <width>72</width>
+            <height>0</height>
+           </size>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>72</width>
+            <height>16777215</height>
            </size>
           </property>
           <property name="text">
-           <string>取消</string>
+           <string>密码：</string>
           </property>
          </widget>
         </item>
+        <item>
+         <widget class="QLineEdit" name="passwordEditor">
+          <property name="echoMode">
+           <enum>QLineEdit::Password</enum>
+          </property>
+          <property name="placeholderText">
+           <string>请输入密码</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <widget class="Line" name="line">
+        <property name="minimumSize">
+         <size>
+          <width>0</width>
+          <height>1</height>
+         </size>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>16777215</width>
+          <height>1</height>
+         </size>
+        </property>
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="label_5">
+        <property name="styleSheet">
+         <string notr="true">color:#99A1B0;
+font-size:14px;</string>
+        </property>
+        <property name="text">
+         <string>登录配置：</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <layout class="QHBoxLayout" name="horizontalLayout_4">
         <item>
          <spacer name="horizontalSpacer_2">
           <property name="orientation">
@@ -405,26 +443,125 @@ QPushButton:hover
           </property>
           <property name="sizeHint" stdset="0">
            <size>
-            <width>20</width>
+            <width>40</width>
             <height>20</height>
            </size>
           </property>
          </spacer>
         </item>
         <item>
-         <widget class="QPushButton" name="sureButton">
-          <property name="minimumSize">
-           <size>
-            <width>80</width>
-            <height>26</height>
-           </size>
-          </property>
+         <widget class="QLabel" name="label_6">
           <property name="text">
-           <string>确认</string>
+           <string>服务器地址：</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLineEdit" name="urlEditor">
+          <property name="placeholderText">
+           <string>请输入服务器地址</string>
           </property>
          </widget>
         </item>
        </layout>
+      </item>
+      <item>
+       <widget class="Line" name="line_2">
+        <property name="minimumSize">
+         <size>
+          <width>0</width>
+          <height>1</height>
+         </size>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>16777215</width>
+          <height>1</height>
+         </size>
+        </property>
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <spacer name="verticalSpacer_2">
+        <property name="orientation">
+         <enum>Qt::Vertical</enum>
+        </property>
+        <property name="sizeType">
+         <enum>QSizePolicy::Fixed</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>20</width>
+          <height>40</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+      <item>
+       <layout class="QHBoxLayout" name="horizontalLayout_5">
+        <property name="spacing">
+         <number>0</number>
+        </property>
+        <property name="bottomMargin">
+         <number>0</number>
+        </property>
+        <item>
+         <widget class="QPushButton" name="loginButton">
+          <property name="minimumSize">
+           <size>
+            <width>320</width>
+            <height>0</height>
+           </size>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>320</width>
+            <height>16777215</height>
+           </size>
+          </property>
+          <property name="styleSheet">
+           <string notr="true">QPushButton
+{
+  selection-background-color: #40404A;
+  selection-color: #3B3B41;
+  color: white;
+  height:28px;
+  background-color: rgb(18, 150, 219);
+  border-style: solid;
+  border: 1px solid #0F0F0F;
+  border-radius: 4px;
+  padding: 1px 0px 1px 2px;
+  font-size: 14px;
+  font-family:Microsoft YaHei UI;
+  padding-left:0px;
+}
+QPushButton:hover
+{
+ background-color: rgb(18, 180, 219);
+}</string>
+          </property>
+          <property name="text">
+           <string>登录</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <spacer name="verticalSpacer">
+        <property name="orientation">
+         <enum>Qt::Vertical</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>20</width>
+          <height>40</height>
+         </size>
+        </property>
+       </spacer>
       </item>
      </layout>
     </widget>
@@ -433,20 +570,14 @@ QPushButton:hover
  </widget>
  <customwidgets>
   <customwidget>
-   <class>NetworkColumnAndFoklerWidget</class>
+   <class>DragMoveDialog</class>
    <extends>QWidget</extends>
-   <header>networkcolumnandfoklerwidget.h</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
-   <class>DisableView</class>
-   <extends>QWidget</extends>
-   <header>disableview.h</header>
+   <header>dragmovedialog.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>
  <resources>
-  <include location="../../resource.qrc"/>
+  <include location="../resource.qrc"/>
  </resources>
  <connections/>
 </ui>

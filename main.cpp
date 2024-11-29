@@ -1,35 +1,64 @@
-﻿// #include <iostream>
-// #include <windows.h>
-//
-// void setWorkingDirectoryToAppPath() {
-//     wchar_t appPath[MAX_PATH];
-//     if (GetModuleFileNameW(nullptr, appPath, MAX_PATH)) {
-//         // 移除文件名，保留路径
-//         wchar_t *lastSlash = wcsrchr(appPath, L'\\');
-//         if (lastSlash) {
-//             *lastSlash = L'\0';
-//             if (!SetCurrentDirectoryW(appPath)) {
-//                 std::wcerr << L"Failed to set working directory. Error: " << GetLastError() << std::endl;
-//             }
-//         }
-//     } else {
-//         std::wcerr << L"Failed to get module file name. Error: " << GetLastError() << std::endl;
-//     }
-// }
-
-
+﻿
+#include "debug.h"
 #include <QApplication>
+#include <QDir>
+#include <QDebug>
+#include <QDateTime>
+#ifdef _WIN32
+#include <windows.h>
+#include <dbghelp.h>
+inline LONG WINAPI exceptionCallback(struct _EXCEPTION_POINTERS* exceptionInfo)
+{
+    QCoreApplication *app = QApplication::instance();
+
+    QString savePath = app->applicationDirPath() + "/dump/";
+    qDebug()<<"save path :"<<savePath;
+    QDir dir(savePath);
+    if (!dir.exists() && !dir.mkpath(savePath)) {
+        app->exit(E_UNEXPECTED);
+        return EXCEPTION_EXECUTE_HANDLER;
+    }
+
+    savePath.append("assit_");
+    savePath.append(QDateTime::currentDateTime().toString("yyyyMMddhhmmsszzz"));
+    savePath.append(".dmp");
+
+    HANDLE dump = CreateFileW(savePath.toStdWString().c_str(), GENERIC_WRITE,
+                              0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+    if (INVALID_HANDLE_VALUE == dump) {
+        app->exit(E_UNEXPECTED);
+        return EXCEPTION_EXECUTE_HANDLER;
+    }
+
+    /*
+    const DWORD flags = MiniDumpWithFullMemory |
+       MiniDumpWithFullMemoryInfo |
+//       MiniDumpWithHandleData |
+       MiniDumpWithUnloadedModules |
+       MiniDumpWithThreadInfo;
+       */
+
+    MINIDUMP_EXCEPTION_INFORMATION miniDumpExceptionInfo;
+    miniDumpExceptionInfo.ExceptionPointers = exceptionInfo;
+    miniDumpExceptionInfo.ThreadId = GetCurrentThreadId();
+    miniDumpExceptionInfo.ClientPointers = TRUE;
+    DWORD idProcess = GetCurrentProcessId();
+    MiniDumpWriteDump(GetCurrentProcess(), idProcess, dump,
+                      MiniDumpNormal/*(MINIDUMP_TYPE)flags*/, &miniDumpExceptionInfo, NULL, NULL);
+
+    CloseHandle(dump);
+
+    app->exit(E_UNEXPECTED);
+    return EXCEPTION_EXECUTE_HANDLER;
+}
+#endif
 
 #include <QTranslator>
 #include <QLibraryInfo>
 #include "recordingwindow.h"
-#include "debug.h"
 #include <QCommandLineParser>
 #include <QCommandLineOption>
 #include <QThread>
-
-#include "commandlinedefinations.h"
-
 
 int main(int argc, char* argv[])
 {
@@ -47,6 +76,12 @@ int main(int argc, char* argv[])
 
     QApplication app(argc, argv);
 
+    app.setApplicationVersion(CURRENT_PROGRAM_VERSION);
+
+    app.setApplicationName("Screen Recorder");
+
+    app.setApplicationDisplayName(u8"屏幕录制");
+
     QThread::sleep(5);
 
     initializeLogger();
@@ -61,44 +96,8 @@ int main(int argc, char* argv[])
 
 
     //2024-11-19：避免从浏览器唤起时拉起程序路径不正确obs找不到文件的问题
-    //setWorkingDirectoryToAppPath();
     qDebug() << "current working path" << QCoreApplication::applicationDirPath();
     QDir::setCurrent(QCoreApplication::applicationDirPath());
-    // // 创建解析器
-    // QCommandLineParser parser;
-    // parser.setApplicationDescription("screen recorder helper");
-    // parser.addHelpOption(); // 添加 --help 选项
-    //
-    // QCommandLineOption portOption(
-    //     QStringList() << TCP_PORT_SHORT << TCP_PORT, // 参数名称 (支持短选项 -p 和长选项 --port)
-    //     u8"tcp notice when recoding finished", // 参数描述
-    //     u8"port", // 参数值的占位符
-    //     u8"29989" // 默认值
-    // );
-    //
-    // QCommandLineOption serverOption(
-    //     QStringList() << SERVER_SHORT << SERVER,
-    //     u8"ip Address(must has prefix [http(s)://]) for no-secret login",
-    //     u8"address",
-    //     u8""
-    // );
-    //
-    // QCommandLineOption tokenOption(
-    //     QStringList() << TOKEN_SHORT << TOKEN,
-    //     u8"token for no-secret login",
-    //     u8"token",
-    //     u8""
-    // );
-    //
-    // parser.addOption(portOption);
-    // parser.addOption(serverOption);
-    // parser.addOption(tokenOption);
-    // parser.process(app);
-    //
-    // auto portStr = parser.value(portOption);
-    // auto server = parser.value(serverOption);
-    // auto token = parser.value(tokenOption);
-    // int port = portStr.isEmpty() ? -1 : portStr.toInt();
 
     QString portStr;
     QString server;
@@ -116,6 +115,11 @@ int main(int argc, char* argv[])
         token = QString(params[2]);
     }
     int port = portStr.isEmpty() ? -1 : portStr.toInt();
+
+
+#ifdef _WIN32
+    SetUnhandledExceptionFilter(exceptionCallback);
+#endif
 
     qDebug() << "invoking with param: port:[" << portStr << "]" << " server:[" << server << "] token:[" << token << "]";
 

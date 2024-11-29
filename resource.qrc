@@ -26,5 +26,13 @@
         <file>images/downarrow.svg</file>
         <file>images/expand_down.svg</file>
         <file>images/expand_up.svg</file>
+        <file>images/update.png</file>
+        <file>images/preFrame.svg</file>
+        <file>images/nextFrame.svg</file>
+        <file>images/play.svg</file>
+        <file>images/pause.svg</file>
+        <file>images/slider.svg</file>
+        <file>images/login.svg</file>
+        <file>images/minimal.svg</file>
     </qresource>
 </RCC>

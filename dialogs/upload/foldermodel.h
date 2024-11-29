@@ -13,6 +13,7 @@ struct FolderData {
     FolderData(){}
 
     int read(const QJsonObject& obj);
+    int readFromFolder(const QJsonObject& obj);
 
 
     int type;

@@ -22,7 +22,7 @@ NetworkColumnAndFoklerWidget::~NetworkColumnAndFoklerWidget()
     delete ui;
 }
 
-void NetworkColumnAndFoklerWidget::setApiInstance(OnlineService* apiInstance)
+void NetworkColumnAndFoklerWidget::setApiInstance(QSharedPointer<OnlineService> apiInstance)
 {
     m_uploadOperator = new UploadOperator(apiInstance, this);
 }
@@ -196,10 +196,7 @@ void NetworkColumnAndFoklerWidget::setColumnIdAndFolderId(const QString &columnI
         ui->m_filePathWidget->setDirs({name});
         ui->m_filePathWidget->setDatas({map});
     }else if(columnId != "-1") {
-        auto datas = m_uploadOperator->getMaterialDetails(m_type == ColumnType_UploadMaterial, {folderId});
-        if(datas.isEmpty()) {
-            return;
-        }
+        auto data = m_uploadOperator->getFolderDetails(folderId);
         bool enabled;
         int limit_folder;
         bool has_permission;
@@ -216,8 +213,6 @@ void NetworkColumnAndFoklerWidget::setColumnIdAndFolderId(const QString &columnI
             limit_folder = columns[0]->nle_config.limit_folder;
             has_permission = columns[0]->has_permission;
         }
-
-        auto data = datas[0];
         if(columnId == "0") {
             data.name_path.prepend(QStringLiteral("我的素材"));
         }else {
@@ -227,7 +222,7 @@ void NetworkColumnAndFoklerWidget::setColumnIdAndFolderId(const QString &columnI
             data.id_path.prepend("0");
         }
         data.name_path.append(data.name);
-        data.id_path.append(data.material_id);
+        data.id_path.append(data.folder_id);
         QList<QMap<int, QVariant>> dataList;
         for(int i = 0; i < data.name_path.size(); i++) {
             QMap<int, QVariant> map;
@@ -581,6 +576,28 @@ void NetworkColumnAndFoklerWidget::onDirsChanged()
         m_folderModel->onFolderSync(m_uploadOperator->getPersonalMediaSync(m_type == ColumnType_UploadMaterial, folderId, ui->m_typeComboBox->currentData().value<QList<MaterialLibHelper::MaterialType>>(), ui->m_searchLineEdit->text()));
     }else if(columnId == "-1") {//公共素材
 //        m_folderModel->onFolderSync(m_uploadOperator->getPublicMaterialSync(MaterialLibHelper::ViewNleProject, ui->m_typeComboBox->currentData().value<QList<MaterialLibHelper::MaterialType>>(), ui->m_searchLineEdit->text()));
+        m_folderModel->onFolderSync(m_uploadOperator->getFolderSync(m_type == ColumnType_UploadMaterial, "0", "0", ui->m_typeComboBox->currentData().value<QList<MaterialLibHelper::MaterialType>>(), ui->m_searchLineEdit->text()));
+    }else {//公共栏目
+        if((nleEnabled && limit_folder == 0) || m_type == ColumnType_UploadMaterial || m_type == ColumnType_CheckProject) {
+            m_folderModel->onFolderSync(m_uploadOperator->getFolderSync(m_type == ColumnType_UploadMaterial, columnId, folderId, ui->m_typeComboBox->currentData().value<QList<MaterialLibHelper::MaterialType>>(), ui->m_searchLineEdit->text()));
+        }
+    }
+}
+
+void NetworkColumnAndFoklerWidget::switchDir(const QString& folderId)
+{
+    QString columnId = ui->m_filePathWidget->data(ui->m_filePathWidget->dirs().size() - 1, Qt::UserRole).toString();
+    bool nleEnabled = ui->m_filePathWidget->data(ui->m_filePathWidget->dirs().size() - 1, Qt::UserRole + 2).toBool();
+    int limit_folder = ui->m_filePathWidget->data(ui->m_filePathWidget->dirs().size() - 1, Qt::UserRole + 3).toInt();
+    bool hasPermission = ui->m_filePathWidget->data(ui->m_filePathWidget->dirs().size() - 1, Qt::UserRole + 4).toBool();
+    if(columnId.isEmpty() || folderId.isEmpty()) {
+        return;
+    }
+    m_folderModel->clearData();
+    if(columnId == "0") {//我的素材
+        m_folderModel->onFolderSync(m_uploadOperator->getPersonalMediaSync(m_type == ColumnType_UploadMaterial, folderId, ui->m_typeComboBox->currentData().value<QList<MaterialLibHelper::MaterialType>>(), ui->m_searchLineEdit->text()));
+    }else if(columnId == "-1") {//公共素材
+        //        m_folderModel->onFolderSync(m_uploadOperator->getPublicMaterialSync(MaterialLibHelper::ViewNleProject, ui->m_typeComboBox->currentData().value<QList<MaterialLibHelper::MaterialType>>(), ui->m_searchLineEdit->text()));
         m_folderModel->onFolderSync(m_uploadOperator->getFolderSync(m_type == ColumnType_UploadMaterial, "0", "0", ui->m_typeComboBox->currentData().value<QList<MaterialLibHelper::MaterialType>>(), ui->m_searchLineEdit->text()));
     }else {//公共栏目
         if((nleEnabled && limit_folder == 0) || m_type == ColumnType_UploadMaterial || m_type == ColumnType_CheckProject) {

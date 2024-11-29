@@ -21,7 +21,7 @@ UploadCanceller::~UploadCanceller()
 
 void UploadCanceller::cancel()
 {
-    if (*m_response) {
+    if (*m_response && (*m_response)->reply()) {
         (*m_response)->reply()->abort();
         qDebug() << "call cancel success";
     }
@@ -34,7 +34,7 @@ HttpResponse **UploadCanceller::response()
 }
 
 
-UploadOperator::UploadOperator(OnlineService* apiInstance,QObject* parent)
+UploadOperator::UploadOperator(QSharedPointer<OnlineService> apiInstance,QObject* parent)
     : QObject{parent},m_api(apiInstance)
     , m_coverSize(QSize(141, 79)) //project cover
 {
@@ -1019,6 +1019,52 @@ QList<FolderData> UploadOperator::getMaterialDetails(bool useMediaApi, const QSt
                                                    }).timeout(TIMEOUTSECOND);
     BLOCK(*response, request.exec());
     return datas;
+}
+
+FolderData UploadOperator::getFolderDetails(const QString& folderId)
+{
+    FolderData data;
+    UploadCanceller* canceller = new UploadCanceller;
+    HttpResponse** response = canceller->response();
+    m_cancelList.append(canceller);
+    QString url= "api/media/internal/folders/"+folderId+"/detail";
+
+    auto request = m_api->requestHelper()->getRequest(QNetworkAccessManager::GetOperation, url)
+                                                   .onSuccess([&](QNetworkReply* reply)
+                                                   {
+                                                       if (!reply)
+                                                       {
+                                                           return;
+                                                       }
+                                                       QJsonParseError errRpt{};
+                                                       auto doc = QJsonDocument::fromJson(reply->readAll(), &errRpt);
+                                                       if (errRpt.error != QJsonParseError::NoError)
+                                                       {
+                                                       }
+                                                       else
+                                                       {
+                                                           QJsonObject obj = doc.object();
+                                                           FolderData folder;
+                                                           folder.readFromFolder(obj);
+                                                           folder.coverPath = downloadCover(
+                                                               folder.material_id, folder.cover_mobject_id,obj.value("cover_url").toString());
+                                                           data =folder;
+                                                       }
+                                                   }).onError([&, canceller](QNetworkReply* reply)
+                                                   {
+                                                       {
+                                                           QMutexLocker lock(&m_mutex);
+                                                           m_cancelList.removeOne(canceller);
+                                                           canceller->deleteLater();
+                                                       }
+                                                   }).onResponse([&, canceller](QNetworkReply* reply)
+                                                   {
+                                                       QMutexLocker lock(&m_mutex);
+                                                       m_cancelList.removeOne(canceller);
+                                                       canceller->deleteLater();
+                                                   }).timeout(TIMEOUTSECOND);
+    BLOCK(*response, request.exec());
+    return data;
 }
 
 QString UploadOperator::downloadCover(const QString& materialId, const QString& mobjectId, const QString& url)

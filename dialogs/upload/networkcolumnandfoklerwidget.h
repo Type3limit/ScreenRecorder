@@ -35,7 +35,7 @@ public:
     explicit NetworkColumnAndFoklerWidget(QWidget *parent = nullptr);
     ~NetworkColumnAndFoklerWidget();
 
-    void setApiInstance(OnlineService* apiInstance);
+    void setApiInstance(QSharedPointer<OnlineService> apiInstance);
 
     void setColumnType(ColumnType type);
 
@@ -77,11 +77,12 @@ protected:
 private:
     void initUi();
     void initConnect();
-    void switchColumn(const QString &columnId);
 
-private slots:
+
+public slots:
     void onDirsChanged();
-
+    void switchDir(const QString& folderId);
+    void switchColumn(const QString& columnId);
 private:
     Ui::NetworkColumnAndFoklerWidget *ui;
 

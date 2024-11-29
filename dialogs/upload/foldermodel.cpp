@@ -71,6 +71,22 @@ int FolderData::read(const QJsonObject& obj)
     return 0;
 }
 
+
+int FolderData::readFromFolder(const QJsonObject& obj)
+{
+
+    folder_id = QString::number(obj.value("folder_id").isNull() ? 0 : obj.value("folder_id").toInt());
+    material_id = QString::number(obj.value("id").toInt());
+    column_id = QString::number(obj.value("column_id").toInt());;
+    name = obj.value("name").toString().remove("<em>").remove("</em>");
+    qualityName = QStringLiteral("文件夹");
+
+    id_path = obj.value("id_path").toString().split("/", Qt::SkipEmptyParts);
+    name_path = obj.value("name_path").toString().split("/", Qt::SkipEmptyParts);
+
+    return 0;
+}
+
 UploadFolderModel::UploadFolderModel(QObject* parent)
     : QAbstractTableModel{parent}
     , m_folderImage(":/icons/image/folder.svg")

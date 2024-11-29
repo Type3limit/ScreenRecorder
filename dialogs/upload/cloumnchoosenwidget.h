@@ -21,10 +21,8 @@ class CloumnChoosenDialog : public DragMoveDialog
     Q_OBJECT
 
     public:
-    explicit CloumnChoosenDialog(const QString& baseUrl,const QString& token,const QStringList& uploadFiles,QWidget *parent = nullptr);
+    explicit CloumnChoosenDialog(QSharedPointer<OnlineService> apiInstance,const QStringList& uploadFiles,QWidget *parent = nullptr);
     ~CloumnChoosenDialog() override;
-
-
 
     void init();
 
@@ -34,18 +32,25 @@ public
     void onUploadStart();
     ///当获取到上传地址后，开始传输文件
     void onGetUploadUrl(const QString& url);
+    /// 创建文件夹
+    void onCreateFolder();
+
+    void onFolderCreated(int code, const QString& folderId);
+public:
+    signals:
+    void hasUploadOptions();
 protected:
     void closeEvent(QCloseEvent *event) override;
 
 private:
     Ui::CloumnChoosenWidget *ui;
 
-    QString m_baseUrl{};
-    QString m_token{};
     QStringList m_uploadedFiles;
-    OnlineService* m_api{nullptr};
+    QSharedPointer<OnlineService> m_api{nullptr};
     HttpResponse* m_requestHandler{nullptr};
     bool m_requestClose{false};
+    bool m_requestCreateFolder{false};
+    QString m_targetFolderId;
 };
 
 

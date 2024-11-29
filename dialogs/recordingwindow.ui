@@ -261,9 +261,49 @@ QListView::item:selected:focus {
         </spacer>
        </item>
        <item>
-        <widget class="QPushButton" name="minimalButton">
+        <widget class="QPushButton" name="signinButton">
          <property name="cursor">
           <cursorShape>PointingHandCursor</cursorShape>
+         </property>
+         <property name="toolTip">
+          <string>登录</string>
+         </property>
+         <property name="text">
+          <string/>
+         </property>
+         <property name="icon">
+          <iconset resource="../resource.qrc">
+           <normaloff>:/icons/images/login.svg</normaloff>:/icons/images/login.svg</iconset>
+         </property>
+         <property name="flat">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="minimizeButton">
+         <property name="toolTip">
+          <string>最小化</string>
+         </property>
+         <property name="text">
+          <string/>
+         </property>
+         <property name="icon">
+          <iconset resource="../resource.qrc">
+           <normaloff>:/icons/images/minimal.svg</normaloff>:/icons/images/minimal.svg</iconset>
+         </property>
+         <property name="flat">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="miniWindowButton">
+         <property name="cursor">
+          <cursorShape>PointingHandCursor</cursorShape>
+         </property>
+         <property name="toolTip">
+          <string>微型窗口</string>
          </property>
          <property name="text">
           <string/>
@@ -281,6 +321,9 @@ QListView::item:selected:focus {
         <widget class="QPushButton" name="closeButton">
          <property name="cursor">
           <cursorShape>PointingHandCursor</cursorShape>
+         </property>
+         <property name="toolTip">
+          <string>关闭</string>
          </property>
          <property name="text">
           <string/>
@@ -766,10 +809,10 @@ background-color:#212126;
              <item>
               <layout class="QHBoxLayout" name="horizontalLayout_22">
                <property name="topMargin">
-                <number>18</number>
+                <number>0</number>
                </property>
                <property name="bottomMargin">
-                <number>10</number>
+                <number>0</number>
                </property>
                <item>
                 <widget class="QFrame" name="placeholder">
@@ -782,13 +825,13 @@ background-color:#212126;
                  <property name="minimumSize">
                   <size>
                    <width>0</width>
-                   <height>28</height>
+                   <height>0</height>
                   </size>
                  </property>
                  <property name="maximumSize">
                   <size>
                    <width>16777215</width>
-                   <height>28</height>
+                   <height>16777215</height>
                   </size>
                  </property>
                  <property name="frameShape">
@@ -797,7 +840,7 @@ background-color:#212126;
                  <property name="frameShadow">
                   <enum>QFrame::Raised</enum>
                  </property>
-                 <layout class="QHBoxLayout" name="horizontalLayout_24">
+                 <layout class="QVBoxLayout" name="verticalLayout_10">
                   <property name="spacing">
                    <number>0</number>
                   </property>
@@ -814,12 +857,42 @@ background-color:#212126;
                    <number>0</number>
                   </property>
                   <item>
+                   <widget class="QLabel" name="unloginNoticeLabel">
+                    <property name="minimumSize">
+                     <size>
+                      <width>0</width>
+                      <height>20</height>
+                     </size>
+                    </property>
+                    <property name="maximumSize">
+                     <size>
+                      <width>16777215</width>
+                      <height>20</height>
+                     </size>
+                    </property>
+                    <property name="styleSheet">
+                     <string notr="true">QLabel
+{
+color:#d81e06;
+font-size:10px;
+font-family:Microsoft YaHei UI;
+}</string>
+                    </property>
+                    <property name="text">
+                     <string>当前未登陆</string>
+                    </property>
+                    <property name="alignment">
+                     <set>Qt::AlignCenter</set>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
                    <widget class="QLabel" name="statusLabel">
                     <property name="styleSheet">
                      <string notr="true">QLabel
 {
 color:#99A1B0;
-font-size:12px;
+font-size:10px;
 font-family:Microsoft YaHei UI;
 }</string>
                     </property>

@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>CloumnChoosenWidget</class>
- <widget class="QWidget" name="CloumnChoosenWidget">
+ <class>UploadNoticeWindow</class>
+ <widget class="DragMoveDialog" name="UploadNoticeWindow">
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>735</width>
-    <height>590</height>
+    <width>400</width>
+    <height>300</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>CloumnChoosenWidget</string>
+   <string>UploadNoticeWindow</string>
   </property>
   <property name="styleSheet">
    <string notr="true">QFrame#contentFrame
@@ -212,34 +212,34 @@ QListView::item:selected:focus {
    </property>
    <item>
     <widget class="QFrame" name="titleFrame">
+     <property name="maximumSize">
+      <size>
+       <width>16777215</width>
+       <height>44</height>
+      </size>
+     </property>
      <property name="frameShape">
       <enum>QFrame::StyledPanel</enum>
      </property>
      <property name="frameShadow">
       <enum>QFrame::Raised</enum>
      </property>
-     <layout class="QHBoxLayout" name="horizontalLayout_2">
-      <property name="leftMargin">
-       <number>20</number>
-      </property>
-      <property name="rightMargin">
-       <number>20</number>
-      </property>
+     <layout class="QHBoxLayout" name="horizontalLayout">
       <item>
        <widget class="QLabel" name="label">
         <property name="text">
-         <string>选择上传栏目</string>
+         <string>提示</string>
         </property>
        </widget>
       </item>
       <item>
-       <spacer name="horizontalSpacer_3">
+       <spacer name="horizontalSpacer">
         <property name="orientation">
          <enum>Qt::Horizontal</enum>
         </property>
         <property name="sizeHint" stdset="0">
          <size>
-          <width>40</width>
+          <width>317</width>
           <height>20</height>
          </size>
         </property>
@@ -281,36 +281,12 @@ QListView::item:selected:focus {
      </property>
      <layout class="QVBoxLayout" name="verticalLayout_2">
       <item>
-       <widget class="QStackedWidget" name="m_stackedContent">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="styleSheet">
-         <string notr="true">QStackedWidget &gt; QWidget{
-background: #00ff0000;
-}</string>
-        </property>
-        <property name="currentIndex">
+       <layout class="QHBoxLayout" name="horizontalLayout_2">
+        <property name="spacing">
          <number>0</number>
         </property>
-        <widget class="NetworkColumnAndFoklerWidget" name="m_uploader"/>
-        <widget class="DisableView" name="m_disableView"/>
-       </widget>
-      </item>
-      <item>
-       <layout class="QHBoxLayout" name="horizontalLayout">
         <item>
-         <widget class="QLabel" name="m_bottomNotice">
-          <property name="text">
-           <string/>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <spacer name="horizontalSpacer">
+         <spacer name="horizontalSpacer_4">
           <property name="orientation">
            <enum>Qt::Horizontal</enum>
           </property>
@@ -324,107 +300,163 @@ background: #00ff0000;
         </item>
         <item>
          <widget class="QLabel" name="label_2">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
           <property name="text">
-           <string>文件夹名称：</string>
+           <string>录屏文件已存入本地，是否上传到素材库？</string>
           </property>
          </widget>
         </item>
         <item>
-         <widget class="QLineEdit" name="m_folderNameEditor"/>
-        </item>
-        <item>
-         <widget class="QPushButton" name="m_createFolderButton">
-          <property name="minimumSize">
-           <size>
-            <width>82</width>
-            <height>0</height>
-           </size>
-          </property>
-          <property name="styleSheet">
-           <string notr="true">QPushButton
-{
-  selection-background-color: #40404A;
-  selection-color: #3B3B41;
-  color: white;
-  height:24px;
-  background-color: rgb(32, 160, 255);
-  border-style: solid;
-  border: 1px solid #0F0F0F;
-  border-radius: 4;
-  padding: 1px 0px 1px 2px;
-  font-size: 12px;
-  font-family:Microsoft YaHei UI;
-  padding-left:0px;
-}
-QPushButton:hover
-{
- background-color: rgb(32, 180, 255);
-}</string>
-          </property>
-          <property name="text">
-           <string>创建文件夹</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <spacer name="horizontalSpacer_4">
+         <spacer name="horizontalSpacer_5">
           <property name="orientation">
            <enum>Qt::Horizontal</enum>
           </property>
-          <property name="sizeType">
-           <enum>QSizePolicy::Fixed</enum>
-          </property>
           <property name="sizeHint" stdset="0">
            <size>
-            <width>15</width>
+            <width>40</width>
             <height>20</height>
            </size>
           </property>
          </spacer>
-        </item>
-        <item>
-         <widget class="QPushButton" name="cancelButton">
-          <property name="minimumSize">
-           <size>
-            <width>80</width>
-            <height>26</height>
-           </size>
-          </property>
-          <property name="text">
-           <string>取消</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <spacer name="horizontalSpacer_2">
-          <property name="orientation">
-           <enum>Qt::Horizontal</enum>
-          </property>
-          <property name="sizeType">
-           <enum>QSizePolicy::Fixed</enum>
-          </property>
-          <property name="sizeHint" stdset="0">
-           <size>
-            <width>20</width>
-            <height>20</height>
-           </size>
-          </property>
-         </spacer>
-        </item>
-        <item>
-         <widget class="QPushButton" name="sureButton">
-          <property name="minimumSize">
-           <size>
-            <width>80</width>
-            <height>26</height>
-           </size>
-          </property>
-          <property name="text">
-           <string>确认</string>
-          </property>
-         </widget>
         </item>
        </layout>
+      </item>
+      <item>
+       <widget class="QWidget" name="horizontalWidget_2" native="true">
+        <property name="minimumSize">
+         <size>
+          <width>0</width>
+          <height>30</height>
+         </size>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>16777215</width>
+          <height>30</height>
+         </size>
+        </property>
+        <layout class="QHBoxLayout" name="horizontalLayout_3">
+         <property name="leftMargin">
+          <number>0</number>
+         </property>
+         <property name="topMargin">
+          <number>0</number>
+         </property>
+         <property name="rightMargin">
+          <number>0</number>
+         </property>
+         <property name="bottomMargin">
+          <number>0</number>
+         </property>
+         <item>
+          <spacer name="horizontalSpacer_2">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>40</width>
+             <height>20</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+         <item>
+          <widget class="QPushButton" name="previewButton">
+           <property name="minimumSize">
+            <size>
+             <width>82</width>
+             <height>0</height>
+            </size>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>82</width>
+             <height>16777215</height>
+            </size>
+           </property>
+           <property name="text">
+            <string>预览文件</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <spacer name="horizontalSpacer_6">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="sizeType">
+            <enum>QSizePolicy::Fixed</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>15</width>
+             <height>20</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+         <item>
+          <widget class="QPushButton" name="cancelButton">
+           <property name="minimumSize">
+            <size>
+             <width>82</width>
+             <height>24</height>
+            </size>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>82</width>
+             <height>24</height>
+            </size>
+           </property>
+           <property name="text">
+            <string>放弃</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <spacer name="horizontalSpacer_3">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="sizeType">
+            <enum>QSizePolicy::Fixed</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>15</width>
+             <height>20</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+         <item>
+          <widget class="QPushButton" name="sureButton">
+           <property name="minimumSize">
+            <size>
+             <width>82</width>
+             <height>24</height>
+            </size>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>82</width>
+             <height>24</height>
+            </size>
+           </property>
+           <property name="text">
+            <string>保存到素材库</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
       </item>
      </layout>
     </widget>
@@ -433,15 +465,9 @@ QPushButton:hover
  </widget>
  <customwidgets>
   <customwidget>
-   <class>NetworkColumnAndFoklerWidget</class>
+   <class>DragMoveDialog</class>
    <extends>QWidget</extends>
-   <header>networkcolumnandfoklerwidget.h</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
-   <class>DisableView</class>
-   <extends>QWidget</extends>
-   <header>disableview.h</header>
+   <header>dragmovedialog.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

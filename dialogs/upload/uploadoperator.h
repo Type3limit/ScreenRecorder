@@ -37,7 +37,7 @@ class UploadOperator : public QObject
 {
     Q_OBJECT
 public:
-    explicit UploadOperator(OnlineService* apiInstance,QObject *parent = nullptr);
+    explicit UploadOperator(QSharedPointer<OnlineService> apiInstance,QObject *parent = nullptr);
 
     //1.获取个人上传地址
     StatusCode presonalUploadPath();
@@ -84,6 +84,7 @@ public:
      * @return
      */
     QList<FolderData> getMaterialDetails(bool useMediaApi, const QStringList& materialIds);
+    FolderData getFolderDetails(const QString& folderId);
 
 public:
     signals:
@@ -117,7 +118,7 @@ private:
     static QMap<QString, QString> s_map;
     QSize m_coverSize;
     QMap<QString, QTimer *> m_lockTimer;
-    OnlineService* m_api;
+    QSharedPointer<OnlineService> m_api;
 };
 
 
