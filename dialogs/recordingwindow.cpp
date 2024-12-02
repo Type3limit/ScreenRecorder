@@ -203,7 +203,7 @@ void RecordingWindow::init(int defaultPort)
     connect(m_miniWindow, &MinimizedRecordingWindow::closed, this, [&]()
     {
         m_miniWindow->hide();
-        this->show();
+        this->showNormal();
     });
     connect(m_miniWindow, &MinimizedRecordingWindow::onRecordAct, this, &RecordingWindow::startRecord);
     //backgroundWindow
@@ -211,6 +211,7 @@ void RecordingWindow::init(int defaultPort)
     connect(m_backgroundWindow, &BackgroundWindow::areaChanged, this, [&, resetVideo](
             int x1, int y1, int x2, int y2)
             {
+
                 auto curScreen = findScreen();
                 qreal devicePixelRatio = curScreen->devicePixelRatio();
                 m_startPos = {x1, y1};
@@ -224,6 +225,14 @@ void RecordingWindow::init(int defaultPort)
                 ui->areaHeightEdit->blockSignals(false);
                 resetVideo();
             });
+
+    connect(m_backgroundWindow,&BackgroundWindow::requestHideWindow,this,[&]()
+    {
+        if (!isFullScreenMode())
+        {
+            this->showMinimized();
+        }
+    });
 
     //button connection
     connect(ui->closeButton, &QPushButton::clicked, this, [&]()
@@ -249,7 +258,7 @@ void RecordingWindow::init(int defaultPort)
         m_miniWindow->show();
     });
 
-    connect(ui->minimizeButton,&QPushButton::clicked,this,&RecordingWindow::showMinimized);
+    connect(ui->minimizeButton, &QPushButton::clicked, this, &RecordingWindow::showMinimized);
 
     //layout
     ui->settingExpander->setChecked(true);
@@ -352,7 +361,7 @@ void RecordingWindow::init(int defaultPort)
     SET_POP_VIEW(areaComboBox)
     ui->areaComboBox->setModel(new QStringListModel({ScreenAreaStr[DeskTop], ScreenAreaStr[Customized]}, this));
     //capture type changed
-    connect(ui->areaComboBox, QOverload<int>::of(&QComboBox::currentIndexChanged), this, [&](int curIndex)
+    connect(ui->areaComboBox, QOverload<int>::of(&QComboBox::currentIndexChanged), this, [&,resetVideo](int curIndex)
     {
         auto style = QString("QPushButton{"
             "qproperty-icon:url(:/icons/images/{iconName}.svg);"
@@ -382,6 +391,7 @@ void RecordingWindow::init(int defaultPort)
             ui->areaHeightEdit->setValidator(HValidator);
             ui->areaWidthEdit->blockSignals(false);
             ui->areaHeightEdit->blockSignals(false);
+            resetVideo();
         }
         QMetaObject::invokeMethod(this, "rebuildBackgroundWindow");
         QMetaObject::invokeMethod(this, "rebuildBackgroundWindow");
@@ -595,7 +605,7 @@ void RecordingWindow::init(int defaultPort)
     });
 
     //login button
-    connect(ui->signinButton, &QPushButton::clicked, this,&RecordingWindow::invokeLoginWindow);
+    connect(ui->signinButton, &QPushButton::clicked, this, &RecordingWindow::invokeLoginWindow);
     //debug preview window
     if (m_config.showPreviewWindow)
     {
@@ -641,32 +651,34 @@ void RecordingWindow::init(int defaultPort)
         qDebug() << u8"程序唤起具备配置基础访问信息:[" << m_url << "][" << m_token << "]";
 
         bool hasLoginFailed = true;
-        qDebug()<<u8"正在验证登录信息";
+        qDebug() << u8"正在验证登录信息";
         //request user info to check if current url and token is valid
         BLOCK_DEBUG(m_requestHandler, m_api->userHelper()->getUserInfoPreExec([&](const QJsonDocument& doc)
-        {
-            m_curUserAccount = doc["username"].toString();
-            hasLoginFailed = false;
-        },[&](int code,const QString& error){qDebug()<<code<<":"<<error;})
-                        .timeout(5)
-                        .onTimeout([&](QNetworkReply* reply)
                         {
-                            qDebug()<<u8"登录信息验证请求超时";
+                        m_curUserAccount = doc["username"].toString();
+                        hasLoginFailed = false;
+                        },[&](int code,const QString& error){qDebug()<<code<<":"<<error;})
+                    .timeout(5)
+                    .onTimeout([&](QNetworkReply* reply)
+                        {
+                        qDebug()<<u8"登录信息验证请求超时";
                         })
-                        .exec());
+                    .exec());
+
+        m_api->loginHelper()->setLoginStatus(!hasLoginFailed);
         if (hasLoginFailed)
         {
-            qDebug()<<u8"登录配置无效,取消后续步骤";
+            qDebug() << u8"登录配置无效,取消后续步骤";
             UserMessageBox::warning(nullptr, u8"失败", u8"当前登录配置无效");
             ui->uploadButton->setVisible(false);
             ui->unloginNoticeLabel->setVisible(true);
+
         }
         else
         {
             ui->statusLabel->setText(u8"已设置在线登录信息,录制完成后即可上传");
-            checkForUpdate();
+            QTimer::singleShot(2000, this, &RecordingWindow::checkForUpdate);
         }
-
     }
     else
     {
@@ -706,7 +718,7 @@ void RecordingWindow::mouseReleaseEvent(QMouseEvent* e)
 
 bool RecordingWindow::isFullScreenMode() const
 {
-    return ui->areaComboBox->currentText() == u8"全屏";
+    return ui->areaComboBox->currentIndex() == 0;
 }
 
 void RecordingWindow::setupPort(int port)
@@ -754,6 +766,8 @@ void RecordingWindow::startRecord()
         QRect cropRect = isFullScreenMode()
                              ? (QRect{0, 0, sc->geometry().width(), sc->geometry().height()})
                              : (QRect{m_startPos, m_endPos});
+
+        qDebug() << "in screen:[" << sc->name() << " ]with crop rect:" << cropRect;
 
         auto fps = ui->frameRateComboBox->currentText().replace(QString("FPS"), QString("")).toInt();
         auto bitRate = ui->bitrateComboBox->currentText().replace(QString("MB"), QString("")).toInt();
@@ -872,8 +886,6 @@ void RecordingWindow::stopRecord()
     {
         ui->statusLabel->setText(u8"已设置在线登录信息,录制完成后即可上传");
     }
-
-
 }
 
 void RecordingWindow::saveConfig()
@@ -892,6 +904,10 @@ void RecordingWindow::saveConfig()
 
 void RecordingWindow::rebuildBackgroundWindow()
 {
+    if (!isFullScreenMode())
+    {
+        this->showMinimized();
+    }
     auto curScreen = findScreen();
     qDebug() << "get Screen" << curScreen->name();
     m_backgroundWindow->resetStatus(isFullScreenMode(), curScreen);
@@ -955,13 +971,9 @@ void RecordingWindow::invokeUpdateWindow(QJsonDocument doc)
 
 void RecordingWindow::invokeUploadNoticeWindow(const QString& file)
 {
-    if (m_url.isEmpty() || m_token.isEmpty())
-    {
-        qWarning() << "url or token is empty! ignore upload option";
-        return;
-    }
     m_backgroundWindow->hide();
     UploadNoticeWindow* dialog = new UploadNoticeWindow(file, m_api, nullptr);
+    connect(dialog,&UploadNoticeWindow::requestLogin,this,&RecordingWindow::invokeLoginWindow);
     dialog->exec();
     dialog->deleteLater();
     m_backgroundWindow->showFullScreen();
@@ -976,6 +988,7 @@ void RecordingWindow::invokePreviewWindow(const QString& file)
     }
     m_backgroundWindow->hide();
     VideoPreviewDialog* dialog = new VideoPreviewDialog(file, m_api, nullptr);
+    connect(dialog,&VideoPreviewDialog::requestLogin,this,&RecordingWindow::invokeLoginWindow);
     dialog->exec();
     dialog->deleteLater();
     m_backgroundWindow->showFullScreen();
@@ -983,11 +996,11 @@ void RecordingWindow::invokePreviewWindow(const QString& file)
 
 void RecordingWindow::invokeLoginWindow()
 {
-    LoginDialog* dialog = new LoginDialog(m_url,m_curUserAccount,m_api, nullptr);
-    connect(dialog,&LoginDialog::loginFinished,this,[&](bool success)
+    LoginDialog* dialog = new LoginDialog(m_url, m_curUserAccount, m_api, nullptr);
+    connect(dialog, &LoginDialog::loginFinished, this, [&](bool success)
     {
         if (!success)
-           return;
+            return;
 
         m_url = m_api->requestHelper()->baseAddress();
         m_token = m_api->requestHelper()->token();

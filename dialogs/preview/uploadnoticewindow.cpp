@@ -31,14 +31,18 @@ void UploadNoticeWindow::init()
     connect(ui->cancelButton,&QPushButton::clicked,this,&UploadNoticeWindow::close);
     connect(ui->sureButton,&QPushButton::clicked,this,&UploadNoticeWindow::invokeUploadWindow);
     connect(ui->previewButton,&QPushButton::clicked,this,&UploadNoticeWindow::invokePreviewWindow);
+
+
 }
 
 void UploadNoticeWindow::invokeUploadWindow()
 {
-    if(m_api==nullptr)
+    if(!m_api->loginHelper()->isLogin())
     {
-        qWarning()<<"api instance is null,ignore upload option";
-        return;
+        qWarning()<<"not login , invoke login window";
+        emit requestLogin();
+        if (!m_api->loginHelper()->isLogin())
+            return;
     }
     if (m_recordFile.isEmpty()||!QFile::exists(m_recordFile))
     {
@@ -60,6 +64,7 @@ void UploadNoticeWindow::invokePreviewWindow()
     }
     VideoPreviewDialog * dialog = new VideoPreviewDialog(m_recordFile,m_api,nullptr);
     connect(dialog,&VideoPreviewDialog::hasUploadOption,this,&UploadNoticeWindow::close);
+    connect(dialog,&VideoPreviewDialog::requestLogin,this,&UploadNoticeWindow::requestLogin);
     dialog->exec();
     dialog->deleteLater();
 }

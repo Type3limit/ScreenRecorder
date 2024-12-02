@@ -28,7 +28,9 @@ class BackgroundWindow : public QWidget
 public:
 signals:
     void areaChanged(qreal x1,qreal y1,qreal x2,qreal y2);
-
+    void requestHideWindow();
+    signals:
+    void onCutomizedWindowFinished();
 public:
     BackgroundWindow(bool isFullScreenModel, QWidget* parent ,
                               const QScreen*  curScreen );

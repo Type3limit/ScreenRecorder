@@ -222,10 +222,12 @@ void VideoPreviewDialog::onPositionChanged(qint64 position)
 
 void VideoPreviewDialog::invokeUploadWindow()
 {
-    if(m_api==nullptr)
+    if(!m_api->loginHelper()->isLogin())
     {
-        qWarning()<<"api instance is null,ignore upload option";
-        return;
+        qWarning()<<"not login , invoke login window";
+        emit requestLogin();//invoke login window
+        if (!m_api->loginHelper()->isLogin())//if aslo not login,ignore current upload action
+            return;
     }
     if (m_previewFile.isEmpty()||!QFile::exists(m_previewFile))
     {

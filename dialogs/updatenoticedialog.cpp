@@ -12,31 +12,20 @@
 #include <QFile>
 #include <QDebug>
 void UACrunProcess(QString Path) {
-    // QFile file(Path);
-    // if (!file.exists()) {
-    //     qWarning() << "create dump bat path is not exists";
-    //     return;
-    // }
+    //
     // std::wstring wstr = Path.toStdWString();
     // const wchar_t* filePtr = wstr.c_str();
-    //
     // SHELLEXECUTEINFOW sei = { sizeof(SHELLEXECUTEINFOW) };
-    // sei.lpVerb = (L"open");
+    // sei.lpVerb = L"open";
     // sei.lpFile = filePtr;
-    // sei.nShow = SW_SHOWNORMAL;//without this,the windows will be hiden
-    // //    sei.nShow = SW_HIDE;
+    // sei.nShow = SW_SHOWNORMAL;
+    // sei.fMask = SEE_MASK_NOASYNC | SEE_MASK_FLAG_NO_UI;  // 使进程独立
+    // sei.hwnd = nullptr;
     // if (!ShellExecuteExW(&sei)) {
     //     DWORD dwStatus = GetLastError();
-    //     if (dwStatus == ERROR_CANCELLED) {
-    //         qWarning() << "execute canceld";
-    //     } else if (dwStatus == ERROR_FILE_NOT_FOUND) {
-    //         qWarning() << "execute not found execute file";
-    //     }
-    //     else
-    //     {
-    //         qWarning() << "execute failed with error code:" << dwStatus;
-    //     }
+    //     qWarning() << "ShellExecuteEx failed with error code:" << dwStatus;
     // }
+
     QFile file(Path);
     if (!file.exists()) {
         qWarning() << "create dump bat path is not exists";
@@ -51,9 +40,11 @@ void UACrunProcess(QString Path) {
     PROCESS_INFORMATION pi;
 
     // Set the dwCreationFlags to CREATE_NEW_CONSOLE or DETACHED_PROCESS
-    DWORD dwCreationFlags = DETACHED_PROCESS;
+    DWORD dwCreationFlags = DETACHED_PROCESS ;
 
-    if (!CreateProcessW(filePtr, nullptr, nullptr, nullptr, FALSE, dwCreationFlags, nullptr, nullptr, &si, &pi)) {
+    if (!CreateProcessW(filePtr, nullptr, nullptr,
+        nullptr, FALSE, dwCreationFlags,
+        nullptr, nullptr, &si, &pi)) {
         DWORD dwStatus = GetLastError();
         qWarning() << "CreateProcess failed with error code:" << dwStatus;
     } else {
@@ -250,24 +241,17 @@ void UpdateNoticeDialog::onStartDownload()
 
 void UpdateNoticeDialog::onDownloadFinished(const QString& downloadedPath)
 {
-    QThread::msleep(1500);
+    qDebug()<<"start invoke "<<downloadedPath;
 #ifdef _WIN32
     UACrunProcess(downloadedPath);
+#else
+    QProcessEnvironment env = QProcessEnvironment::systemEnvironment();
+    process.setProcessEnvironment(env);
+    if (!QProcess::startDetached(downloadedPath)) {
+         qDebug() << "Failed to start program : " << QProcess::error();
+     }
+    QProcess::startDetached(downloadedPath);
 #endif
-    // qDebug()<<"start invoke "<<downloadedPath;
-    // QProcess process;
-    // connect(&process, &QProcess::errorOccurred, [](QProcess::ProcessError error) {
-    // qDebug() << "Error occurred: " << error;
-    // });
-    // connect(&process, &QProcess::started, [](){
-    //     qDebug() << "Process started successfully.";
-    // });
-    // QProcessEnvironment env = QProcessEnvironment::systemEnvironment();
-    // process.setProcessEnvironment(env);
-    // if (!QProcess::startDetached(downloadedPath)) {
-    //     qDebug() << "Failed to start program : " << QProcess::error();
-    // }
-    //QProcess::startDetached(downloadedPath);
     close();
     emit requestCloseProgram();
 }

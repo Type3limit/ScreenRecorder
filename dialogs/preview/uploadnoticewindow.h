@@ -27,6 +27,10 @@ public:
 
     void invokePreviewWindow();
 
+public:
+    signals:
+    void requestLogin();
+
 private:
     Ui::UploadNoticeWindow *ui;
     QString m_recordFile;

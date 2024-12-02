@@ -128,6 +128,7 @@ void BackgroundWindow::mousePressEvent(QMouseEvent* event)
         }
         else
         {
+            emit requestHideWindow();
             if (!m_IsFirstAreaCompelete)
             {
                 m_dragModel = DragModel::areaDivide;
@@ -181,8 +182,8 @@ void BackgroundWindow::mouseReleaseEvent(QMouseEvent* event)
 
 void BackgroundWindow::mouseMoveEvent(QMouseEvent* event)
 {
-    auto curCursorPos = event->pos();
 
+    auto curCursorPos = event->pos();
     if(m_IsDragMoveModel&&!m_isFullScreen)
     {
 
@@ -236,6 +237,7 @@ void BackgroundWindow::mouseMoveEvent(QMouseEvent* event)
                 break;
             }
         }
+        emit requestHideWindow();
     }
     if(centerAnchorRect().contains(curCursorPos))
     {

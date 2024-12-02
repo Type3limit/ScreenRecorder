@@ -48,6 +48,8 @@ public:
     void saveConfig();
 
     void checkForUpdate();
+public:
+
 
 public slots:
     void rebuildBackgroundWindow();

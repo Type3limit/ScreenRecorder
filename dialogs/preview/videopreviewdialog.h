@@ -37,7 +37,7 @@ public:
     void seek(qint64 position);
 public: signals:
     void hasUploadOption();
-
+    void requestLogin();
 private:
     Ui::VideoPreviewDialog *ui;
     QAVPlayer* m_player{nullptr};

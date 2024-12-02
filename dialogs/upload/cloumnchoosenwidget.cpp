@@ -67,8 +67,13 @@ void CloumnChoosenDialog::init()
         int curProcess,int totalProcess)
     {
         int percent = static_cast<int>((static_cast<double>(curProcess) / totalProcess) * 100.0);;
+        if (totalProcess==0)
+        {
+            percent = 100;
+        }
+
         qDebug()<<u8"文件上传"<<curIndex<<"/"<<totalCount<<":"<<percent;
-        ui->m_disableView->setNoticeMessage(QString(u8"正在上传%1/%2,%3")
+        ui->m_disableView->setNoticeMessage(QString(u8"正在上传 %1/%2,%3 %")
             .arg(curIndex)
             .arg(totalCount)
             .arg(percent));

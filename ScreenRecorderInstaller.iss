@@ -21,7 +21,7 @@ LicenseFile=C:\Users\58226\Documents\License_Agreement.rtf
 ; 移除以下行，以在管理安装模式下运行（为所有用户安装）。
 PrivilegesRequired=lowest
 OutputDir=C:\Users\58226\Desktop
-OutputBaseFilename=录屏程序Windows安装包
+OutputBaseFilename=ScreenRecorderInstallerForWindows
 SetupIconFile=G:\Code\screenRecord-git\ScreenRecorder\recording.ico
 Compression=lzma
 SolidCompression=yes

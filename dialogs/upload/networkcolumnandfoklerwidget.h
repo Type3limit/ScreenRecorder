@@ -95,6 +95,8 @@ private:
     UploadFolderModel *m_folderModel;
 
     bool m_inited = false;
+
+    QString m_currentHighlightedFolderId = "";
 };
 
 #endif // NETWORKCOLUMNANDFOKLERWIDGET_H
