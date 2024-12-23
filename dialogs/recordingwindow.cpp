@@ -653,6 +653,8 @@ void RecordingWindow::init(int defaultPort)
         bool hasLoginFailed = true;
         qDebug() << u8"正在验证登录信息";
         //request user info to check if current url and token is valid
+
+
         BLOCK_DEBUG(m_requestHandler, m_api->userHelper()->getUserInfoPreExec([&](const QJsonDocument& doc)
                         {
                         m_curUserAccount = doc["username"].toString();
