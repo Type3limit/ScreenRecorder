@@ -48,7 +48,9 @@ include_directories(
         ${CMAKE_CURRENT_LIST_DIR}/helper
         ${CMAKE_CURRENT_LIST_DIR}/../thirdpart/src/jsrt-api
         ${CMAKE_CURRENT_LIST_DIR}/../thirdpart/src/jsrt-api/base
-        ${CMAKE_CURRENT_LIST_DIR}/../thirdpart/src/jsrt-api/helper)
+        ${CMAKE_CURRENT_LIST_DIR}/../thirdpart/src/jsrt-api/helper
+        ${CMAKE_CURRENT_LIST_DIR}/../thirdpart/src/dwidgets/include
+)
 
 set(RESOURCES resource.qrc
         dialogs/recordingwindow.cpp
@@ -196,6 +198,8 @@ set(CMAKE_LIBRARY_PATH ../thirdPart/lib)
 
 add_subdirectory(../thirdPart/src/jsrt-api jsrt-api)
 
+add_subdirectory(../thirdPart/src/dwidgets DWidgets)
+
 include_directories(../thirdPart/src/QtAVPlayer/src)
 
 set(QT_AVPLAYER_DIR ../thirdPart/src/QtAVPlayer/src/QtAVPlayer)
@@ -203,13 +207,13 @@ set(QT_AVPLAYER_DIR ../thirdPart/src/QtAVPlayer/src/QtAVPlayer)
 include(../thirdPart/src/QtAVPlayer/src/QtAVPlayer/QtAVPlayer.cmake)
 
 if(WIN32)
-    add_executable(${CMAKE_PROJECT_NAME} WIN32 ${RESOURCES} main.cpp ${QtAVPlayer_SOURCES})
+    add_executable(${CMAKE_PROJECT_NAME} WIN32 ${RESOURCES} main.cpp ${QtAVPlayer_SOURCES} ${CMAKE_CURRENT_LIST_DIR}/../thirdpart/src/dwidgets/src/components/dwidgets.qrc)
 
     target_sources(${CMAKE_PROJECT_NAME} PRIVATE appicon.rc)
 
     target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE DbgHelp)
 else()
-    add_executable(${CMAKE_PROJECT_NAME}  ${RESOURCES} main.cpp appicon.rc ${QtAVPlayer_SOURCES})
+    add_executable(${CMAKE_PROJECT_NAME}  ${RESOURCES} main.cpp appicon.rc ${QtAVPlayer_SOURCES} ${CMAKE_CURRENT_LIST_DIR}/../thirdpart/src/dwidgets/src/components/dwidgets.qrc)
 endif()
 
 #add_dependencies(${CMAKE_PROJECT_NAME} jsrt_api)
@@ -218,6 +222,7 @@ endif()
 
 target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE ${LinkLib}
         jsrt_api
+        dwidgets
         ${QtAVPlayer_LIBS})
 
 if(UNIX)
