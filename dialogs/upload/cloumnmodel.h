@@ -25,7 +25,7 @@ public:
     int columnCount(const QModelIndex &parent) const override;
     QVariant data(const QModelIndex &index, int role) const override;
     QModelIndex index(const QString &columnId);
-
+    QModelIndex firstIndex();
     public slots:
         void onPresonalColumns();//个人素材栏目
     void onPresonalUploadColumns();//个人上传素材栏目(除去”我的分享“和“我的收藏”)

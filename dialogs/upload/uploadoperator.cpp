@@ -1371,7 +1371,8 @@ QString UploadOperator::createFolderSync(QString columnId, QString folderId, QSt
     return res;
 }
 
-StatusCode UploadOperator::uploadMediaFile(QStringList filePathList, QString url, QString columnId, QString folderId)
+StatusCode UploadOperator::uploadMediaFile(QStringList filePathList, QString url, QString columnId, QString folderId,
+    QHash<QString,QString> replaceName)
 {
     int filePathSize = filePathList.size();
     m_stop = false;
@@ -1386,7 +1387,8 @@ StatusCode UploadOperator::uploadMediaFile(QStringList filePathList, QString url
                                                               {
                                                                   emit updateMediaProcess(
                                                                       i, filePathSize, pos, duration);
-                                                              }, [&, i, filePathSize, filePath, columnId, folderId](
+                                                              }, [&, i, filePathSize, filePath,
+                                                                  columnId, folderId,replaceName](
                                                               const QJsonDocument& doc)
                                                               {
                                                                   QJsonObject obj = doc.object();
@@ -1397,8 +1399,15 @@ StatusCode UploadOperator::uploadMediaFile(QStringList filePathList, QString url
                                                                   QJsonObject subJob;
                                                                   subJob["mobject_id"] = obj.value("id").toString();
                                                                   subJob["privacy"] = 1;
-                                                                  subJob["name"] = FileHelper::getFileInfo(
-                                                                      filePath, FileHelper::FileName);
+                                                                  if (replaceName.contains(filePath))
+                                                                  {
+                                                                      subJob["name"] = replaceName[filePath];
+                                                                  }
+                                                                  else
+                                                                  {
+                                                                      subJob["name"] =FileHelper::getFileInfo(filePath, FileHelper::FileName);
+                                                                  }
+
                                                                   subJob["key_words"];
                                                                   subJob["description"];
                                                                   subJob["folder_id"] = folderId.toInt();
@@ -1485,7 +1494,7 @@ StatusCode UploadOperator::uploadMediaFile(QStringList filePathList, QString url
     return 0;
 }
 
-bool UploadOperator::uploadMediaFileSync(QStringList filePathList, QString url, QString columnId, QString folderId)
+bool UploadOperator::uploadMediaFileSync(QStringList filePathList, QString url, QString columnId, QString folderId,QHash<QString,QString> replaceName)
 {
     int filePathSize = filePathList.size();
     m_stop = false;
@@ -1549,7 +1558,14 @@ bool UploadOperator::uploadMediaFileSync(QStringList filePathList, QString url, 
         QJsonObject subJob;
         subJob["mobject_id"] = mobjectId;
         subJob["privacy"] = 1;
-        subJob["name"] = FileHelper::getFileInfo(filePath, FileHelper::FileName);
+        if (replaceName.contains(filePath))
+        {
+            subJob["name"] =replaceName[filePath];
+        }
+        else
+        {
+            subJob["name"] = FileHelper::getFileInfo(filePath, FileHelper::FileName);
+        }
         subJob["key_words"];
         subJob["description"];
         subJob["folder_id"] = folderId.toInt();

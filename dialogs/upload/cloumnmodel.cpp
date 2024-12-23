@@ -104,6 +104,14 @@ QModelIndex UploadColumnModel::index(const QString &columnId)
     }
 }
 
+QModelIndex UploadColumnModel::firstIndex()
+{
+    if (m_rootColumn->child.isEmpty()) {
+        return QModelIndex();
+    }
+    return createIndex(0, 0, m_rootColumn->child[0]->id.toULongLong());
+}
+
 void UploadColumnModel::onPresonalColumns()
 {
     beginResetModel();

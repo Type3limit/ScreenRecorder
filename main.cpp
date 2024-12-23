@@ -3,7 +3,15 @@
 #include <QApplication>
 #include <QDir>
 #include <QDebug>
+#include <QSharedMemory>
+#include <QMessageBox>
+#include <QMainWindow>
+#include <QSystemTrayIcon>
+#include <QAction>
+#include <QMenu>
 #include <QDateTime>
+#include <QLocalServer>
+#include <QLocalSocket>
 #ifdef _WIN32
 #include <windows.h>
 #include <dbghelp.h>
@@ -30,14 +38,6 @@ inline LONG WINAPI exceptionCallback(struct _EXCEPTION_POINTERS* exceptionInfo)
         return EXCEPTION_EXECUTE_HANDLER;
     }
 
-    /*
-    const DWORD flags = MiniDumpWithFullMemory |
-       MiniDumpWithFullMemoryInfo |
-//       MiniDumpWithHandleData |
-       MiniDumpWithUnloadedModules |
-       MiniDumpWithThreadInfo;
-       */
-
     MINIDUMP_EXCEPTION_INFORMATION miniDumpExceptionInfo;
     miniDumpExceptionInfo.ExceptionPointers = exceptionInfo;
     miniDumpExceptionInfo.ThreadId = GetCurrentThreadId();
@@ -59,6 +59,50 @@ inline LONG WINAPI exceptionCallback(struct _EXCEPTION_POINTERS* exceptionInfo)
 #include <QCommandLineParser>
 #include <QCommandLineOption>
 #include <QThread>
+#include <usermessagebox.h>
+
+class SingleInstanceApp : public QApplication {
+public:
+    SingleInstanceApp(int &argc, char **argv)
+        : QApplication(argc, argv)
+    {
+
+        m_server.setMaxPendingConnections(50);
+        if (!m_server.listen(QHostAddress::Any, 19990))
+        {
+            QTcpSocket socket;
+            socket.connectToHost("localhost", 19990);
+            socket.waitForConnected();
+            socket.write("bringToFront");
+            socket.waitForBytesWritten();
+            socket.disconnectFromHost();
+            exit(0);
+        }
+
+        // 等待客户端连接并处理请求
+        connect(&m_server, &QTcpServer::newConnection, this, &SingleInstanceApp::onNewConnection);
+    }
+    void onNewConnection() {
+        QTcpSocket *clientConnection = m_server.nextPendingConnection();
+        connect(clientConnection, &QTcpSocket::disconnected, clientConnection, &QTcpSocket::deleteLater);
+
+        // 通过信号唤醒已有实例的主窗口
+        if (mainWindow) {
+            mainWindow->raise();
+            mainWindow->activateWindow();
+            mainWindow->showNormal();
+        }
+    }
+
+    void setWindow(QMainWindow* window)
+    {
+        mainWindow = window;
+    }
+private:
+    QTcpServer m_server;
+    QMainWindow* mainWindow = nullptr;
+
+};
 
 int main(int argc, char* argv[])
 {
@@ -74,7 +118,7 @@ int main(int argc, char* argv[])
     qtTranslator.load("qt_" + QLocale::system().name(),
                       QLibraryInfo::location(QLibraryInfo::TranslationsPath));
 
-    QApplication app(argc, argv);
+    SingleInstanceApp app(argc, argv);
 
     app.setApplicationVersion(CURRENT_PROGRAM_VERSION);
 
@@ -124,6 +168,7 @@ int main(int argc, char* argv[])
     qDebug() << "invoking with param: port:[" << portStr << "]" << " server:[" << server << "] token:[" << token << "]";
 
     RecordingWindow window(server, token, port, nullptr);
+    app.setWindow(&window);
     window.show();
 
     return QApplication::exec();

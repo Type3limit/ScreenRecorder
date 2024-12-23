@@ -6,6 +6,7 @@
 
 #include "cloumnchoosenwidget.h"
 
+#include "createfolderdialog.h"
 #include "extensionmethods.h"
 #include "ui_cloumnchoosenwidget.h"
 #include "uploadoperator.h"
@@ -52,11 +53,9 @@ void CloumnChoosenDialog::init()
     ui->m_uploader->hideFilterWidget(true);
 
     auto fileName = ExtensionMethods::QStringExtension::getFileInfo(m_uploadedFiles.first(),
-        ExtensionMethods::QStringExtension::QStringExtensionPathOptionMode::FileNameWithoutExtension);
+        ExtensionMethods::QStringExtension::QStringExtensionPathOptionMode::FileName);
 
-    qDebug()<<"curUploadFile:"<<m_uploadedFiles.first()<<"fileName:"<<fileName;
-
-    ui->m_folderNameEditor->setText(fileName);
+    ui->m_fileNameEditor->setText(fileName);
 
     connect(ui->closeButton,&QPushButton::clicked,this,&CloumnChoosenDialog::close);
     connect(ui->cancelButton,&QPushButton::clicked,this,&CloumnChoosenDialog::close);
@@ -96,7 +95,7 @@ void CloumnChoosenDialog::init()
         }
     });
 
-    connect(ui->m_createFolderButton,&QPushButton::clicked,this,&CloumnChoosenDialog::onCreateFolder);
+    connect(ui->m_createFolderButton,&QPushButton::clicked,this,&CloumnChoosenDialog::invokeCreateFolderDialog);
     connect(ui->m_uploader->apiOperator(),&UploadOperator::folderCreated,this,&CloumnChoosenDialog::onFolderCreated);
 
     qDebug()<<u8"初始化上传页面完成";
@@ -163,11 +162,23 @@ void CloumnChoosenDialog::onGetUploadUrl(const QString& url)
     qDebug()<<u8"上传地址获取完成，开始上传文件";
     ui->m_disableView->setNoticeMessage(u8"开始上传文件");
     ui->m_uploader->apiOperator()->uploadMediaFile(m_uploadedFiles,url,ui->m_uploader->columnId(),
-        m_targetFolderId.isEmpty()?ui->m_uploader->folderId():m_targetFolderId);
+        m_targetFolderId.isEmpty()?ui->m_uploader->folderId():m_targetFolderId,
+        {{m_uploadedFiles.first(),ui->m_fileNameEditor->text()}});
 
 }
 
-void CloumnChoosenDialog::onCreateFolder()
+void CloumnChoosenDialog::invokeCreateFolderDialog()
+{
+    CreateFolderDialog* dialog = new CreateFolderDialog();
+
+    connect(dialog,&CreateFolderDialog::createFolder,this,&CloumnChoosenDialog::onCreateFolder);
+
+    dialog->exec();
+    dialog->deleteLater();
+}
+
+
+void CloumnChoosenDialog::onCreateFolder(const QString& folderName)
 {
     if (m_requestCreateFolder)
         return;
@@ -184,7 +195,7 @@ void CloumnChoosenDialog::onCreateFolder()
     qDebug()<<u8"开始创建文件夹，选定栏目：["<<ui->m_uploader->columnName()<<"]["<<ui->m_uploader->columnId()
             <<u8"]选定文件夹：["<<ui->m_uploader->folderName()<<"]["<<ui->m_uploader->folderId()<<"]";
     auto code =ui->m_uploader->apiOperator()->createFolder(columnId,folderId,
-        ui->m_folderNameEditor->text(),true);
+        folderName,true);
     if(code<0)
     {
         qDebug()<<u8"创建文件夹失败，终止后续操作";

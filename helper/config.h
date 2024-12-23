@@ -9,7 +9,7 @@
 #include <QJsonArray>
 #include "extensionmethods.h"
 
-#define CURRENT_PROGRAM_VERSION  QString("1.0.1")
+#define CURRENT_PROGRAM_VERSION  QString("1.0.3")
 
 using StrEx = ExtensionMethods::QStringExtension;
 

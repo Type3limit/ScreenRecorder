@@ -101,6 +101,9 @@ set(RESOURCES resource.qrc
         dialogs/upload/cloumnchoosenwidget.h
         dialogs/upload/cloumnchoosenwidget.cpp
         dialogs/upload/cloumnchoosenwidget.ui
+        dialogs/upload/createfolderdialog.h
+        dialogs/upload/createfolderdialog.cpp
+        dialogs/upload/createfolderdialog.ui
         dialogs/countdowndialog.cpp
         dialogs/countdowndialog.h
         dialogs/countdowndialog.ui

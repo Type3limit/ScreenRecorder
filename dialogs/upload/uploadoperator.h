@@ -49,8 +49,11 @@ public:
     StatusCode createFolder(QString columnId, QString folderId, QString fileName, bool useMediaApi);
     QString createFolderSync(QString columnId, QString folderId, QString fileName, bool useMediaApi);
     //3.上传媒体文件
-    StatusCode uploadMediaFile(QStringList filePathList, QString url, QString columnId, QString folderId);
-    bool uploadMediaFileSync(QStringList filePathList, QString url, QString columnId, QString folderId);
+    StatusCode uploadMediaFile(QStringList filePathList, QString url, QString columnId, QString folderId,
+        QHash<QString,QString> replaceName = {});
+    bool uploadMediaFileSync(QStringList filePathList, QString url, QString columnId,
+        QString folderId,
+        QHash<QString,QString> replaceName={});
 
     void cancelUpload();
 

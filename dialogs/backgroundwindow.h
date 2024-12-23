@@ -28,14 +28,15 @@ class BackgroundWindow : public QWidget
 public:
 signals:
     void areaChanged(qreal x1,qreal y1,qreal x2,qreal y2);
+    void requestToFullScreenMode();
     void requestHideWindow();
-    signals:
     void onCutomizedWindowFinished();
 public:
     BackgroundWindow(bool isFullScreenModel, QWidget* parent ,
                               const QScreen*  curScreen );
     ~BackgroundWindow() override;
     void paintEvent(QPaintEvent* event) override;
+    void keyPressEvent(QKeyEvent* event) override;
     void mousePressEvent(QMouseEvent* event) override;
     void mouseReleaseEvent(QMouseEvent* event) override;
     void mouseMoveEvent(QMouseEvent* event) override;

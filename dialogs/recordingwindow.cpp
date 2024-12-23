@@ -42,18 +42,8 @@ const QString ScreenAreaStr[2] = {u8"全屏", u8"自定义"};
 
 bool isValidFilePath(const QString& filePath)
 {
-    QRegExp rx("^[a-zA-Z0-9:/._-]+$");
-
-    if (rx.exactMatch(filePath))
-    {
-        qDebug() << "文件路径合法：" << filePath;
-        return true;
-    }
-    else
-    {
-        qDebug() << "文件路径包含非法字符：" << filePath;
-        return false;
-    }
+    QRegularExpression re("[*?<>|]");
+    return !filePath.contains(re);
 }
 
 
@@ -206,6 +196,7 @@ void RecordingWindow::init(int defaultPort)
         this->showNormal();
     });
     connect(m_miniWindow, &MinimizedRecordingWindow::onRecordAct, this, &RecordingWindow::startRecord);
+    connect(m_miniWindow,&MinimizedRecordingWindow::onPauseAct,this,&RecordingWindow::pauseRecord);
     //backgroundWindow
     m_backgroundWindow = new BackgroundWindow(true, nullptr, firstScreen);
     connect(m_backgroundWindow, &BackgroundWindow::areaChanged, this, [&, resetVideo](
@@ -232,6 +223,12 @@ void RecordingWindow::init(int defaultPort)
         {
             this->showMinimized();
         }
+    });
+
+
+    connect(m_backgroundWindow,&BackgroundWindow::requestToFullScreenMode,this,[&]()
+    {
+
     });
 
     //button connection
@@ -653,17 +650,30 @@ void RecordingWindow::init(int defaultPort)
         bool hasLoginFailed = true;
         qDebug() << u8"正在验证登录信息";
         //request user info to check if current url and token is valid
-        BLOCK_DEBUG(m_requestHandler, m_api->userHelper()->getUserInfoPreExec([&](const QJsonDocument& doc)
-                        {
-                        m_curUserAccount = doc["username"].toString();
-                        hasLoginFailed = false;
-                        },[&](int code,const QString& error){qDebug()<<code<<":"<<error;})
-                    .timeout(5)
-                    .onTimeout([&](QNetworkReply* reply)
+
+        BLOCK_DEBUG
+        (m_requestHandler,m_api->requestHelper()->getRequest(QNetworkAccessManager::GetOperation,
+            "/api/media/internal/users/current")
+        .timeout(5)
+        .onTimeout([&](QNetworkReply* reply)
                         {
                         qDebug()<<u8"登录信息验证请求超时";
                         })
-                    .exec());
+        .onSuccess([&](QNetworkReply* reply)
+        {
+            auto str = reply->readAll();
+            QJsonDocument doc = QJsonDocument::fromJson(str);
+            m_curUserAccount = doc["username"].toString();
+            hasLoginFailed = false;
+            reply->deleteLater();
+        })
+        .onFailed([&](QNetworkReply* reply)
+        {
+            qDebug()<<u8"登录信息验证请求失败";
+            qDebug()<< reply->readAll();
+            reply->deleteLater();
+        })
+        .exec());
 
         m_api->loginHelper()->setLoginStatus(!hasLoginFailed);
         if (hasLoginFailed)
@@ -868,7 +878,7 @@ void RecordingWindow::stopRecord()
     this->activateWindow();
     if (m_obs->isRecordingStart())
     {
-        if (m_seconds < 1) //too short cause crash
+        if (m_seconds < 3) //too short cause crash
         {
             UserMessageBox::warning(this, u8"警告", u8"录制时长过短，请稍后再试");
             return;

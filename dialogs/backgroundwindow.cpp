@@ -89,6 +89,16 @@ void BackgroundWindow::paintEvent(QPaintEvent* event)
 
 }
 
+void BackgroundWindow::keyPressEvent(QKeyEvent* event)
+{
+    if (event->key()==Qt::Key_Escape && !m_IsFirstAreaCompelete)//back to full screen
+    {
+        emit requestToFullScreenMode();
+        event->accept();
+    }
+    QWidget::keyPressEvent(event);
+}
+
 void BackgroundWindow::mousePressEvent(QMouseEvent* event)
 {
     if (event->button() == Qt::MouseButton::LeftButton)

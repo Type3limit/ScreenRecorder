@@ -32,8 +32,12 @@ public
     void onUploadStart();
     ///当获取到上传地址后，开始传输文件
     void onGetUploadUrl(const QString& url);
+
+    ///唤起创建文件夹窗口
+    void invokeCreateFolderDialog();
+
     /// 创建文件夹
-    void onCreateFolder();
+    void onCreateFolder(const QString& folderName);
 
     void onFolderCreated(int code, const QString& folderId);
 public:

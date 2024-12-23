@@ -627,6 +627,27 @@ QSlider::groove:horizontal {
              <height>24</height>
             </size>
            </property>
+           <property name="styleSheet">
+            <string notr="true">QPushButton
+{
+  selection-background-color: #40404A;
+  selection-color: #3B3B41;
+  color: white;
+  height:24px;
+  background-color: rgb(32, 160, 255);
+  border-style: solid;
+  border: 1px solid #0F0F0F;
+  border-radius: 4;
+  padding: 1px 0px 1px 2px;
+  font-size: 12px;
+  font-family:Microsoft YaHei UI;
+  padding-left:0px;
+}
+QPushButton:hover
+{
+ background-color: rgb(32, 180, 255);
+}</string>
+           </property>
            <property name="text">
             <string>上传</string>
            </property>

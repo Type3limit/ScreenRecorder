@@ -20,6 +20,8 @@ public:
     void onRecover();
     void closed();
     void onRecordAct();
+    void onPauseAct();
+
 public:
     explicit MinimizedRecordingWindow(const QSharedPointer<ObsWrapper>& obs_wrapper,QWidget *parent = nullptr);
     ~MinimizedRecordingWindow() override;
