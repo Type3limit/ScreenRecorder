@@ -681,6 +681,7 @@ void RecordingWindow::init(int defaultPort)
             qDebug() << u8"登录配置无效,取消后续步骤";
             UserMessageBox::warning(nullptr, u8"失败", u8"当前登录配置无效");
             ui->uploadButton->setVisible(false);
+            //when build in nle ,do not with login
             ui->unloginNoticeLabel->setVisible(true);
 
         }
@@ -693,6 +694,7 @@ void RecordingWindow::init(int defaultPort)
     else
     {
         ui->uploadButton->setVisible(false);
+        //when build in nle ,do not with login
         ui->unloginNoticeLabel->setVisible(true);
     }
 }
@@ -742,11 +744,31 @@ void RecordingWindow::setupPort(int port)
     }
     m_server = new QTcpServer(this);
     m_server->setMaxPendingConnections(50);
-    if (!m_server->listen(QHostAddress::Any, port))
+
+    auto originPort = port;
+    bool startTCPSuccess =false;
+    do
     {
-        qWarning() << "tcp server start listen at [" << port << "] failed!";
-        UserMessageBox::warning(this, u8"警告", u8"tcp服务监听端口：" + QString::number(port) + u8"失败！");
-        exit(-1);
+        startTCPSuccess = m_server->listen(QHostAddress::Any, port);
+        if (!startTCPSuccess&&port<65535)
+        {
+            port++;
+        }
+    }
+    while (!startTCPSuccess);
+
+    if (!startTCPSuccess && port >= 65535)
+    {
+        qWarning() << "tcp server start listen at [" << originPort << "] failed!";
+        UserMessageBox::warning(this, u8"警告",
+            u8"服务监听端口：" + QString::number(originPort) + u8"失败！");
+        qApp->exit(-1);
+    }
+    else if (startTCPSuccess && port!=originPort)
+    {
+        qWarning() << "tcp server replace ["<<originPort<<"] with [" << port << "]";
+        UserMessageBox::information(this, u8"通知",
+           u8"原服务监听端口：" + QString::number(originPort) + u8"不可用！已替换为：" + QString::number(port));
     }
     qDebug() << "tcp server start listen at [" << port << "]";
 }

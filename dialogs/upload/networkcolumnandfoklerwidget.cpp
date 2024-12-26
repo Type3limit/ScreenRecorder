@@ -308,7 +308,8 @@ void NetworkColumnAndFoklerWidget::showEvent(QShowEvent* event)
 		if (m_type == ColumnType_UploadMaterial)
 		{
 			//无分享收藏，只有文件夹
-			m_uploadOperator->getAllAuthorizedColumns(m_type == ColumnType_UploadMaterial, MaterialLibHelper::Upload);
+			m_uploadOperator->getAllAuthorizedColumns(m_type == ColumnType_UploadMaterial,
+				MaterialLibHelper::Upload);
 		}
 		else if (m_type == ColumnType_UploadProject)
 		{

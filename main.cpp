@@ -90,7 +90,8 @@ public:
         if (mainWindow) {
             mainWindow->raise();
             mainWindow->activateWindow();
-            mainWindow->showNormal();
+            mainWindow->hide();
+            mainWindow->show();
         }
     }
 

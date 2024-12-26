@@ -537,76 +537,38 @@ QList<QSharedPointer<SubRequests::ColumnBaseInfo>> UploadOperator::getAllColumns
 
 StatusCode UploadOperator::getAllAuthorizedColumns(bool useMediaApi, MaterialLibHelper::Authority authority, bool isNle)
 {
-
     UploadCanceller *canceller = new UploadCanceller;
     HttpResponse **response = canceller->response();
     m_cancelList.append(canceller);
-    QString url;
-    if(useMediaApi) {
-        url = "api/media/internal/columns/operation-columns/" + m_api->materialHelper()->AuthorityStr[authority];
-    }else {
-        url = "api/nle/internal/columns/operation-columns/" +m_api->materialHelper()->AuthorityStr[authority];
-    }
-    auto request = m_api->requestHelper()->getRequest(QNetworkAccessManager::GetOperation, url).
-                    queryParam("nle", isNle).
-                    onSuccess([&, useMediaApi](QNetworkReply *reply) {
-                        if(!reply) {
-                            return;
-                        }
-                        QJsonParseError errRpt{};
-                        auto doc = QJsonDocument::fromJson(reply->readAll(), &errRpt);
-                        if (errRpt.error != QJsonParseError::NoError) {
-                        }else {
-                            if(doc.isArray()) {
-                                auto array = doc.array();
-                                QList<QSharedPointer<SubRequests::ColumnBaseInfo> > tempList;
-                                //先解析栏目列表
-                                for (const auto itr: array) {
-                                    auto job = itr.toObject();
-                                    auto columnInfo = QSharedPointer<SubRequests::ColumnBaseInfo>(new SubRequests::ColumnBaseInfo());
-                                    columnInfo->id = QString::number(job["id"].toInt());
-                                    columnInfo->parent_id = QString::number(job["parent_id"].toInt());
-                                    columnInfo->number = job["number"].toInt();
-                                    columnInfo->name = job["name"].toString();
-                                    columnInfo->type = job["type"].toInt();
-                                    columnInfo->has_permission = job["has_permission"].toBool();
-                                    auto nleJob = job["nle_config"].toObject();
-                                    columnInfo->nle_config.enabled = nleJob["enabled"].toBool();
-                                    columnInfo->nle_config.limit_folder = nleJob["limit_folder"].toInt();
-                                    tempList.append(columnInfo);
-                                }
-                                auto columnList = polishColumns(useMediaApi, tempList);
-                                emit publicColumns(columnList);
-//                                auto columnList = SubRequests::findChildColumns(doc);
-//                                emit publicColumns(columnList);
-                            }else {
-                                auto job = doc.object();
-                                QList<QSharedPointer<SubRequests::ColumnBaseInfo> > columnList;
-                                auto columnInfo = QSharedPointer<SubRequests::ColumnBaseInfo>(new SubRequests::ColumnBaseInfo());
-                                columnInfo->id = QString::number(job["id"].toInt());
-                                columnInfo->parent_id = QString::number(job["parent_id"].toInt());
-                                columnInfo->number = job["number"].toInt();
-                                columnInfo->name = job["name"].toString();
-                                columnInfo->type = job["type"].toInt();
-                                columnInfo->has_permission = job["has_permission"].toBool();
-                                auto nleJob = job["nle_config"].toObject();
-                                columnInfo->nle_config.enabled = nleJob["enabled"].toBool();
-                                columnInfo->nle_config.limit_folder = nleJob["limit_folder"].toInt();
-                                columnList.append(columnInfo);
-                                emit publicColumns(columnList);
-                            }
-                        }
-                    }).onError([&, canceller](QNetworkReply::NetworkError error){
-                       {
-                           QMutexLocker lock(&m_mutex);
-                           m_cancelList.removeOne(canceller);
-                           canceller->deleteLater();
-                       }
-                    }).onResponse([&, canceller](QNetworkReply *reply) {
-                        QMutexLocker lock(&m_mutex);
-                        m_cancelList.removeOne(canceller);
-                        canceller->deleteLater();
-                    }).timeout(TIMEOUTSECOND);
+
+    auto request = m_api->materialHelper()->
+    getMemberColumnsPreExec([&,authority](QList<QSharedPointer<SubRequests::ColumnBaseInfo> > columnList)
+    {
+        emit publicColumns(columnList);
+        // QList<QSharedPointer<SubRequests::ColumnBaseInfo> > usedList;
+        // for (const auto& itr :usedList)
+        // {
+        //     if (itr->operations.contains(m_api->materialHelper()->AuthorityStr[authority]))
+        //     {
+        //         usedList.append(itr);
+        //     }
+        // }
+        //emit publicColumns(usedList);
+    },
+    std::nullopt,
+    std::nullopt,
+    EMPTY_CALL)
+    .onError([&, canceller](QNetworkReply *reply) {
+        {
+            QMutexLocker lock(&m_mutex);
+            m_cancelList.removeOne(canceller);
+            canceller->deleteLater();
+        }
+    }).onResponse([&, canceller](QNetworkReply *reply) {
+        QMutexLocker lock(&m_mutex);
+        m_cancelList.removeOne(canceller);
+        canceller->deleteLater();
+    }).timeout(TIMEOUTSECOND);
     *response = request.exec();
     return 0;
 }

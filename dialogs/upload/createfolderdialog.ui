@@ -21,8 +21,8 @@ border-top : 0px solid #0F0F0F;
 border-left : 1px solid #0F0F0F;
 border-right : 1px solid #0F0F0F;
 border-bottom : 1px solid #0F0F0F;
-border-bottom-left-radius:10px;
-border-bottom-right-radius:10px;
+border-bottom-left-radius:0px;
+border-bottom-right-radius:0px;
 }
 
 QFrame#titleFrame
@@ -32,8 +32,8 @@ border-left : 1px solid #0F0F0F;
 border-right : 1px solid #0F0F0F;
 border-bottom : 1px solid #0F0F0F;
 background-color:#212126;
-border-top-left-radius:10px;
-border-top-right-radius:10px;
+border-top-left-radius:0px;
+border-top-right-radius:0px;
 }
 
 QPushButton
@@ -287,7 +287,7 @@ QListView::item:selected:focus {
          </widget>
         </item>
         <item>
-         <widget class="QLineEdit" name="folderNameEditor"/>
+         <widget class="DLineEdit" name="folderNameEditor"/>
         </item>
        </layout>
       </item>
@@ -388,6 +388,13 @@ QPushButton:hover
    </item>
   </layout>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>DLineEdit</class>
+   <extends>QLineEdit</extends>
+   <header>dlineedit.h</header>
+  </customwidget>
+ </customwidgets>
  <resources>
   <include location="../../resource.qrc"/>
  </resources>

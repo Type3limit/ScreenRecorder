@@ -100,7 +100,7 @@ UserMessageBox::ButtonType UserMessageBox::showMessageBox(QWidget* parent,
         "QDialog {"
         "background-color: #28282E;"
         "border: 1px solid #0F0F0F;"
-        "border-radius: 10px;"
+        "border-radius: 0px;"
         "}"
         "QDialog #m_notifyLabel {"
         "image: url(:/icons/images/{typeIcons}.svg)"
