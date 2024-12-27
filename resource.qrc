@@ -5,7 +5,9 @@
         <file>images/fullscreen.svg</file>
         <file>images/areas.svg</file>
         <file>images/micphone.svg</file>
+        <file>images/micphone_mute.svg</file>
         <file>images/player.svg</file>
+        <file>images/player_mute.svg</file>
         <file>images/stop_recoding.svg</file>
         <file>images/stop_recoding_minimize.svg</file>
         <file>images/centerAnchor.svg</file>
@@ -34,5 +36,6 @@
         <file>images/slider.svg</file>
         <file>images/login.svg</file>
         <file>images/minimal.svg</file>
+        <file>images/continue.svg</file>
     </qresource>
 </RCC>

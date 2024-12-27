@@ -33,11 +33,11 @@ public:
     ~RecordingWindow() override;
     QScreen* findScreen() const;
     int calculateNameSimilarity(const QString& a, const QString& b) const;
+    void resetVideo();
     void mousePressEvent(QMouseEvent* e) override;
     void mouseMoveEvent(QMouseEvent* e) override;
     void mouseReleaseEvent(QMouseEvent* e) override;
     void closeEvent(QCloseEvent* event) override;
-
     void showEvent(QShowEvent* event) override;
 
     bool isFullScreenMode() const;
@@ -64,6 +64,15 @@ public slots:
     void invokeLoginWindow();
 protected:
     void init(int defaultPort = -1);
+    void initSignalProxy();
+    void initMiniWindow();
+    void initBackgroundWindow();
+    void initConfig();
+    void initRecordingStatus();
+    void initUpload();
+    void initDebugWindow();
+    void initFunctionalControls();
+    void initHotKeys();
 
 private:
     QPoint m_pos = {0, 0};
@@ -91,6 +100,7 @@ private:
     QPoint m_startPos = {0, 0};
     QPoint m_endPos = {0, 0};
 
+    int m_socketPort{};
 private:
     QString m_url{};
     QString m_token{};
@@ -99,6 +109,8 @@ private:
     QString m_currentRecordingFile{};
     HttpResponse* m_requestHandler{nullptr};
     QString m_versionCode{""};
+
+    volatile bool m_hasFirstInit = false;
 };
 
 

@@ -7,12 +7,14 @@
 
 #include <QDialog>
 
+#include "dragmovedialog.h"
+
 class ObsWrapper;
 QT_BEGIN_NAMESPACE
 namespace Ui { class MinimizedRecordingWindow; }
 QT_END_NAMESPACE
 
-class MinimizedRecordingWindow : public QDialog {
+class MinimizedRecordingWindow : public DragMoveDialog {
 Q_OBJECT
 
 public:
@@ -21,14 +23,10 @@ public:
     void closed();
     void onRecordAct();
     void onPauseAct();
-
 public:
     explicit MinimizedRecordingWindow(const QSharedPointer<ObsWrapper>& obs_wrapper,QWidget *parent = nullptr);
     ~MinimizedRecordingWindow() override;
     void closeEvent(QCloseEvent* event) override;
-    void mousePressEvent(QMouseEvent *e) override;
-    void mouseMoveEvent(QMouseEvent *e) override;
-    void mouseReleaseEvent(QMouseEvent *e) override;
     void onAudioFrame(const float currentMagnitude[8],const float currentPeak[8],const float currentInputPeak[8],bool isMicphone);
 private:
     Ui::MinimizedRecordingWindow *ui;

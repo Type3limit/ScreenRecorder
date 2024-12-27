@@ -81,6 +81,8 @@ set(RESOURCES resource.qrc
         helper/qhotkey_p.h
         helper/debug.cpp
         helper/debug.h
+        helper/signalproxy.h
+        helper/signalproxy.cpp
         dialogs/dragmovedialog.h
         dialogs/dragmovedialog.cpp
         dialogs/updatenoticedialog.h

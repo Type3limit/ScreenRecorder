@@ -13,7 +13,171 @@
   <property name="windowTitle">
    <string>捕获预览</string>
   </property>
+  <property name="styleSheet">
+   <string notr="true">QFrame#contentFrame
+{
+background-color:#28282E;
+border-top : 0px solid #454549;
+border-left : 1px solid #454549;
+border-right : 1px solid #454549;
+border-bottom : 1px solid #454549;
+border-bottom-left-radius:0px;
+border-bottom-right-radius:0px;
+}
+
+QFrame#titleFrame
+{
+border-top : 1px solid #454549;
+border-left : 1px solid #454549;
+border-right : 1px solid #454549;
+border-bottom : 1px solid #454549;
+background-color:#212126;
+border-top-left-radius:0px;
+border-top-right-radius:0px;
+
+
+}
+
+QCheckBox,
+QLabel
+{
+color:#99A1B0;
+font-size:12px;
+font-family:Microsoft YaHei UI;
+}</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <property name="spacing">
+    <number>0</number>
+   </property>
+   <property name="leftMargin">
+    <number>0</number>
+   </property>
+   <property name="topMargin">
+    <number>0</number>
+   </property>
+   <property name="rightMargin">
+    <number>0</number>
+   </property>
+   <property name="bottomMargin">
+    <number>0</number>
+   </property>
+   <item>
+    <widget class="QFrame" name="titleFrame">
+     <property name="minimumSize">
+      <size>
+       <width>0</width>
+       <height>44</height>
+      </size>
+     </property>
+     <property name="maximumSize">
+      <size>
+       <width>16777215</width>
+       <height>44</height>
+      </size>
+     </property>
+     <property name="frameShape">
+      <enum>QFrame::StyledPanel</enum>
+     </property>
+     <property name="frameShadow">
+      <enum>QFrame::Raised</enum>
+     </property>
+     <layout class="QHBoxLayout" name="horizontalLayout">
+      <item>
+       <widget class="QLabel" name="label">
+        <property name="text">
+         <string>录制预览</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <spacer name="horizontalSpacer">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>293</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+      <item>
+       <widget class="QPushButton" name="closeButton">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>24</width>
+          <height>24</height>
+         </size>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>24</width>
+          <height>24</height>
+         </size>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">QPushButton
+{
+  selection-background-color: #40404A;
+  selection-color: #3B3B41;
+  color: #99A1B0;
+  height:24px;
+  background-color: #212126;
+  border-style: solid;
+  border: 0px solid #0F0F0F;
+  border-radius: 4;
+  padding: 1px 0px 1px 2px;
+  font-size: 12px;
+  font-family:Microsoft YaHei UI;
+  padding-left:0px;
+}
+QPushButton:hover
+            {
+            background-color:#212126;
+            border-radius: 4px;
+            border: 1px solid #5967f2;
+            }</string>
+        </property>
+        <property name="text">
+         <string/>
+        </property>
+        <property name="icon">
+         <iconset resource="../resource.qrc">
+          <normaloff>:/icons/images/close.svg</normaloff>:/icons/images/close.svg</iconset>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QFrame" name="contentFrame">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="frameShape">
+      <enum>QFrame::StyledPanel</enum>
+     </property>
+     <property name="frameShadow">
+      <enum>QFrame::Raised</enum>
+     </property>
+    </widget>
+   </item>
+  </layout>
  </widget>
- <resources/>
+ <resources>
+  <include location="../resource.qrc"/>
+ </resources>
  <connections/>
 </ui>

@@ -14,10 +14,11 @@
 
 
 testwindow::testwindow(const QSharedPointer<ObsWrapper>& obs, QWidget *parent) :
-m_obs(obs),QDialog(parent), ui(new Ui::testwindow) {
+m_obs(obs),DragMoveDialog(parent), ui(new Ui::testwindow) {
     ui->setupUi(this);
     setWindowIcon(QIcon(QString(":/icons/images/recording.svg")));
     setWindowTitle(u8"采集预览");
+    connect(ui->closeButton, &QPushButton::clicked, this, &testwindow::close);
 }
 
 testwindow::~testwindow() {
@@ -27,7 +28,7 @@ testwindow::~testwindow() {
 
 void testwindow::createDisplayer()
 {
-    QSize size = GetPixelSize(this);
+    QSize size = GetPixelSize(ui->contentFrame);
     gs_init_data info = {};
     info.cx = size.width();
     info.cy = size.height();
@@ -45,7 +46,7 @@ void testwindow::createDisplayer()
 
 void testwindow::resizeEvent(QResizeEvent* event)
 {
-    QSize size = GetPixelSize(this);
+    QSize size = GetPixelSize(ui->contentFrame);
     obs_display_resize(m_displayer,size.width(), size.height());
     QDialog::resizeEvent(event);
 }

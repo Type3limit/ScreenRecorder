@@ -51,6 +51,9 @@ inline LONG WINAPI exceptionCallback(struct _EXCEPTION_POINTERS* exceptionInfo)
     app->exit(E_UNEXPECTED);
     return EXCEPTION_EXECUTE_HANDLER;
 }
+#define _CRTDBG_MAP_ALLOC
+#include <stdlib.h>
+#include <crtdbg.h>
 #endif
 
 #include <QTranslator>
@@ -172,5 +175,15 @@ int main(int argc, char* argv[])
     app.setWindow(&window);
     window.show();
 
-    return QApplication::exec();
+    qApp->setStyleSheet("QMenu,"
+                        "QToolTip "
+                        "{ padding:5px; color: #ffffff; background-color: #2F2F34; border: 1px solid 454549; }");
+
+
+    int code =  QApplication::exec();
+
+#ifdef WIN32
+    _CrtDumpMemoryLeaks();
+#endif
+    return code;
 }

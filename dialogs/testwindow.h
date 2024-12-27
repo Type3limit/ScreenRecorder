@@ -6,12 +6,14 @@
 #define TESTWINDOW_H
 
 #include <QDialog>
+
+#include "dragmovedialog.h"
 #include "obswrapper.h"
 QT_BEGIN_NAMESPACE
 namespace Ui { class testwindow; }
 QT_END_NAMESPACE
 
-class testwindow : public QDialog {
+class testwindow : public DragMoveDialog {
 Q_OBJECT
 
 public:

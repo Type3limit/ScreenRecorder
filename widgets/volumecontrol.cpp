@@ -115,7 +115,13 @@ void VolumeControl::paintEvent(QPaintEvent* event)
 		auto drawCount = width / (ITEM_DISTANCE + COLUMN_WIDTH);
 		for (int i = 1; i <= drawCount; i++)
 		{
-			painter.drawRoundedRect(QRectF{ (qreal)i * (ITEM_DISTANCE + COLUMN_WIDTH),(qreal)widgetRect.y() + TOP_DISTANCE,COLUMN_WIDTH,(qreal)widgetRect.height() - (2 * TOP_DISTANCE) }, 1, 1);
+			auto x = (qreal)i * (ITEM_DISTANCE + COLUMN_WIDTH);
+			if (width - x < COLUMN_WIDTH)
+				break;
+			painter.drawRoundedRect(QRectF{ x,
+				(qreal)widgetRect.y() + TOP_DISTANCE,
+					COLUMN_WIDTH,
+					(qreal)widgetRect.height() - (2 * TOP_DISTANCE) }, 1, 1);
 		}
 		qreal usedMagnitude = currentMagnitude[0];
 		qreal usedPeak = currentPeak[0];

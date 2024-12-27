@@ -24,6 +24,7 @@
 #include "countdowndialog.h"
 #include "logindialog.h"
 #include "optionnalchain.h"
+#include "signalproxy.h"
 #include "updatenoticedialog.h"
 #include "preview/uploadnoticewindow.h"
 #include "preview/videopreviewdialog.h"
@@ -55,6 +56,7 @@ RecordingWindow::RecordingWindow(const QString& url, const QString& token, int p
     , m_pauseHotKey(new QHotkey(this))
     , m_url(url)
     , m_token(token)
+    , m_socketPort(port)
     , m_api(QSharedPointer<OnlineService>(new OnlineService((SubRequests::ApiType::nle))))
 {
     ui->setupUi(this);
@@ -63,7 +65,6 @@ RecordingWindow::RecordingWindow(const QString& url, const QString& token, int p
     setAttribute(Qt::WA_TranslucentBackground);
     setWindowIcon(QIcon(QString(":/icons/images/recording.svg")));
     setWindowTitle(u8"录屏");
-    init(port);
 }
 
 RecordingWindow::~RecordingWindow()
@@ -137,14 +138,41 @@ int RecordingWindow::calculateNameSimilarity(const QString& a, const QString& b)
     return 0; // 不包含
 }
 
-void RecordingWindow::init(int defaultPort)
+void RecordingWindow::resetVideo()
+{
+    auto curScreen = findScreen();
+    qreal devicePixelRatio = curScreen->devicePixelRatio();
+    QRect cropRect = isFullScreenMode()
+                         ? (QRect{0, 0, curScreen->geometry().width(), curScreen->geometry().height()})
+                         : (QRect{m_startPos, m_endPos});
+    auto curRect = QRect{m_startPos, m_endPos};
+    auto left = m_startPos.x() * devicePixelRatio;
+    auto right = (curScreen->geometry().width() - m_endPos.x()) * devicePixelRatio;
+    auto top = m_startPos.y() * devicePixelRatio;
+    auto bottom = (curScreen->geometry().height() - m_endPos.y()) * devicePixelRatio;
+    m_obs->updateRecItem(ui->screenDeviceComboBox->currentText().toUtf8().data(),
+                         REC_DESKTOP, !isFullScreenMode(), left, right, top, bottom);
+    if (OBS_VIDEO_SUCCESS != m_obs->resetVideo(cropRect.width() * devicePixelRatio,
+                                               cropRect.height() * devicePixelRatio,
+                                               cropRect.width() * devicePixelRatio,
+                                               cropRect.height() * devicePixelRatio,
+                                               ui->frameRateComboBox->currentText().remove("FPS").toInt()))
+    {
+        qWarning() << u8"reset video failed!";
+        UserMessageBox::warning(this, u8"警告", u8"输出重置失败!");
+    }
+}
+
+#pragma region initilize
+void RecordingWindow::init(const int defaultPort)
 {
     if (m_alreadyInited)
         return;
-    //init obs
+
     auto firstScreen = QGuiApplication::primaryScreen();
     auto pix = devicePixelRatio();
 
+    //init obs
     if (!m_obs->initObs(firstScreen->geometry().width() * pix,
                         firstScreen->geometry().height() * pix, 60))
     {
@@ -153,109 +181,11 @@ void RecordingWindow::init(int defaultPort)
         exit(-1);
     }
 
+    //miniWinodw
+    initMiniWindow();
 
-    //reset video func
-    auto resetVideo = [&]()
-    {
-        auto curScreen = findScreen();
-        qreal devicePixelRatio = curScreen->devicePixelRatio();
-        QRect cropRect = isFullScreenMode()
-                             ? (QRect{0, 0, curScreen->geometry().width(), curScreen->geometry().height()})
-                             : (QRect{m_startPos, m_endPos});
-        auto curRect = QRect{m_startPos, m_endPos};
-        auto left = m_startPos.x() * devicePixelRatio;
-        auto right = (curScreen->geometry().width() - m_endPos.x()) * devicePixelRatio;
-        auto top = m_startPos.y() * devicePixelRatio;
-        auto bottom = (curScreen->geometry().height() - m_endPos.y()) * devicePixelRatio;
-        m_obs->updateRecItem(ui->screenDeviceComboBox->currentText().toUtf8().data(),
-                             REC_DESKTOP, !isFullScreenMode(), left, right, top, bottom);
-        if (OBS_VIDEO_SUCCESS != m_obs->resetVideo(cropRect.width() * devicePixelRatio,
-                                                   cropRect.height() * devicePixelRatio,
-                                                   cropRect.width() * devicePixelRatio,
-                                                   cropRect.height() * devicePixelRatio,
-                                                   ui->frameRateComboBox->currentText().remove("FPS").toInt()))
-        {
-            qWarning() << u8"reset video failed!";
-            UserMessageBox::warning(this, u8"警告", u8"输出重置失败!");
-        }
-    };
-
-
-    //miniwindow
-    m_miniWindow = new MinimizedRecordingWindow(m_obs, nullptr);
-
-    connect(m_miniWindow, &MinimizedRecordingWindow::onRecover, this, [&]()
-    {
-        m_miniWindow->hide();
-        this->show();
-        this->setFocus();
-    });
-    connect(m_miniWindow, &MinimizedRecordingWindow::closed, this, [&]()
-    {
-        m_miniWindow->hide();
-        this->showNormal();
-    });
-    connect(m_miniWindow, &MinimizedRecordingWindow::onRecordAct, this, &RecordingWindow::startRecord);
-    connect(m_miniWindow,&MinimizedRecordingWindow::onPauseAct,this,&RecordingWindow::pauseRecord);
     //backgroundWindow
-    m_backgroundWindow = new BackgroundWindow(true, nullptr, firstScreen);
-    connect(m_backgroundWindow, &BackgroundWindow::areaChanged, this, [&, resetVideo](
-            int x1, int y1, int x2, int y2)
-            {
-
-                auto curScreen = findScreen();
-                qreal devicePixelRatio = curScreen->devicePixelRatio();
-                m_startPos = {x1, y1};
-                m_endPos = {x2, y2};
-                auto curRect = QRect{m_startPos, m_endPos};
-                ui->areaWidthEdit->blockSignals(true);
-                ui->areaHeightEdit->blockSignals(true);
-                ui->areaWidthEdit->setText(QString::number(curRect.width() * devicePixelRatio));
-                ui->areaHeightEdit->setText(QString::number(curRect.height() * devicePixelRatio));
-                ui->areaWidthEdit->blockSignals(false);
-                ui->areaHeightEdit->blockSignals(false);
-                resetVideo();
-            });
-
-    connect(m_backgroundWindow,&BackgroundWindow::requestHideWindow,this,[&]()
-    {
-        if (!isFullScreenMode())
-        {
-            this->showMinimized();
-        }
-    });
-
-
-    connect(m_backgroundWindow,&BackgroundWindow::requestToFullScreenMode,this,[&]()
-    {
-
-    });
-
-    //button connection
-    connect(ui->closeButton, &QPushButton::clicked, this, [&]()
-    {
-        if (m_isRecordingStarted)
-        {
-            auto res = UserMessageBox::question(this, "提示", "当前正在录制，确认退出？");
-            if (res == UserMessageBox::ButtonType::Ok)
-            {
-                stopRecord();
-                close();
-            }
-        }
-        else
-        {
-            close();
-        }
-    });
-
-    connect(ui->miniWindowButton, &QPushButton::clicked, this, [&]()
-    {
-        this->hide();
-        m_miniWindow->show();
-    });
-
-    connect(ui->minimizeButton, &QPushButton::clicked, this, &RecordingWindow::showMinimized);
+    initBackgroundWindow();
 
     //layout
     ui->settingExpander->setChecked(true);
@@ -274,6 +204,185 @@ void RecordingWindow::init(int defaultPort)
     });
 
     //init config
+    initConfig();
+
+    //init server for communicate between different process
+    setupPort(defaultPort < 0 ? m_config.tcpPort : defaultPort);
+
+
+    //display status when recording like time\audio wave etc...
+    initRecordingStatus();
+
+    //get desktops
+    m_obs->addSceneSource(REC_DESKTOP);
+    m_obs->searchRecTargets(REC_DESKTOP);
+
+    //get micphone and players
+    m_obs->searchPlayerDevice();
+    m_obs->searchMicDevice();
+
+    //button status
+    connect(m_obs.get(), &ObsWrapper::recordStatusChanged, this, [&](int status)
+    {
+        m_backgroundWindow->hide();
+        auto style = QString("QPushButton{"
+            "qproperty-icon:url(:/icons/images/{iconName}.svg);"
+            "qproperty-iconSize:44px;"
+            "background-color:#2F2F34;"
+            "border:1px solid #454549;"
+            "border-radius:4px;"
+            "}"
+            "QPushButton:hover"
+            "{"
+            "background-color:#212126;"
+            "border-radius: 4px;"
+            "border: 1px solid #5967f2;"
+            "}");
+        if (status == RecordingStatus::Recording)
+        {
+            m_timer.start();
+            ui->RecordingButton->setStyleSheet(style.replace("{iconName}", "stop_recoding"));
+            ui->statusLabel->setText("");
+            ui->ScreenAreaWidget->setDisabled(true);
+            ui->MicphoneWidget->setDisabled(true);
+            ui->PlayerWidget->setDisabled(true);
+            ui->SettingWidget->setDisabled(true);
+            ui->screenDeviceComboBox->setDisabled(true);
+            m_isPauseNow = false;
+            emit SignalProxy::instance()->recodingStarted();
+        }
+        else if (status == RecordingStatus::Paused)
+        {
+            m_timer.stop();
+            ui->RecordingButton->setStyleSheet(style.replace("{iconName}", "stop_recoding"));
+            ui->statusLabel->setText(u8"暂停中...");
+            ui->ScreenAreaWidget->setDisabled(true);
+            ui->MicphoneWidget->setDisabled(true);
+            ui->PlayerWidget->setDisabled(true);
+            ui->SettingWidget->setDisabled(true);
+            ui->screenDeviceComboBox->setDisabled(true);
+            m_isPauseNow = true;
+            emit SignalProxy::instance()->recodingPaused();
+        }
+        else
+        {
+            m_timer.stop();
+            m_seconds = 0;
+            ui->RecordingButton->setStyleSheet(style.replace("{iconName}", "start"));
+            ui->statusLabel->setText("");
+            ui->ScreenAreaWidget->setDisabled(false);
+            ui->MicphoneWidget->setDisabled(false);
+            ui->PlayerWidget->setDisabled(false);
+            ui->SettingWidget->setDisabled(false);
+            ui->screenDeviceComboBox->setDisabled(false);
+            if (m_server != nullptr) //to notice other process
+            {
+                QTcpSocket* socket = nullptr;
+                do
+                {
+                    socket = m_server->nextPendingConnection();
+                    if (socket != nullptr && socket->isValid())
+                    {
+                        QString data = ui->savePathEdit->text() + "/" + ui->nameEdit->text() + ".mp4";
+                        socket->write(data.toUtf8().data());
+                        socket->flush();
+                    }
+                }
+                while (socket != nullptr);
+            }
+            m_isPauseNow = false;
+            m_backgroundWindow->show();
+            emit SignalProxy::instance()->recodingStoped();
+        }
+    });
+
+    //button connection
+    initFunctionalControls();
+
+    //hot keys
+    initHotKeys();
+
+    //debug preview window
+    initDebugWindow();
+
+    //upload window
+    initUpload();
+
+    //signalproxy
+    initSignalProxy();
+
+    m_hasFirstInit = true;
+}
+
+void RecordingWindow::initSignalProxy()
+{
+    connect(SignalProxy::instance(),&SignalProxy::requestStartRecording,this,&RecordingWindow::startRecord);
+    connect(SignalProxy::instance(),&SignalProxy::requestPauseRecording,this,&RecordingWindow::pauseRecord);
+    connect(SignalProxy::instance(),&SignalProxy::requestStopRecording,this,&RecordingWindow::stopRecord);
+}
+
+void RecordingWindow::initMiniWindow()
+{
+    //miniwindow
+    m_miniWindow = new MinimizedRecordingWindow(m_obs, nullptr);
+    connect(m_miniWindow, &MinimizedRecordingWindow::onRecover, this, [&]()
+    {
+        m_miniWindow->hide();
+        this->show();
+        this->setFocus();
+    });
+    connect(m_miniWindow, &MinimizedRecordingWindow::closed, this, [&]()
+    {
+        m_miniWindow->hide();
+        this->showNormal();
+    });
+    connect(m_miniWindow, &MinimizedRecordingWindow::onRecordAct, this,
+[&]()
+    {
+      m_miniWindow->showMinimized();
+      startRecord();
+    });
+    connect(m_miniWindow, &MinimizedRecordingWindow::onPauseAct, this, &RecordingWindow::pauseRecord);
+}
+
+void RecordingWindow::initBackgroundWindow()
+{
+    //backgroundWindow
+    m_backgroundWindow = new BackgroundWindow(true, nullptr, QGuiApplication::primaryScreen());
+    connect(m_backgroundWindow, &BackgroundWindow::areaChanged, this, [&](
+            int x1, int y1, int x2, int y2)
+            {
+                auto curScreen = findScreen();
+                qreal devicePixelRatio = curScreen->devicePixelRatio();
+                m_startPos = {x1, y1};
+                m_endPos = {x2, y2};
+                auto curRect = QRect{m_startPos, m_endPos};
+                ui->areaWidthEdit->blockSignals(true);
+                ui->areaHeightEdit->blockSignals(true);
+                ui->areaWidthEdit->setText(QString::number(curRect.width() * devicePixelRatio));
+                ui->areaHeightEdit->setText(QString::number(curRect.height() * devicePixelRatio));
+                ui->areaWidthEdit->blockSignals(false);
+                ui->areaHeightEdit->blockSignals(false);
+                resetVideo();
+            });
+
+    connect(m_backgroundWindow, &BackgroundWindow::requestHideWindow, this, [&]()
+    {
+        if (!isFullScreenMode())
+        {
+            this->showMinimized();
+        }
+    });
+
+
+    connect(m_backgroundWindow, &BackgroundWindow::requestToFullScreenMode, this, [&]()
+    {
+        ui->areaComboBox->setCurrentIndex(0);
+    });
+}
+
+void RecordingWindow::initConfig()
+{
     if (m_config.isDefault())
     {
         m_config.frameRateInUse = "25FPS";
@@ -306,10 +415,10 @@ void RecordingWindow::init(int defaultPort)
     ui->countDownEdit->setValidator(validator);
 
     ui->countDownEdit->setText(QString::number(m_config.countDownSeconds));
+}
 
-
-    //init server for communicate between different process
-    setupPort(defaultPort < 0 ? m_config.tcpPort : defaultPort);
+void RecordingWindow::initRecordingStatus()
+{
     //timer for display recording status
     m_seconds = 0;
     m_timer.setInterval(1000);
@@ -337,28 +446,102 @@ void RecordingWindow::init(int defaultPort)
     ui->playerVolume->setChannelCount(m_obs->playerChannelCount());
     ui->playerVolume->setAudioChannel(audioChannel);
     ui->playerVolume->setInverting(true);
-    //get desktops
-    m_obs->addSceneSource(REC_DESKTOP);
-    m_obs->searchRecTargets(REC_DESKTOP);
-    //get micphone and players
-    m_obs->searchPlayerDevice();
-    m_obs->searchMicDevice();
-    //screen mode
-    SET_POP_VIEW(screenDeviceComboBox)
-    QStandardItemModel* curScModel = new QStandardItemModel(this);
-    auto curScItems = m_obs->getRecTargets();
-    for (int i = 0; i < curScItems.size(); ++i)
+}
+
+void RecordingWindow::initUpload()
+{
+
+    ui->unloginNoticeLabel->setVisible(false);
+    if (!m_url.isEmpty() && !m_token.isEmpty())
     {
-        QStandardItem* item = new QStandardItem(curScItems.at(i));;
-        item->setToolTip(curScItems.at(i));
-        curScModel->appendRow(item);
+        m_api->requestHelper()->setBaseAddress(m_url);
+        m_api->requestHelper()->setToken(m_token);
+        qDebug() << u8"程序唤起具备配置基础访问信息:[" << m_url << "][" << m_token << "]";
+
+        bool hasLoginFailed = true;
+        qDebug() << u8"正在验证登录信息";
+        //request user info to check if current url and token is valid
+
+        BLOCK_DEBUG
+        (m_requestHandler, m_api->requestHelper()->getRequest(QNetworkAccessManager::GetOperation,
+             "/api/media/internal/users/current")
+         .timeout(5)
+         .onTimeout([&](QNetworkReply* reply)
+             {
+             qDebug()<<u8"登录信息验证请求超时";
+             })
+         .onSuccess([&](QNetworkReply* reply)
+             {
+             auto str = reply->readAll();
+             QJsonDocument doc = QJsonDocument::fromJson(str);
+             m_curUserAccount = doc["username"].toString();
+             hasLoginFailed = false;
+             reply->deleteLater();
+             })
+         .onFailed([&](QNetworkReply* reply)
+             {
+             qDebug()<<u8"登录信息验证请求失败";
+             qDebug()<< reply->readAll();
+             reply->deleteLater();
+             })
+         .exec());
+
+        m_api->loginHelper()->setLoginStatus(!hasLoginFailed);
+        if (hasLoginFailed)
+        {
+            qDebug() << u8"登录配置无效,取消后续步骤";
+            UserMessageBox::warning(nullptr, u8"失败", u8"当前登录配置无效");
+            ui->uploadButton->setVisible(false);
+            //when build in nle ,do not with login
+            ui->unloginNoticeLabel->setVisible(true);
+        }
+        else
+        {
+            ui->statusLabel->setText(u8"已设置在线登录信息,录制完成后即可上传");
+            QTimer::singleShot(2000, this, &RecordingWindow::checkForUpdate);
+        }
     }
-    ui->screenDeviceComboBox->setModel(curScModel);
+    else
+    {
+        ui->uploadButton->setVisible(false);
+        //when build in nle ,do not with login
+        ui->unloginNoticeLabel->setVisible(true);
+    }
+}
+
+void RecordingWindow::initDebugWindow()
+{
+    if (m_config.showPreviewWindow)
+    {
+        m_test = new testwindow(m_obs);
+        m_test->show();
+        m_test->createDisplayer();
+    }
+    m_showCaptureKey = new QHotkey(QKeySequence("Alt+S"), true);
+    connect(m_showCaptureKey, &QHotkey::activated, this, [&]()
+    {
+        if (m_test != nullptr)
+        {
+            m_test->close();
+            delete m_test;
+        }
+        m_test = new testwindow(m_obs);
+        m_test->show();
+        m_test->createDisplayer();
+    });
+    m_obs->recMicAudio(true, "default");
+    m_obs->recPlayerAudio(true, "default");
+    m_alreadyInited = true;
+}
+
+void RecordingWindow::initFunctionalControls()
+{
+
     //area Init
     SET_POP_VIEW(areaComboBox)
     ui->areaComboBox->setModel(new QStringListModel({ScreenAreaStr[DeskTop], ScreenAreaStr[Customized]}, this));
     //capture type changed
-    connect(ui->areaComboBox, QOverload<int>::of(&QComboBox::currentIndexChanged), this, [&,resetVideo](int curIndex)
+    connect(ui->areaComboBox, QOverload<int>::of(&QComboBox::currentIndexChanged), this, [&](int curIndex)
     {
         auto style = QString("QPushButton{"
             "qproperty-icon:url(:/icons/images/{iconName}.svg);"
@@ -368,7 +551,10 @@ void RecordingWindow::init(int defaultPort)
             "}"
             "QPushButton:hover"
             "{"
-            "background-color:#212126;}");
+            "background-color:#212126;"
+            "border-radius: 4px;"
+            "border: 1px solid #5967f2;"
+            "}");
         ui->areaButton->setStyleSheet(isFullScreenMode()
                                           ? style.replace("{iconName}", "fullscreen")
                                           : style.replace("{iconName}", "areas"));
@@ -393,9 +579,23 @@ void RecordingWindow::init(int defaultPort)
         QMetaObject::invokeMethod(this, "rebuildBackgroundWindow");
         QMetaObject::invokeMethod(this, "rebuildBackgroundWindow");
     });
+
+
+    //screen mode
+    SET_POP_VIEW(screenDeviceComboBox)
+    QStandardItemModel* curScModel = new QStandardItemModel(this);
+    auto curScItems = m_obs->getRecTargets();
+    for (int i = 0; i < curScItems.size(); ++i)
+    {
+        QStandardItem* item = new QStandardItem(curScItems.at(i));;
+        item->setToolTip(curScItems.at(i));
+        curScModel->appendRow(item);
+    }
+    ui->screenDeviceComboBox->setModel(curScModel);
+
     //screen comboBox changed
     connect(ui->screenDeviceComboBox, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
-            [&, resetVideo](int curIndex)
+            [&](int curIndex)
             {
                 auto curScreen = findScreen();
                 ui->areaWidthEdit->blockSignals(true);
@@ -416,12 +616,13 @@ void RecordingWindow::init(int defaultPort)
     ui->areaComboBox->setCurrentIndex(0);
     ui->areaWidthEdit->blockSignals(true);
     ui->areaHeightEdit->blockSignals(true);
-    ui->areaWidthEdit->setText(QString::number(firstScreen->geometry().width() * pix));
-    ui->areaHeightEdit->setText(QString::number(firstScreen->geometry().height() * pix));
+    ui->areaWidthEdit->setText(QString::number(QGuiApplication::primaryScreen()->geometry().width() * QGuiApplication::primaryScreen()->devicePixelRatio()));
+    ui->areaHeightEdit->setText(QString::number(QGuiApplication::primaryScreen()->geometry().height() * QGuiApplication::primaryScreen()->devicePixelRatio()));
     rebuildBackgroundWindow();
     resetVideo();
     ui->areaWidthEdit->blockSignals(false);
     ui->areaHeightEdit->blockSignals(false);
+
 
     //Sound device name
     SET_POP_VIEW(micphoneDeviceComboBox)
@@ -440,6 +641,8 @@ void RecordingWindow::init(int defaultPort)
         auto curId = m_obs->micDeviceId(ui->micphoneDeviceComboBox->currentText());
         m_obs->resetMicphoneVolumeLevelCallback(curId);
     });
+
+
     //player device name
     SET_POP_VIEW(playerDeviceComboBox)
     QStandardItemModel* curPlayerModel = new QStandardItemModel(this);
@@ -457,80 +660,8 @@ void RecordingWindow::init(int defaultPort)
         auto curId = m_obs->playerDeviceId(ui->playerDeviceComboBox->currentText());
         m_obs->resetPlayerVolumeLevelCallback(curId);
     });
-    //button status
-    connect(m_obs.get(), &ObsWrapper::recordStatusChanged, this, [&](int status)
-    {
-        m_backgroundWindow->hide();
-        auto style = QString("QPushButton{"
-            "qproperty-icon:url(:/icons/images/{iconName}.svg);"
-            "qproperty-iconSize:44px;"
-            "background-color:#2F2F34;"
-            "border-radius:4px;"
-            "}");
-        if (status == RecordingStatus::Recording)
-        {
-            m_timer.start();
-            ui->RecordingButton->setStyleSheet(style.replace("{iconName}", "stop_recoding"));
-            ui->statusLabel->setText("");
-            ui->ScreenAreaWidget->setDisabled(true);
-            ui->MicphoneWidget->setDisabled(true);
-            ui->PlayerWidget->setDisabled(true);
-            ui->SettingWidget->setDisabled(true);
-            ui->screenDeviceComboBox->setDisabled(true);
-            m_isPauseNow = false;
-        }
-        else if (status == RecordingStatus::Paused)
-        {
-            m_timer.stop();
-            ui->RecordingButton->setStyleSheet(style.replace("{iconName}", "stop_recoding"));
-            ui->statusLabel->setText(u8"暂停中...");
-            ui->ScreenAreaWidget->setDisabled(true);
-            ui->MicphoneWidget->setDisabled(true);
-            ui->PlayerWidget->setDisabled(true);
-            ui->SettingWidget->setDisabled(true);
-            ui->screenDeviceComboBox->setDisabled(true);
-            m_isPauseNow = true;
-        }
-        else
-        {
-            m_timer.stop();
-            m_seconds = 0;
-            ui->RecordingButton->setStyleSheet(style.replace("{iconName}", "start"));
-            ui->statusLabel->setText("");
-            ui->ScreenAreaWidget->setDisabled(false);
-            ui->MicphoneWidget->setDisabled(false);
-            ui->PlayerWidget->setDisabled(false);
-            ui->SettingWidget->setDisabled(false);
-            ui->screenDeviceComboBox->setDisabled(false);
-            if (m_server != nullptr) //to notice other process
-            {
-                QTcpSocket* socket = nullptr;
-                do
-                {
-                    socket = m_server->nextPendingConnection();
-                    if (socket != nullptr && socket->isValid())
-                    {
-                        QString data = ui->savePathEdit->text() + "/" + ui->nameEdit->text() + ".mp4";
-                        socket->write(data.toUtf8().data());
-                        socket->flush();
-                    }
-                }
-                while (socket != nullptr);
-            }
-            m_isPauseNow = false;
-            m_backgroundWindow->show();
-        }
-    });
 
-    //region set
-    connect(ui->areaButton, &QPushButton::clicked, this, [&]()
-    {
-        if (isFullScreenMode())
-            return;
-        auto sc = findScreen();
-        m_backgroundWindow->resetSelectionPos(sc->geometry().width(), sc->geometry().height());
-    });
-
+    //area size line edit
     auto setSizeAct = [&]()
     {
         if (isFullScreenMode())
@@ -540,32 +671,47 @@ void RecordingWindow::init(int defaultPort)
         m_backgroundWindow->setSize(ui->areaWidthEdit->text().toInt() / devicePixelRatio,
                                     ui->areaHeightEdit->text().toInt() / devicePixelRatio);
     };
-    connect(ui->areaWidthEdit, &QLineEdit::textEdited, this, [&, setSizeAct]()
-    {
-        setSizeAct();
-    });
 
+    connect(ui->areaWidthEdit, &QLineEdit::textEdited, this, [&, setSizeAct]()
+{
+    setSizeAct();
+});
     connect(ui->areaHeightEdit, &QLineEdit::textEdited, this, [&, setSizeAct]()
     {
         setSizeAct();
     });
-    //hotkey
-    connect(ui->PauseShortCut, &QKeySequenceEdit::keySequenceChanged, this, [&](const QKeySequence& s)
+
+    //title buttons
+    connect(ui->closeButton, &QPushButton::clicked, this, [&]()
+{
+    if (m_isRecordingStarted)
     {
-        m_pauseHotKey->setRegistered(false);
-        delete m_pauseHotKey;
-        m_pauseHotKey = new QHotkey(s, true);
-        connect(m_pauseHotKey, &QHotkey::activated, this, &RecordingWindow::pauseRecord);
-    });
-    connect(ui->StartShortCut, &QKeySequenceEdit::keySequenceChanged, this, [&](const QKeySequence& s)
+        auto res = UserMessageBox::question(this, "提示", "当前正在录制，确认退出？");
+        if (res == UserMessageBox::ButtonType::Ok)
+        {
+            stopRecord();
+            close();
+        }
+    }
+    else
     {
-        m_recordHotKey->setRegistered(false);
-        delete m_recordHotKey;
-        m_recordHotKey = new QHotkey(s, true);
-        connect(m_recordHotKey, &QHotkey::activated, this, &RecordingWindow::startRecord);
+        close();
+    }
+});
+    connect(ui->miniWindowButton, &QPushButton::clicked, this, [&]()
+    {
+        this->hide();
+        m_miniWindow->show();
     });
-    connect(m_pauseHotKey, &QHotkey::activated, this, &RecordingWindow::pauseRecord);
-    connect(m_recordHotKey, &QHotkey::activated, this, &RecordingWindow::startRecord);
+    connect(ui->minimizeButton, &QPushButton::clicked, this, &RecordingWindow::showMinimized);
+    //region set
+    connect(ui->areaButton, &QPushButton::clicked, this, [&]()
+    {
+        if (isFullScreenMode())
+            return;
+        auto sc = findScreen();
+        m_backgroundWindow->resetSelectionPos(sc->geometry().width(), sc->geometry().height());
+    });
     //save path
     connect(ui->pathSelectionButton, &QPushButton::clicked, this, [&]()
     {
@@ -583,50 +729,75 @@ void RecordingWindow::init(int defaultPort)
     {
         startRecord();
     });
-
     //micphone button
     connect(ui->micphoneButton, &QPushButton::clicked, this, [&]()
     {
         m_isMicphoneEnable = !m_isMicphoneEnable;
         ui->micphoneLabel->setText(m_isMicphoneEnable ? "" : u8"已禁用");
+        ui->micphoneVolume->setVisible(m_isMicphoneEnable);
         auto curId = m_obs->micDeviceId(ui->micphoneDeviceComboBox->currentText());
         m_obs->recMicAudio(m_isMicphoneEnable, curId);
+        auto style = QString("QPushButton"
+            "{"
+            "qproperty-icon:url(:/icons/images/{iconName}.svg);"
+            "qproperty-iconSize:54px;"
+            "background-color:#2F2F34;"
+            "border-radius:4px;"
+            "border:1px solid #454549;"
+            "}"
+            "QPushButton:hover"
+            "{"
+            "background-color:#212126;"
+            "border-radius: 4px;"
+            "border: 1px solid #5967f2;"
+            "}");
+        if (m_isMicphoneEnable)
+        {
+            style.replace("{iconName}", "micphone");
+        }
+        else
+        {
+            style.replace("{iconName}", "micphone_mute");
+        }
+        ui->micphoneButton->setStyleSheet(style);
+        ui->micphoneButton->update();
     });
     //player button
     connect(ui->playerButton, &QPushButton::clicked, this, [&]()
     {
         m_isPlayerEnable = !m_isPlayerEnable;
         ui->playerLabel->setText(m_isPlayerEnable ? "" : u8"已禁用");
+        ui->playerVolume->setVisible(m_isPlayerEnable);
         auto curId = m_obs->playerDeviceId(ui->playerDeviceComboBox->currentText());
         m_obs->recPlayerAudio(m_isPlayerEnable, curId);
+        auto style = QString("QPushButton"
+            "{"
+            "qproperty-icon:url(:/icons/images/{iconName}.svg);"
+            "qproperty-iconSize:54px;"
+            "background-color:#2F2F34;"
+            "border-radius:4px;"
+            "border:1px solid #454549;"
+            "}"
+            "QPushButton:hover"
+            "{"
+            "background-color:#212126;"
+            "border-radius: 4px;"
+            "border: 1px solid #5967f2;"
+            "}");
+        if (m_isPlayerEnable)
+        {
+            style.replace("{iconName}", "player");
+        }
+        else
+        {
+            style.replace("{iconName}", "player_mute");
+        }
+        ui->playerButton->setStyleSheet(style);
+        ui->playerButton->update();
     });
-
     //login button
     connect(ui->signinButton, &QPushButton::clicked, this, &RecordingWindow::invokeLoginWindow);
-    //debug preview window
-    if (m_config.showPreviewWindow)
-    {
-        m_test = new testwindow(m_obs);
-        m_test->show();
-        m_test->createDisplayer();
-    }
-    m_showCaptureKey = new QHotkey(QKeySequence("Alt+S"), true);
-    connect(m_showCaptureKey, &QHotkey::activated, this, [&]()
-    {
-        if (m_test != nullptr)
-        {
-            m_test->close();
-            delete m_test;
-        }
-        m_test = new testwindow(m_obs);
-        m_test->show();
-        m_test->createDisplayer();
-    });
-    m_obs->recMicAudio(true, "default");
-    m_obs->recPlayerAudio(true, "default");
-    m_alreadyInited = true;
-
-    //upload window
+    //upload button
     connect(ui->uploadButton, &QPushButton::clicked, this, [&]()
     {
         auto curStr = QFileDialog::getOpenFileName(
@@ -640,64 +811,31 @@ void RecordingWindow::init(int defaultPort)
             //invokeUploadWindow(curStrs);
         }
     });
-    ui->unloginNoticeLabel->setVisible(false);
-    if (!m_url.isEmpty() && !m_token.isEmpty())
-    {
-        m_api->requestHelper()->setBaseAddress(m_url);
-        m_api->requestHelper()->setToken(m_token);
-        qDebug() << u8"程序唤起具备配置基础访问信息:[" << m_url << "][" << m_token << "]";
-
-        bool hasLoginFailed = true;
-        qDebug() << u8"正在验证登录信息";
-        //request user info to check if current url and token is valid
-
-        BLOCK_DEBUG
-        (m_requestHandler,m_api->requestHelper()->getRequest(QNetworkAccessManager::GetOperation,
-            "/api/media/internal/users/current")
-        .timeout(5)
-        .onTimeout([&](QNetworkReply* reply)
-                        {
-                        qDebug()<<u8"登录信息验证请求超时";
-                        })
-        .onSuccess([&](QNetworkReply* reply)
-        {
-            auto str = reply->readAll();
-            QJsonDocument doc = QJsonDocument::fromJson(str);
-            m_curUserAccount = doc["username"].toString();
-            hasLoginFailed = false;
-            reply->deleteLater();
-        })
-        .onFailed([&](QNetworkReply* reply)
-        {
-            qDebug()<<u8"登录信息验证请求失败";
-            qDebug()<< reply->readAll();
-            reply->deleteLater();
-        })
-        .exec());
-
-        m_api->loginHelper()->setLoginStatus(!hasLoginFailed);
-        if (hasLoginFailed)
-        {
-            qDebug() << u8"登录配置无效,取消后续步骤";
-            UserMessageBox::warning(nullptr, u8"失败", u8"当前登录配置无效");
-            ui->uploadButton->setVisible(false);
-            //when build in nle ,do not with login
-            ui->unloginNoticeLabel->setVisible(true);
-
-        }
-        else
-        {
-            ui->statusLabel->setText(u8"已设置在线登录信息,录制完成后即可上传");
-            QTimer::singleShot(2000, this, &RecordingWindow::checkForUpdate);
-        }
-    }
-    else
-    {
-        ui->uploadButton->setVisible(false);
-        //when build in nle ,do not with login
-        ui->unloginNoticeLabel->setVisible(true);
-    }
 }
+
+void RecordingWindow::initHotKeys()
+{
+    //hotkey
+    connect(ui->PauseShortCut, &QKeySequenceEdit::keySequenceChanged, this, [&](const QKeySequence& s)
+    {
+        m_pauseHotKey->setRegistered(false);
+        delete m_pauseHotKey;
+        m_pauseHotKey = new QHotkey(s, true);
+        connect(m_pauseHotKey, &QHotkey::activated, this, &RecordingWindow::pauseRecord);
+    });
+    connect(ui->StartShortCut, &QKeySequenceEdit::keySequenceChanged, this, [&](const QKeySequence& s)
+    {
+        m_recordHotKey->setRegistered(false);
+        delete m_recordHotKey;
+        m_recordHotKey = new QHotkey(s, true);
+        connect(m_recordHotKey, &QHotkey::activated, this, &RecordingWindow::startRecord);
+    });
+    connect(m_pauseHotKey, &QHotkey::activated, this, &RecordingWindow::pauseRecord);
+    connect(m_recordHotKey, &QHotkey::activated, this, &RecordingWindow::startRecord);
+}
+
+#pragma endregion
+
 
 void RecordingWindow::mousePressEvent(QMouseEvent* e)
 {
@@ -746,11 +884,11 @@ void RecordingWindow::setupPort(int port)
     m_server->setMaxPendingConnections(50);
 
     auto originPort = port;
-    bool startTCPSuccess =false;
+    bool startTCPSuccess = false;
     do
     {
         startTCPSuccess = m_server->listen(QHostAddress::Any, port);
-        if (!startTCPSuccess&&port<65535)
+        if (!startTCPSuccess && port < 65535)
         {
             port++;
         }
@@ -761,14 +899,14 @@ void RecordingWindow::setupPort(int port)
     {
         qWarning() << "tcp server start listen at [" << originPort << "] failed!";
         UserMessageBox::warning(this, u8"警告",
-            u8"服务监听端口：" + QString::number(originPort) + u8"失败！");
+                                u8"服务监听端口：" + QString::number(originPort) + u8"失败！");
         qApp->exit(-1);
     }
-    else if (startTCPSuccess && port!=originPort)
+    else if (startTCPSuccess && port != originPort)
     {
-        qWarning() << "tcp server replace ["<<originPort<<"] with [" << port << "]";
+        qWarning() << "tcp server replace [" << originPort << "] with [" << port << "]";
         UserMessageBox::information(this, u8"通知",
-           u8"原服务监听端口：" + QString::number(originPort) + u8"不可用！已替换为：" + QString::number(port));
+                                    u8"原服务监听端口：" + QString::number(originPort) + u8"不可用！已替换为：" + QString::number(port));
     }
     qDebug() << "tcp server start listen at [" << port << "]";
 }
@@ -781,6 +919,11 @@ void RecordingWindow::closeEvent(QCloseEvent* event)
 void RecordingWindow::showEvent(QShowEvent* event)
 {
     QMainWindow::showEvent(event);
+
+    if (!m_hasFirstInit)
+    {
+        init(m_socketPort);
+    }
 }
 
 void RecordingWindow::startRecord()
@@ -895,9 +1038,19 @@ void RecordingWindow::pauseRecord()
 
 void RecordingWindow::stopRecord()
 {
-    this->showNormal();
-    this->raise();
-    this->activateWindow();
+    if (this->isHidden()&& m_miniWindow)
+    {
+        m_miniWindow->showNormal();
+        m_miniWindow->raise();
+        m_miniWindow->activateWindow();
+    }
+    else
+    {
+        this->showNormal();
+        this->raise();
+        this->activateWindow();
+    }
+
     if (m_obs->isRecordingStart())
     {
         if (m_seconds < 3) //too short cause crash
@@ -1005,7 +1158,7 @@ void RecordingWindow::invokeUploadNoticeWindow(const QString& file)
 {
     m_backgroundWindow->hide();
     UploadNoticeWindow* dialog = new UploadNoticeWindow(file, m_api, nullptr);
-    connect(dialog,&UploadNoticeWindow::requestLogin,this,&RecordingWindow::invokeLoginWindow);
+    connect(dialog, &UploadNoticeWindow::requestLogin, this, &RecordingWindow::invokeLoginWindow);
     dialog->exec();
     dialog->deleteLater();
     m_backgroundWindow->showFullScreen();
@@ -1020,7 +1173,7 @@ void RecordingWindow::invokePreviewWindow(const QString& file)
     }
     m_backgroundWindow->hide();
     VideoPreviewDialog* dialog = new VideoPreviewDialog(file, m_api, nullptr);
-    connect(dialog,&VideoPreviewDialog::requestLogin,this,&RecordingWindow::invokeLoginWindow);
+    connect(dialog, &VideoPreviewDialog::requestLogin, this, &RecordingWindow::invokeLoginWindow);
     dialog->exec();
     dialog->deleteLater();
     m_backgroundWindow->showFullScreen();

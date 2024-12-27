@@ -29,11 +29,11 @@
    <string notr="true">QFrame#contentFrame
 {
 background-color:#28282E;
-border-top : 1px solid #0F0F0F;
-border-left : 1px solid #0F0F0F;
-border-right : 1px solid #0F0F0F;
-border-bottom : 1px solid #0F0F0F;
-border-radius:10px;
+border-top : 1px solid #454549;
+border-left : 1px solid #454549;
+border-right : 1px solid #454549;
+border-bottom : 1px solid #454549;
+border-radius:0px;
 }
 QLabel
 {

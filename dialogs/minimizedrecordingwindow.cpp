@@ -10,7 +10,9 @@
 #include <QMouseEvent>
 
 MinimizedRecordingWindow::MinimizedRecordingWindow(const QSharedPointer<ObsWrapper>& obs_wrapper, QWidget* parent)
-    : QDialog(parent), ui(new Ui::MinimizedRecordingWindow), m_obs(obs_wrapper)
+    : DragMoveDialog(parent)
+    , ui(new Ui::MinimizedRecordingWindow)
+    , m_obs(obs_wrapper)
 {
     ui->setupUi(this);
     // hide title bar
@@ -20,44 +22,66 @@ MinimizedRecordingWindow::MinimizedRecordingWindow(const QSharedPointer<ObsWrapp
     setWindowTitle(u8"录屏");
     connect(m_obs.get(), &ObsWrapper::recordStatusChanged, this, [&](const int status)
     {
-        auto style = QString("QPushButton{"
-            "qproperty-icon:url(:/icons/images/{iconName}.svg);"
-            "qproperty-iconSize:20px;"
-            "background-color:#2F2F34;"
-            "border-radius:4px;"
-            "}");
+        auto startButtonStyle = QString("QPushButton {"
+            "    qproperty-icon:url(:/icons/images/{iconName}.svg);"
+            "    qproperty-iconSize:20px;"
+            "    selection-background-color: #40404A;"
+            "    selection-color: #3B3B41;"
+            "    color: #99A1B0;"
+            "    height:24px;"
+            "    background-color: transparent;"
+            "    border-style: solid;"
+            "    border: 0px solid #0F0F0F;"
+            "    border-radius: 4;"
+            "    padding: 1px 0px 1px 2px;"
+            "    font-size: 12px;"
+            "    font-family:Microsoft YaHei UI;"
+            "    padding-left:0px;"
+            "}"
+            ""
+            "QPushButton:hover {"
+            "    background-color: #2F2F34;"
+            "    border-radius: 4px;"
+            "    border: 1px solid #5967f2;"
+            "}"
+        );
         if (status == RecordingStatus::Recording)
         {
-            ui->recordingButton->setStyleSheet(style.replace("{iconName}", "stop_recoding_minimize"));
+            ui->recordingButton->setStyleSheet(startButtonStyle.replace("{iconName}", "stop_recoding_minimize"));
+            ui->pauseButton->setStyleSheet(startButtonStyle.replace("{iconName}", "pause"));
+            ui->pauseButton->setEnabled(true);
         }
         else if (status == RecordingStatus::Paused)
         {
-            ui->recordingButton->setStyleSheet(style.replace("{iconName}", "stop_recoding_minimize"));;
+            ui->recordingButton->setStyleSheet(startButtonStyle.replace("{iconName}", "stop_recoding_minimize"));
+            ui->pauseButton->setStyleSheet(startButtonStyle.replace("{iconName}", "play"));
+            ui->pauseButton->setEnabled(true);
         }
         else
         {
-            ui->recordingButton->setStyleSheet(style.replace("{iconName}", "start"));
+            ui->recordingButton->setStyleSheet(startButtonStyle.replace("{iconName}", "start"));
+            ui->pauseButton->setStyleSheet(startButtonStyle.replace("{iconName}", "play"));
+            ui->pauseButton->setEnabled(false);
         }
     });
     connect(m_obs.get(), &ObsWrapper::micVolumeDataChange, this, [&]
         (const float* magnitude, const float* peak, const float* inputPeak)
             {
                 onAudioFrame(magnitude, peak, inputPeak, true);
-            },Qt::QueuedConnection);
+            }, Qt::QueuedConnection);
     connect(m_obs.get(), &ObsWrapper::playerVolumeDataChange, this, [&]
         (const float* magnitude, const float* peak, const float* inputPeak)
             {
                 onAudioFrame(magnitude, peak, inputPeak, false);
-            },Qt::QueuedConnection);
+            }, Qt::QueuedConnection);
     int audioChannel = m_obs->audioChannel();
     ui->CurrentVolume->setChannelCount(m_obs->micChannelCount());
     ui->CurrentVolume->setAudioChannel(audioChannel);
     ui->CurrentVolume->setInverting(true);
-    connect(ui->recoverButton,&QPushButton::clicked,this,&MinimizedRecordingWindow::onRecover);
-    connect(ui->recordingButton,&QPushButton::clicked,this,[&]()
-    {
-       emit onRecordAct();
-    });
+
+    connect(ui->recoverButton, &QPushButton::clicked, this, &MinimizedRecordingWindow::onRecover);
+    connect(ui->recordingButton, &QPushButton::clicked, this, &MinimizedRecordingWindow::onRecordAct);
+    connect(ui->pauseButton, &QPushButton::clicked, this, &MinimizedRecordingWindow::onPauseAct);
 }
 
 MinimizedRecordingWindow::~MinimizedRecordingWindow()
@@ -94,29 +118,4 @@ void MinimizedRecordingWindow::onAudioFrame(const float currentMagnitude[8], con
         }
         ui->CurrentVolume->setLevels(m_currentMagnitude, m_currentPeak, m_currentInputPeak);
     }
-}
-void MinimizedRecordingWindow::mousePressEvent(QMouseEvent *e)
-{
-    if (e->button() != Qt::LeftButton) {
-        return;
-    }
-    m_pos = e->globalPos() - mapToGlobal({0,0}) ;
-    m_leftButtonPressed = true;
-}
-
-void MinimizedRecordingWindow::mouseMoveEvent(QMouseEvent *e)
-{
-    if (!m_leftButtonPressed) {
-        return;
-    }
-    QPoint posOffset = e->globalPos() - m_pos;
-    move( posOffset);
-}
-
-void MinimizedRecordingWindow::mouseReleaseEvent(QMouseEvent *e)
-{
-    if (e->button() != Qt::LeftButton) {
-        return;
-    }
-    m_leftButtonPressed = false;
 }

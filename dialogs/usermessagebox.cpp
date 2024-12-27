@@ -99,7 +99,7 @@ UserMessageBox::ButtonType UserMessageBox::showMessageBox(QWidget* parent,
     auto styleStr = QString(
         "QDialog {"
         "background-color: #28282E;"
-        "border: 1px solid #0F0F0F;"
+        "border: 1px solid #454549;"
         "border-radius: 0px;"
         "}"
         "QDialog #m_notifyLabel {"
@@ -124,10 +124,12 @@ UserMessageBox::ButtonType UserMessageBox::showMessageBox(QWidget* parent,
         "border: 1px solid #0F0F0F;"
         "border-radius:4px;"
         "}"
-        "QPushButton::hover"
-        "{"
-        "background-color:#880F0F0F;"
-        "}");
+        "QPushButton:hover"
+            "{"
+            "background-color:#212126;"
+            "border-radius: 4px;"
+            "border: 1px solid #5967f2;"
+            "}");
     switch (noticeType)
     {
     case Info:
