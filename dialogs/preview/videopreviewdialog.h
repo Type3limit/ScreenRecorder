@@ -6,21 +6,20 @@
 #define VIDEOPREVIEWDIALOG_H
 
 #include "dragmovedialog.h"
-#include "QtAVPlayer/qavplayer.h"
-#include "QtAVPlayer/qavvideoframe.h"
-#include "QtAVPlayer/qavaudiooutput.h"
 #include "onlineservice.h"
 #include "videorenderer.h"
+#include <QMutex>
 
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class VideoPreviewDialog; }
 QT_END_NAMESPACE
-
+class QAVPlayer;
+class QAVAudioOutput;
 class VideoPreviewDialog : public DragMoveDialog {
-Q_OBJECT
+    Q_OBJECT
 
-public:
+    public:
     explicit VideoPreviewDialog(const QString& file,QSharedPointer<OnlineService> apiInstance,QWidget *parent = nullptr);
     ~VideoPreviewDialog() override;
 
@@ -35,6 +34,8 @@ public:
     void invokeUploadWindow();
 
     void seek(qint64 position);
+
+    void resizeEvent(QResizeEvent* event) override;
 public: signals:
     void hasUploadOption();
     void requestLogin();
@@ -54,13 +55,19 @@ private:
 
     bool m_ignoreTimerUpdate = false;
 
+
+    bool m_onResize = false;
+
     QSharedPointer<OnlineService> m_api;
 
     VideoRenderer* m_renderer{nullptr};
     MediaObject* m_mediaObject{nullptr};
 
     QTimer m_timer;
+
+    QMutex m_mutex;
 };
+
 
 
 #endif //VIDEOPREVIEWDIALOG_H

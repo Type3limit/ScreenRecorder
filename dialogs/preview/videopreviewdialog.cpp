@@ -5,7 +5,9 @@
 // You may need to build the project (run Qt uic code generator) to get "ui_VideoPreviewDialog.h" resolved
 
 #include "videopreviewdialog.h"
-
+#include "QtAVPlayer/qavplayer.h"
+#include "QtAVPlayer/qavvideoframe.h"
+#include "QtAVPlayer/qavaudiooutput.h"
 #include "cloumnchoosenwidget.h"
 #include "ui_VideoPreviewDialog.h"
 #include "usermessagebox.h"
@@ -15,7 +17,7 @@
 VideoPreviewDialog::VideoPreviewDialog(const QString& file, QSharedPointer<OnlineService> apiInstance, QWidget* parent) :
     m_previewFile(file)
     , m_api(apiInstance)
-    , DragMoveDialog(parent)
+    , DragMoveDialog(true,parent)
     , ui(new Ui::VideoPreviewDialog)
 {
     ui->setupUi(this);
@@ -27,6 +29,12 @@ VideoPreviewDialog::VideoPreviewDialog(const QString& file, QSharedPointer<Onlin
 
 VideoPreviewDialog::~VideoPreviewDialog()
 {
+    QMutexLocker locker(&m_mutex);
+    m_closed = true;
+
+    if (m_renderer && m_renderer->m_surface && m_renderer->m_surface->isActive()) {
+        m_renderer->m_surface->stop();
+    }
     delete m_audioOutPut;
     delete m_player;
     delete ui;
@@ -78,18 +86,43 @@ void VideoPreviewDialog::init()
         m_audioOutPut->play(frame);
     }, Qt::DirectConnection);
     QObject::connect(m_player, &QAVPlayer::videoFrame, this, [&](const QAVVideoFrame &frame) {
-         if (m_renderer->m_surface == nullptr||m_closed)
-             return;
+        QMutexLocker locker(&m_mutex);
 
-         QVideoFrame videoFrame = frame.convertTo(AVPixelFormat::AV_PIX_FMT_RGB32);
-         if (!m_renderer->m_surface->isActive() ||
-             m_renderer->m_surface->surfaceFormat().frameSize() != videoFrame.size())
-             {
-             QVideoSurfaceFormat f(videoFrame.size(), videoFrame.pixelFormat(), videoFrame.handleType());
-             m_renderer->m_surface->start(f);
-         }
-         if (m_renderer->m_surface->isActive())
-             m_renderer->m_surface->present(videoFrame);
+   // 先检查基本状态
+   if (!m_renderer || !m_renderer->m_surface || m_closed || m_onResize) {
+       return;
+   }
+
+   // 转换视频帧
+   QVideoFrame videoFrame = frame.convertTo(AVPixelFormat::AV_PIX_FMT_RGB32);
+   if (!videoFrame.isValid()) {
+       qWarning() << "Invalid video frame!";
+       return;
+   }
+
+   // 安全地重新配置surface
+   if (!m_renderer->m_surface->isActive()) {
+       QVideoSurfaceFormat format(videoFrame.size(), videoFrame.pixelFormat(), videoFrame.handleType());
+       if (!m_renderer->m_surface->start(format)) {
+           qWarning() << "Failed to start video surface!";
+           return;
+       }
+   } else if (m_renderer->m_surface->surfaceFormat().frameSize() != videoFrame.size()) {
+       // 如果尺寸改变，先停止再重新开始
+       m_renderer->m_surface->stop();
+       QVideoSurfaceFormat format(videoFrame.size(), videoFrame.pixelFormat(), videoFrame.handleType());
+       if (!m_renderer->m_surface->start(format)) {
+           qWarning() << "Failed to restart video surface with new size!";
+           return;
+       }
+   }
+
+   // 确保surface仍然是活动的再呈现
+   if (m_renderer->m_surface->isActive()) {
+       if (!m_renderer->m_surface->present(videoFrame)) {
+           qWarning() << "Failed to present video frame!";
+       }
+   }
      }, Qt::DirectConnection);
 
     QFile file(m_previewFile);
@@ -104,9 +137,10 @@ void VideoPreviewDialog::init()
 
     m_player->setSource(m_previewFile);
     m_player->setSynced(true);
-    m_player->setInputOptions(QMap<QString, QString>{
+    m_player->setInputOptions(
+        QMap<QString, QString>{
         {"fastseek","1"},
-        {"accurate_seek","0"},
+        {"accurate_seek","1"},
         {"threads","4"},
         {"skip_loop_filter","ALL"},
         {"skip_frame","NONKEY"}
@@ -250,4 +284,22 @@ void VideoPreviewDialog::seek(qint64 position)
     m_player->pause();
     m_player->seek(position);
     onPositionChanged(position);
+}
+
+
+
+void VideoPreviewDialog::resizeEvent(QResizeEvent* event)
+{
+    QMutexLocker locker(&m_mutex);
+    m_onResize = true;
+
+    // 调用基类的resize事件
+    DragMoveDialog::resizeEvent(event);
+
+    // 确保surface安全停止
+    if (m_renderer && m_renderer->m_surface && m_renderer->m_surface->isActive()) {
+        m_renderer->m_surface->stop();
+    }
+
+    m_onResize = false;
 }
