@@ -9,7 +9,7 @@
 #include <QJsonArray>
 #include "extensionmethods.h"
 
-#define CURRENT_PROGRAM_VERSION  QString("1.0.3")
+#define CURRENT_PROGRAM_VERSION  QString("1.0.4")
 
 using StrEx = ExtensionMethods::QStringExtension;
 
@@ -26,6 +26,7 @@ public:
     QString loginAddress;
     QList<QString> bitRatesPresets{"2MB","4MB","8MB"};
     QList<QString> frameRatePresets{"25FPS","30FPS","50FPS","60FPS"};
+    int stopRecInterval{0};
     int tcpPort = 29989;
     bool countDownEnable = false;
     int countDownSeconds = 3;
@@ -53,6 +54,7 @@ public:
             {"loginAddress",loginAddress},
             {"countDownEnable", countDownEnable},
             {"countDownSeconds", countDownSeconds},
+            {"stopRecInterval", stopRecInterval},
             {"tcpPort", tcpPort},
             {"showPreviewWindow", showPreviewWindow},
             {"bitRatesPresets",bitArr},
@@ -71,6 +73,7 @@ public:
         this->savePath = obj["savePath"].toString();
         this->startRecordShortCut = obj["startRecordShortCut"].toString();
         this->pauseRecordShortCut = obj["pauseRecordShortCut"].toString();
+        this->stopRecInterval = obj["stopRecInterval"].toInt();
         this->countDownEnable = obj["countDownEnable"].toBool();
         this->countDownSeconds = obj["countDownSeconds"].toInt();
         this->loginUserName = obj["loginUserName"].toString();

@@ -65,6 +65,8 @@ RecordingWindow::RecordingWindow(const QString& url, const QString& token, int p
     setAttribute(Qt::WA_TranslucentBackground);
     setWindowIcon(QIcon(QString(":/icons/images/recording.svg")));
     setWindowTitle(u8"录屏");
+
+
 }
 
 RecordingWindow::~RecordingWindow()
@@ -392,6 +394,7 @@ void RecordingWindow::initConfig()
         m_config.pauseRecordShortCut = QKeySequence::fromString("F8").toString();
         m_config.countDownEnable = false;
         m_config.countDownSeconds = 3;
+        m_config.stopRecInterval = 0;
         m_config.tcpPort = 29989;
         m_config.showPreviewWindow = false;
         m_config.bitRatesPresets = {"2MB", "4MB", "8MB"};
@@ -415,6 +418,11 @@ void RecordingWindow::initConfig()
     ui->countDownEdit->setValidator(validator);
 
     ui->countDownEdit->setText(QString::number(m_config.countDownSeconds));
+
+    auto minute = m_config.stopRecInterval / 60;
+    auto sec = m_config.stopRecInterval%60;
+    ui->m_minuteSpinBox->setValue(minute);
+    ui->m_secondSpinBox->setValue(sec);
 }
 
 void RecordingWindow::initRecordingStatus()
@@ -424,6 +432,7 @@ void RecordingWindow::initRecordingStatus()
     m_timer.setInterval(1000);
     connect(&m_timer, &QTimer::timeout, this, [&]()
     {
+
         ++m_seconds;
         int hours = m_seconds / 3600;
         int mins = (m_seconds - hours * 3600) / 60;
@@ -432,6 +441,11 @@ void RecordingWindow::initRecordingStatus()
                                                    .arg(mins, 2, 10, QLatin1Char('0'))
                                                    .arg(secs, 2, 10, QLatin1Char('0'));
         ui->statusLabel->setText(QString(formattedTime));
+        if (m_stopTimeInterval!=0 && m_seconds>=m_stopTimeInterval)
+        {
+            qDebug()<<u8"record stopped by timer";
+            stopRecord();
+        }
     });
     //widgets connection
     //audio signal display
@@ -974,7 +988,10 @@ void RecordingWindow::startRecord()
             UserMessageBox::warning(this, u8"警告", u8"当前存储路径不合法!");
             return;
         }
+        m_stopTimeInterval = ui->m_minuteSpinBox->value() * 60;
+        m_stopTimeInterval += ui->m_secondSpinBox->value();
 
+        qDebug()<<"current recording time interval:"<<m_stopTimeInterval;
 
         auto fileName = ui->savePathEdit->text() + "/" + ui->nameEdit->text();
 
@@ -1038,6 +1055,7 @@ void RecordingWindow::pauseRecord()
 
 void RecordingWindow::stopRecord()
 {
+    m_stopTimeInterval = 0;
     if (this->isHidden()&& m_miniWindow)
     {
         m_miniWindow->showNormal();
@@ -1076,12 +1094,14 @@ void RecordingWindow::stopRecord()
 void RecordingWindow::saveConfig()
 {
     //m_config.nameOfRecord = ui->nameEdit->text();
+
     m_config.frameRateInUse = ui->frameRateComboBox->currentText();
     m_config.bitRateInUse = ui->bitrateComboBox->currentText();
     m_config.savePath = ui->savePathEdit->text();
     m_config.startRecordShortCut = ui->StartShortCut->keySequence().toString();
     m_config.pauseRecordShortCut = ui->PauseShortCut->keySequence().toString();
     m_config.countDownEnable = ui->countDownCheckBox->isChecked();
+    m_config.stopRecInterval = m_stopTimeInterval;
     m_config.countDownSeconds = ui->countDownEdit->text().toInt();
     m_config.writeJson();
 }

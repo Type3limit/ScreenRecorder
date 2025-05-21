@@ -47,20 +47,27 @@ MinimizedRecordingWindow::MinimizedRecordingWindow(const QSharedPointer<ObsWrapp
         );
         if (status == RecordingStatus::Recording)
         {
-            ui->recordingButton->setStyleSheet(startButtonStyle.replace("{iconName}", "stop_recoding_minimize"));
-            ui->pauseButton->setStyleSheet(startButtonStyle.replace("{iconName}", "pause"));
+            auto recStyle = QString(startButtonStyle).replace("{iconName}", "stop_recoding_minimize");
+            ui->recordingButton->setStyleSheet(recStyle);
+            auto pauseStyle = QString(startButtonStyle).replace("{iconName}", "pause");
+            ui->pauseButton->setStyleSheet(pauseStyle);
             ui->pauseButton->setEnabled(true);
         }
         else if (status == RecordingStatus::Paused)
         {
-            ui->recordingButton->setStyleSheet(startButtonStyle.replace("{iconName}", "stop_recoding_minimize"));
-            ui->pauseButton->setStyleSheet(startButtonStyle.replace("{iconName}", "play"));
+            auto recStyle = QString(startButtonStyle).replace("{iconName}", "stop_recoding_minimize");
+            ui->recordingButton->setStyleSheet(recStyle);
+
+            auto pauseStyle = QString(startButtonStyle).replace("{iconName}", "play");
+            ui->pauseButton->setStyleSheet(pauseStyle);
             ui->pauseButton->setEnabled(true);
         }
         else
         {
-            ui->recordingButton->setStyleSheet(startButtonStyle.replace("{iconName}", "start"));
-            ui->pauseButton->setStyleSheet(startButtonStyle.replace("{iconName}", "play"));
+            auto recStyle = QString(startButtonStyle).replace("{iconName}", "start");
+            ui->recordingButton->setStyleSheet(recStyle);
+            auto pauseStyle = QString(startButtonStyle).replace("{iconName}", "play");
+            ui->pauseButton->setStyleSheet(pauseStyle);
             ui->pauseButton->setEnabled(false);
         }
     });

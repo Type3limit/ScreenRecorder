@@ -111,6 +111,7 @@ private:
     QString m_versionCode{""};
 
     volatile bool m_hasFirstInit = false;
+    qint64 m_stopTimeInterval = 0;
 };
 
 
