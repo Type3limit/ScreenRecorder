@@ -7,19 +7,19 @@
     <x>0</x>
     <y>0</y>
     <width>738</width>
-    <height>565</height>
+    <height>625</height>
    </rect>
   </property>
   <property name="minimumSize">
    <size>
     <width>738</width>
-    <height>565</height>
+    <height>625</height>
    </size>
   </property>
   <property name="maximumSize">
    <size>
     <width>738</width>
-    <height>565</height>
+    <height>625</height>
    </size>
   </property>
   <property name="windowTitle">
@@ -71,24 +71,19 @@ QFrame#line,
 {
 background-color:#353539;
 }
-QComboBox QAbstractItemView { outline: 0px;}
-QLineEdit,
-QComboBox{
-  subcontrol-origin: padding;
-  subcontrol-position: top right;
-  selection-background-color: #40404A;
-  selection-color: #3B3B41;
-  color: #ffffff;
-  height:24px;
-  background-color: #212126;
-  border-style: solid;
-  border: 1px solid #0F0F0F;
-  border-radius: 4;
-  padding: 1px 4px 1px 2px;
-  font-size: 12px;
-  font-family:Microsoft YaHei UI;
-  padding-left:8px;
-  }
+
+QLineEdit {
+    color: #ffffff;
+    background-color: #212126;
+    border: 1px solid #0f0f0f;
+    border-radius: 4px;
+    font-size: 12px;
+    font-family: Microsoft YaHei UI, Microsoft YaHei UI-400;
+    font-weight: 400;
+    text-align: JUSTIFIED;
+    line-height: 18px;
+    padding-left:8px;
+}
 
 QLineEdit:hover {
     border-radius: 4px;
@@ -101,44 +96,193 @@ QLineEdit:hover[state = 'danger'] {
     border: 1px solid #e64b3d;
 }
 
-QListWidget{outline:0px;}
-QListView {
-  border-radius: 4px;
-  padding: 5px;
-  margin: 0px;
-}
-
-QTableView::item,
-QTreeView::item,
-QListView::item {
-  padding: 5px;
-  height: 22px;
-  color: #99A1B0;
-  selection-color: white;
-  border-color: transparent; 
-  border-radius: 4px;
-outline: 0px;
+QLineEdit:disabled {
+    color: #a0a0a4;
 }
 
 
-
-QTableView:item:selected,
-QTreeView::item:selected,
-QListView::item:selected {
-  background-color: #40404A;
-  selection-background-color:  #3B3B41;
-  color: #99A1B0;
-  selection-color:  white;
-  border-radius: 4px;
+QComboBox {
+    background-color: #212126;
+    border: 1px solid #0f0f0f;
+    border-radius: 4px;
+    font-family: Microsoft YaHei UI, Microsoft YaHei UI-400;
+    font-weight: 400;
+    text-align: LEFT;
+    color: #ffffff;
+    line-height: 15px;
+    padding-left:8px;
+    padding-right:10px;
 }
 
-QTableView:item:selected:focus,
-QTreeView::item:selected:focus,
-QListView::item:selected:focus {
-  background-color: #40404A;
-  selection-background-color:#3B3B41;
-  color:  #99A1B0;
-  selection-color: white; 
+
+QComboBox:hover {
+    border: 1px solid #5967f2;
+}
+
+QComboBox:disabled {
+    color: #545353;
+}
+
+
+QComboBox::drop-down {
+    right:5px;
+    border: none;
+}
+
+QComboBox::down-arrow:on {
+    width: 12px;
+    height: 6px;
+    image: url(:/icons/images/ic_combobox_up_light.svg);
+}
+
+QComboBox::down-arrow {
+    width: 12px;
+    height: 6px;
+    image: url(:/icons/images/ic_combobox_down_dark.svg);
+}
+
+
+QComboBox::down-arrow:disabled {
+    width: 12px;
+    height: 6px;
+    image: url(:/icons/images/ic_combobox_down_disable.svg);
+}
+
+QComboBox QAbstractItemView {
+    outline: 0px; /*È¥³ýitemÐéÏß¿ò*/
+    border: none;
+    border-radius: 4px;
+    background: #34343d;
+    padding-top: 8px;
+    padding-bottom: 8px;
+    padding-left:8px;
+    padding-right:8px;
+}
+
+
+QComboBox QAbstractItemView::item {
+    font-size: 12px;
+    font-family: Microsoft YaHei UI, Microsoft YaHei UI-400;
+    font-weight: 400;
+    text-align: LEFT;
+    color: #ffffff;
+    line-height: 15px;
+    height: 24px;
+}
+
+
+
+QComboBox QAbstractItemView::item:hover {
+    border-radius: 4px;
+
+    background-color: #40404a;
+}
+
+QComboBox QAbstractItemView::item:selected {
+    border-radius: 4px;
+    background-color: #40404a;
+}
+
+QScrollBar:vertical {
+    width: 4px;
+    background: #34343d;
+    margin: 0px,0px,0px,0px;
+    padding-top: 0px;
+    padding-bottom: 0px;
+}
+
+QScrollBar::handle:vertical {
+    width: 4px;
+    background:  #424954;
+    border-radius: 2px;
+    min-height: 40;
+}
+
+QScrollBar::handle:vertical:hover {
+    width: 4px;
+    background:  #99a1b0;
+    border-radius: 2px;
+    min-height: 40;
+}
+
+QScrollBar::add-page:vertical {
+    background:  #34343d;
+    border-bottom-left-radius: 2px;
+    border-bottom-right-radius: 2px;
+}
+
+QScrollBar::sub-page:vertical {
+    background:  #34343d;
+    border-top-left-radius: 2px;
+    border-top-right-radius: 2px;
+}
+
+QAbstractSpinBox {
+    color: #ffffff;
+    border: none;
+    padding-right: 20px;
+    background-color: #212126;
+    background-clip: content;
+    border-radius: 4px;
+    font-size: 12px;
+    font-family: Microsoft YaHei UI, Microsoft YaHei UI-400;
+    font-weight: 400;
+    text-align: left;
+    line-height: 15px;
+}
+
+
+QAbstractSpinBox::up-button {
+    subcontrol-origin: padding;
+    subcontrol-position: top right;
+    width: 15px;
+    background-color: #212126;
+    border-top-left-radius: 4px;
+    border-top-right-radius: 4px;
+}
+
+
+QAbstractSpinBox::up-arrow {
+    image: url(:/icons/images/ic_up_arrow.svg);
+    width: 10px;
+    height: 4px;
+}
+
+QAbstractSpinBox::up-arrow:hover {
+    image: url(:/icons/images/ic_up_arrow_hover.svg);
+}
+
+QAbstractSpinBox::up-arrow::pressed{
+    image: url(:/icons/images/ic_up_arrow_hover.svg);
+}
+
+QAbstractSpinBox::down-button {
+    subcontrol-origin: padding;
+    subcontrol-position: bottom right;
+    width: 15px;
+    background-color: #212126;
+    border-bottom-left-radius: 4px;
+    border-bottom-right-radius: 4px;
+}
+
+QAbstractSpinBox::down-arrow {
+    image: url(:/icons/images/ic_down_arrow.svg);
+    width: 8px;
+    height: 4px;
+}
+
+QAbstractSpinBox::down-arrow:hover {
+    image: url(:/icons/images/ic_down_arrow_hover.svg);
+}
+
+QAbstractSpinBox::down-arrow::pressed {
+    image: url(:/icons/images/ic_down_arrow_hover.svg);
+}
+
+QAbstractSpinBox:disabled,
+QAbstractSpinBox::down-button:disabled,
+QAbstractSpinBox::up-button:disabled {
+    background-color: #2d2d35;
 }
 
 
@@ -207,45 +351,6 @@ QListView::item:selected:focus {
           </size>
          </property>
         </spacer>
-       </item>
-       <item>
-        <widget class="QPushButton" name="signinButton">
-         <property name="minimumSize">
-          <size>
-           <width>24</width>
-           <height>24</height>
-          </size>
-         </property>
-         <property name="maximumSize">
-          <size>
-           <width>24</width>
-           <height>24</height>
-          </size>
-         </property>
-         <property name="cursor">
-          <cursorShape>PointingHandCursor</cursorShape>
-         </property>
-         <property name="toolTip">
-          <string>登录</string>
-         </property>
-         <property name="styleSheet">
-          <string notr="true">QPushButton:hover
-{
- border-radius: 4px;
- border: 1px solid #5967f2;
-}</string>
-         </property>
-         <property name="text">
-          <string/>
-         </property>
-         <property name="icon">
-          <iconset resource="../resource.qrc">
-           <normaloff>:/icons/images/login.svg</normaloff>:/icons/images/login.svg</iconset>
-         </property>
-         <property name="flat">
-          <bool>true</bool>
-         </property>
-        </widget>
        </item>
        <item>
         <widget class="QPushButton" name="minimizeButton">
@@ -466,14 +571,27 @@ background-color:#212126;
                 <number>10</number>
                </property>
                <item>
-                <widget class="DComboBox" name="areaComboBox"/>
+                <widget class="QComboBox" name="areaComboBox">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                 <property name="minimumSize">
+                  <size>
+                   <width>0</width>
+                   <height>28</height>
+                  </size>
+                 </property>
+                </widget>
                </item>
               </layout>
              </item>
              <item>
               <layout class="QHBoxLayout" name="horizontalLayout_4">
                <item>
-                <widget class="DLineEdit" name="areaWidthEdit">
+                <widget class="QLineEdit" name="areaWidthEdit">
                  <property name="sizePolicy">
                   <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
                    <horstretch>0</horstretch>
@@ -483,7 +601,7 @@ background-color:#212126;
                  <property name="minimumSize">
                   <size>
                    <width>64</width>
-                   <height>0</height>
+                   <height>28</height>
                   </size>
                  </property>
                  <property name="maximumSize">
@@ -520,7 +638,7 @@ image:url(:/icons/images/lock.svg);
                 </widget>
                </item>
                <item>
-                <widget class="DLineEdit" name="areaHeightEdit">
+                <widget class="QLineEdit" name="areaHeightEdit">
                  <property name="sizePolicy">
                   <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
                    <horstretch>0</horstretch>
@@ -530,7 +648,7 @@ image:url(:/icons/images/lock.svg);
                  <property name="minimumSize">
                   <size>
                    <width>64</width>
-                   <height>0</height>
+                   <height>28</height>
                   </size>
                  </property>
                  <property name="maximumSize">
@@ -547,18 +665,9 @@ image:url(:/icons/images/lock.svg);
            </widget>
           </item>
           <item>
-           <widget class="DLine" name="m_line_2">
-            <property name="minimumSize">
-             <size>
-              <width>3</width>
-              <height>0</height>
-             </size>
-            </property>
-            <property name="maximumSize">
-             <size>
-              <width>3</width>
-              <height>16777215</height>
-             </size>
+           <widget class="Line" name="line_2">
+            <property name="orientation">
+             <enum>Qt::Vertical</enum>
             </property>
            </widget>
           </item>
@@ -661,7 +770,14 @@ background-color:#212126;
              <item>
               <layout class="QHBoxLayout" name="horizontalLayout_9">
                <item>
-                <widget class="DComboBox" name="micphoneDeviceComboBox"/>
+                <widget class="QComboBox" name="micphoneDeviceComboBox">
+                 <property name="minimumSize">
+                  <size>
+                   <width>0</width>
+                   <height>28</height>
+                  </size>
+                 </property>
+                </widget>
                </item>
               </layout>
              </item>
@@ -669,18 +785,9 @@ background-color:#212126;
            </widget>
           </item>
           <item>
-           <widget class="DLine" name="m_line_3">
-            <property name="minimumSize">
-             <size>
-              <width>3</width>
-              <height>0</height>
-             </size>
-            </property>
-            <property name="maximumSize">
-             <size>
-              <width>3</width>
-              <height>16777215</height>
-             </size>
+           <widget class="Line" name="line_3">
+            <property name="orientation">
+             <enum>Qt::Vertical</enum>
             </property>
            </widget>
           </item>
@@ -777,7 +884,14 @@ background-color:#212126;
              <item>
               <layout class="QHBoxLayout" name="horizontalLayout_15">
                <item>
-                <widget class="DComboBox" name="playerDeviceComboBox"/>
+                <widget class="QComboBox" name="playerDeviceComboBox">
+                 <property name="minimumSize">
+                  <size>
+                   <width>0</width>
+                   <height>28</height>
+                  </size>
+                 </property>
+                </widget>
                </item>
               </layout>
              </item>
@@ -785,18 +899,9 @@ background-color:#212126;
            </widget>
           </item>
           <item>
-           <widget class="DLine" name="m_line_4">
-            <property name="minimumSize">
-             <size>
-              <width>3</width>
-              <height>0</height>
-             </size>
-            </property>
-            <property name="maximumSize">
-             <size>
-              <width>3</width>
-              <height>16777215</height>
-             </size>
+           <widget class="Line" name="line_4">
+            <property name="orientation">
+             <enum>Qt::Vertical</enum>
             </property>
            </widget>
           </item>
@@ -957,7 +1062,14 @@ font-family:Microsoft YaHei UI;
              <item>
               <layout class="QHBoxLayout" name="horizontalLayout_20">
                <item>
-                <widget class="DComboBox" name="screenDeviceComboBox"/>
+                <widget class="QComboBox" name="screenDeviceComboBox">
+                 <property name="minimumSize">
+                  <size>
+                   <width>0</width>
+                   <height>28</height>
+                  </size>
+                 </property>
+                </widget>
                </item>
               </layout>
              </item>
@@ -1029,9 +1141,9 @@ font-family:Microsoft YaHei UI;
            </spacer>
           </item>
           <item>
-           <widget class="DLine" name="m_line">
+           <widget class="Line" name="line">
             <property name="sizePolicy">
-             <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+             <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
               <horstretch>0</horstretch>
               <verstretch>0</verstretch>
              </sizepolicy>
@@ -1048,6 +1160,9 @@ font-family:Microsoft YaHei UI;
               <height>3</height>
              </size>
             </property>
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
            </widget>
           </item>
          </layout>
@@ -1063,7 +1178,7 @@ font-family:Microsoft YaHei UI;
          </property>
          <layout class="QVBoxLayout" name="verticalLayout_6">
           <property name="spacing">
-           <number>12</number>
+           <number>10</number>
           </property>
           <property name="leftMargin">
            <number>1</number>
@@ -1090,7 +1205,14 @@ font-family:Microsoft YaHei UI;
              </widget>
             </item>
             <item>
-             <widget class="DLineEdit" name="nameEdit"/>
+             <widget class="QLineEdit" name="nameEdit">
+              <property name="minimumSize">
+               <size>
+                <width>0</width>
+                <height>28</height>
+               </size>
+              </property>
+             </widget>
             </item>
            </layout>
           </item>
@@ -1113,7 +1235,14 @@ font-family:Microsoft YaHei UI;
              </widget>
             </item>
             <item>
-             <widget class="DComboBox" name="bitrateComboBox"/>
+             <widget class="QComboBox" name="bitrateComboBox">
+              <property name="minimumSize">
+               <size>
+                <width>0</width>
+                <height>28</height>
+               </size>
+              </property>
+             </widget>
             </item>
            </layout>
           </item>
@@ -1136,7 +1265,14 @@ font-family:Microsoft YaHei UI;
              </widget>
             </item>
             <item>
-             <widget class="DComboBox" name="frameRateComboBox"/>
+             <widget class="QComboBox" name="frameRateComboBox">
+              <property name="minimumSize">
+               <size>
+                <width>0</width>
+                <height>28</height>
+               </size>
+              </property>
+             </widget>
             </item>
            </layout>
           </item>
@@ -1153,10 +1289,23 @@ font-family:Microsoft YaHei UI;
              </widget>
             </item>
             <item>
-             <widget class="DLineEdit" name="savePathEdit"/>
+             <widget class="QLineEdit" name="savePathEdit">
+              <property name="minimumSize">
+               <size>
+                <width>0</width>
+                <height>28</height>
+               </size>
+              </property>
+             </widget>
             </item>
             <item>
-             <widget class="DPushButton" name="pathSelectionButton">
+             <widget class="QPushButton" name="pathSelectionButton">
+              <property name="minimumSize">
+               <size>
+                <width>80</width>
+                <height>28</height>
+               </size>
+              </property>
               <property name="maximumSize">
                <size>
                 <width>80</width>
@@ -1191,42 +1340,6 @@ QPushButton:hover
               </property>
              </widget>
             </item>
-            <item>
-             <widget class="DPushButton" name="uploadButton">
-              <property name="maximumSize">
-               <size>
-                <width>80</width>
-                <height>16777215</height>
-               </size>
-              </property>
-              <property name="styleSheet">
-               <string notr="true">QPushButton
-{
-  selection-background-color: #40404A;
-  selection-color: #3B3B41;
-  color: #99A1B0;
-  height:24px;
-  background-color: #212126;
-  border-style: solid;
-  border: 1px solid #0F0F0F;
-  border-radius: 4;
-  padding: 1px 0px 1px 2px;
-  font-size: 12px;
-  font-family:Microsoft YaHei UI;
-  padding-left:0px;
-}
-QPushButton:hover
-{
- background-color: #2F2F34;
- border-radius: 4px;
- border: 1px solid #5967f2;
-}</string>
-              </property>
-              <property name="text">
-               <string>上传到...</string>
-              </property>
-             </widget>
-            </item>
            </layout>
           </item>
           <item>
@@ -1245,9 +1358,12 @@ QPushButton:hover
              </widget>
             </item>
             <item>
-             <widget class="DSpinBox" name="m_minuteSpinBox">
-              <property name="maximum">
-               <number>9999</number>
+             <widget class="QSpinBox" name="m_minuteSpinBox">
+              <property name="minimumSize">
+               <size>
+                <width>80</width>
+                <height>24</height>
+               </size>
               </property>
              </widget>
             </item>
@@ -1259,9 +1375,12 @@ QPushButton:hover
              </widget>
             </item>
             <item>
-             <widget class="DSpinBox" name="m_secondSpinBox">
-              <property name="maximum">
-               <number>59</number>
+             <widget class="QSpinBox" name="m_secondSpinBox">
+              <property name="minimumSize">
+               <size>
+                <width>80</width>
+                <height>24</height>
+               </size>
               </property>
              </widget>
             </item>
@@ -1301,8 +1420,23 @@ QPushButton:hover
             </item>
             <item>
              <widget class="QKeySequenceEdit" name="StartShortCut">
-              <property name="keySequence">
-               <string>F9</string>
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="minimumSize">
+               <size>
+                <width>0</width>
+                <height>28</height>
+               </size>
+              </property>
+              <property name="maximumSize">
+               <size>
+                <width>16777215</width>
+                <height>28</height>
+               </size>
               </property>
              </widget>
             </item>
@@ -1322,8 +1456,17 @@ QPushButton:hover
             </item>
             <item>
              <widget class="QKeySequenceEdit" name="PauseShortCut">
-              <property name="keySequence">
-               <string>F10</string>
+              <property name="minimumSize">
+               <size>
+                <width>0</width>
+                <height>28</height>
+               </size>
+              </property>
+              <property name="maximumSize">
+               <size>
+                <width>16777215</width>
+                <height>28</height>
+               </size>
               </property>
              </widget>
             </item>
@@ -1351,10 +1494,27 @@ QPushButton:hover
              </widget>
             </item>
             <item>
-             <widget class="DSwitch" name="countDownCheckBox"/>
+             <widget class="QCheckBox" name="countDownCheckBox">
+              <property name="minimumSize">
+               <size>
+                <width>0</width>
+                <height>28</height>
+               </size>
+              </property>
+              <property name="text">
+               <string/>
+              </property>
+             </widget>
             </item>
             <item>
-             <widget class="DLineEdit" name="countDownEdit"/>
+             <widget class="QLineEdit" name="countDownEdit">
+              <property name="minimumSize">
+               <size>
+                <width>0</width>
+                <height>28</height>
+               </size>
+              </property>
+             </widget>
             </item>
             <item>
              <widget class="QLabel" name="label_10">
@@ -1375,36 +1535,6 @@ QPushButton:hover
   </widget>
  </widget>
  <customwidgets>
-  <customwidget>
-   <class>DSwitch</class>
-   <extends>QWidget</extends>
-   <header>dswitch.h</header>
-  </customwidget>
-  <customwidget>
-   <class>DSpinBox</class>
-   <extends>QSpinBox</extends>
-   <header>dspinbox.h</header>
-  </customwidget>
-  <customwidget>
-   <class>DComboBox</class>
-   <extends>QComboBox</extends>
-   <header>dcombobox.h</header>
-  </customwidget>
-  <customwidget>
-   <class>DPushButton</class>
-   <extends>QPushButton</extends>
-   <header>dpushbutton.h</header>
-  </customwidget>
-  <customwidget>
-   <class>DLine</class>
-   <extends>QFrame</extends>
-   <header>dline.h</header>
-  </customwidget>
-  <customwidget>
-   <class>DLineEdit</class>
-   <extends>QLineEdit</extends>
-   <header>dlineedit.h</header>
-  </customwidget>
   <customwidget>
    <class>VolumeControl</class>
    <extends>QWidget</extends>

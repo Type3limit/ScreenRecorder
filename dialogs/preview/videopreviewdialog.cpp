@@ -8,15 +8,13 @@
 #include "QtAVPlayer/qavplayer.h"
 #include "QtAVPlayer/qavvideoframe.h"
 #include "QtAVPlayer/qavaudiooutput.h"
-#include "cloumnchoosenwidget.h"
 #include "ui_VideoPreviewDialog.h"
 #include "usermessagebox.h"
+#include <QDebug>
 
 
-
-VideoPreviewDialog::VideoPreviewDialog(const QString& file, QSharedPointer<OnlineService> apiInstance, QWidget* parent) :
+VideoPreviewDialog::VideoPreviewDialog(const QString& file, QWidget* parent) :
     m_previewFile(file)
-    , m_api(apiInstance)
     , DragMoveDialog(true,parent)
     , ui(new Ui::VideoPreviewDialog)
 {
@@ -256,26 +254,7 @@ void VideoPreviewDialog::onPositionChanged(qint64 position)
 
 void VideoPreviewDialog::invokeUploadWindow()
 {
-    if(!m_api->loginHelper()->isLogin())
-    {
-        qWarning()<<"not login , invoke login window";
-        emit requestLogin();//invoke login window
-        if (!m_api->loginHelper()->isLogin())//if aslo not login,ignore current upload action
-            return;
-    }
-    if (m_previewFile.isEmpty()||!QFile::exists(m_previewFile))
-    {
-        qWarning()<<"recorded file is empty or not exist,ignore upload option";
-        return;
-    }
-    CloumnChoosenDialog * dialog = new CloumnChoosenDialog(m_api,{m_previewFile},nullptr);
-    connect(dialog,&CloumnChoosenDialog::hasUploadOptions,this,[&]()
-    {
-        emit hasUploadOption();
-    });
-    dialog->exec();
-    dialog->deleteLater();
-    close();
+
 }
 
 void VideoPreviewDialog::seek(qint64 position)

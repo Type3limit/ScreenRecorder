@@ -4,29 +4,25 @@
 
 #include "recordingwindow.h"
 #include "dialogs/ui_recordingwindow.h"
-#include <QMouseEvent>
-#include <QStringListModel>
-#include <QScreen>
-#include <QStyledItemDelegate>
-#include <QListView>
-#include <QTcpSocket>
 #include <QFileDialog>
+#include <QListView>
+#include <QMenu>
+#include <QMouseEvent>
+#include <QScreen>
 #include <QStandardItemModel>
+#include <QStringListModel>
+#include <QStyledItemDelegate>
+#include <QTcpSocket>
 #ifdef _WIN32
 #else
 #include <X11/Xlib.h>
 #endif
 #include <QThread>
-
 #include "usermessagebox.h"
 #include "backgroundwindow.h"
-#include "cloumnchoosenwidget.h"
 #include "countdowndialog.h"
-#include "logindialog.h"
 #include "optionnalchain.h"
 #include "signalproxy.h"
-#include "updatenoticedialog.h"
-#include "preview/uploadnoticewindow.h"
 #include "preview/videopreviewdialog.h"
 
 
@@ -57,7 +53,6 @@ RecordingWindow::RecordingWindow(const QString& url, const QString& token, int p
     , m_url(url)
     , m_token(token)
     , m_socketPort(port)
-    , m_api(QSharedPointer<OnlineService>(new OnlineService((SubRequests::ApiType::nle))))
 {
     ui->setupUi(this);
     // hide title bar
@@ -65,8 +60,6 @@ RecordingWindow::RecordingWindow(const QString& url, const QString& token, int p
     setAttribute(Qt::WA_TranslucentBackground);
     setWindowIcon(QIcon(QString(":/icons/images/recording.svg")));
     setWindowTitle(u8"录屏");
-
-
 }
 
 RecordingWindow::~RecordingWindow()
@@ -201,7 +194,7 @@ void RecordingWindow::init(const int defaultPort)
         else
         {
             ui->SettingWidget->setHidden(false);
-            this->setFixedHeight(565);
+            this->setFixedHeight(625);
         }
     });
 
@@ -307,8 +300,6 @@ void RecordingWindow::init(const int defaultPort)
     //debug preview window
     initDebugWindow();
 
-    //upload window
-    initUpload();
 
     //signalproxy
     initSignalProxy();
@@ -409,8 +400,8 @@ void RecordingWindow::initConfig()
     ui->frameRateComboBox->setModel(new QStringListModel(m_config.frameRatePresets, this));
     ui->frameRateComboBox->setCurrentText(m_config.frameRateInUse);
     ui->savePathEdit->setText(m_config.savePath);
-    ui->StartShortCut->setKeySequence(QKeySequence::fromString(m_config.startRecordShortCut));
-    ui->PauseShortCut->setKeySequence(QKeySequence::fromString(m_config.pauseRecordShortCut));
+    ui->StartShortCut->setKeySequence(m_config.startRecordShortCut);
+    ui->PauseShortCut->setKeySequence(m_config.pauseRecordShortCut);
     m_recordHotKey->setShortcut(ui->StartShortCut->keySequence(), true);
     m_pauseHotKey->setShortcut(ui->PauseShortCut->keySequence(), true);
     ui->countDownCheckBox->setChecked(m_config.countDownEnable);
@@ -460,67 +451,6 @@ void RecordingWindow::initRecordingStatus()
     ui->playerVolume->setChannelCount(m_obs->playerChannelCount());
     ui->playerVolume->setAudioChannel(audioChannel);
     ui->playerVolume->setInverting(true);
-}
-
-void RecordingWindow::initUpload()
-{
-
-    ui->unloginNoticeLabel->setVisible(false);
-    if (!m_url.isEmpty() && !m_token.isEmpty())
-    {
-        m_api->requestHelper()->setBaseAddress(m_url);
-        m_api->requestHelper()->setToken(m_token);
-        qDebug() << u8"程序唤起具备配置基础访问信息:[" << m_url << "][" << m_token << "]";
-
-        bool hasLoginFailed = true;
-        qDebug() << u8"正在验证登录信息";
-        //request user info to check if current url and token is valid
-
-        BLOCK_DEBUG
-        (m_requestHandler, m_api->requestHelper()->getRequest(QNetworkAccessManager::GetOperation,
-             "/api/media/internal/users/current")
-         .timeout(5)
-         .onTimeout([&](QNetworkReply* reply)
-             {
-             qDebug()<<u8"登录信息验证请求超时";
-             })
-         .onSuccess([&](QNetworkReply* reply)
-             {
-             auto str = reply->readAll();
-             QJsonDocument doc = QJsonDocument::fromJson(str);
-             m_curUserAccount = doc["username"].toString();
-             hasLoginFailed = false;
-             reply->deleteLater();
-             })
-         .onFailed([&](QNetworkReply* reply)
-             {
-             qDebug()<<u8"登录信息验证请求失败";
-             qDebug()<< reply->readAll();
-             reply->deleteLater();
-             })
-         .exec());
-
-        m_api->loginHelper()->setLoginStatus(!hasLoginFailed);
-        if (hasLoginFailed)
-        {
-            qDebug() << u8"登录配置无效,取消后续步骤";
-            UserMessageBox::warning(nullptr, u8"失败", u8"当前登录配置无效");
-            ui->uploadButton->setVisible(false);
-            //when build in nle ,do not with login
-            ui->unloginNoticeLabel->setVisible(true);
-        }
-        else
-        {
-            ui->statusLabel->setText(u8"已设置在线登录信息,录制完成后即可上传");
-            QTimer::singleShot(2000, this, &RecordingWindow::checkForUpdate);
-        }
-    }
-    else
-    {
-        ui->uploadButton->setVisible(false);
-        //when build in nle ,do not with login
-        ui->unloginNoticeLabel->setVisible(true);
-    }
 }
 
 void RecordingWindow::initDebugWindow()
@@ -809,35 +739,21 @@ void RecordingWindow::initFunctionalControls()
         ui->playerButton->setStyleSheet(style);
         ui->playerButton->update();
     });
-    //login button
-    connect(ui->signinButton, &QPushButton::clicked, this, &RecordingWindow::invokeLoginWindow);
-    //upload button
-    connect(ui->uploadButton, &QPushButton::clicked, this, [&]()
-    {
-        auto curStr = QFileDialog::getOpenFileName(
-            this,
-            tr(u8"打开文件"),
-            ui->savePathEdit->text().isEmpty() ? "." : ui->savePathEdit->text(),
-            tr(u8"视频文件 (*.mp4 *.avi *.mkv *.mov *.wmv *.flv *.mpeg *.webm);;所有文件 (*.*)"));
-        if (!curStr.isEmpty())
-        {
-            invokePreviewWindow(curStr);
-            //invokeUploadWindow(curStrs);
-        }
-    });
 }
 
 void RecordingWindow::initHotKeys()
 {
     //hotkey
-    connect(ui->PauseShortCut, &QKeySequenceEdit::keySequenceChanged, this, [&](const QKeySequence& s)
+    connect(ui->PauseShortCut, &QKeySequenceEdit::keySequenceChanged,
+        this, [&](const QKeySequence& s)
     {
         m_pauseHotKey->setRegistered(false);
         delete m_pauseHotKey;
         m_pauseHotKey = new QHotkey(s, true);
         connect(m_pauseHotKey, &QHotkey::activated, this, &RecordingWindow::pauseRecord);
     });
-    connect(ui->StartShortCut, &QKeySequenceEdit::keySequenceChanged, this, [&](const QKeySequence& s)
+    connect(ui->StartShortCut, &QKeySequenceEdit::keySequenceChanged, this,
+        [&](const QKeySequence& s)
     {
         m_recordHotKey->setRegistered(false);
         delete m_recordHotKey;
@@ -932,7 +848,7 @@ void RecordingWindow::closeEvent(QCloseEvent* event)
 
 void RecordingWindow::showEvent(QShowEvent* event)
 {
-    QMainWindow::showEvent(event);
+    QWidget::showEvent(event);
 
     if (!m_hasFirstInit)
     {
@@ -1082,7 +998,7 @@ void RecordingWindow::stopRecord()
         //rename current recording
         ui->nameEdit->setText(QDateTime::currentDateTime().toString("yyyy.MM.dd-hh.mm.ss"));
 
-        invokeUploadNoticeWindow({m_currentRecordingFile});
+        invokePreviewWindow({m_currentRecordingFile});
     }
 
     if (!m_url.isEmpty() && !m_token.isEmpty())
@@ -1120,21 +1036,6 @@ void RecordingWindow::rebuildBackgroundWindow()
 }
 
 
-void RecordingWindow::invokeUploadWindow(const QStringList& uploadedFiles)
-{
-    if (m_url.isEmpty() || m_token.isEmpty())
-    {
-        qWarning() << "url or token is empty! ignore upload option";
-        return;
-    }
-    m_backgroundWindow->hide();
-    CloumnChoosenDialog* dialog = new CloumnChoosenDialog(m_api, uploadedFiles, nullptr);
-    dialog->exec();
-    dialog->deleteLater();
-
-    m_backgroundWindow->showFullScreen();
-}
-
 bool RecordingWindow::checkUpdate(const QString& serverVersion)
 {
     qDebug() << "current version:" << QCoreApplication::applicationVersion() << "server version:" << serverVersion;
@@ -1161,29 +1062,6 @@ bool RecordingWindow::checkUpdate(const QString& serverVersion)
     return false;
 }
 
-
-void RecordingWindow::invokeUpdateWindow(QJsonDocument doc)
-{
-    UpdateNoticeDialog* m_noticeDialog = new UpdateNoticeDialog(m_api, doc);
-
-    connect(m_noticeDialog, &UpdateNoticeDialog::requestCloseProgram, this, [&]()
-    {
-        close();
-    });
-    m_noticeDialog->exec();
-    m_noticeDialog->deleteLater();
-}
-
-void RecordingWindow::invokeUploadNoticeWindow(const QString& file)
-{
-    m_backgroundWindow->hide();
-    UploadNoticeWindow* dialog = new UploadNoticeWindow(file, m_api, nullptr);
-    connect(dialog, &UploadNoticeWindow::requestLogin, this, &RecordingWindow::invokeLoginWindow);
-    dialog->exec();
-    dialog->deleteLater();
-    m_backgroundWindow->showFullScreen();
-}
-
 void RecordingWindow::invokePreviewWindow(const QString& file)
 {
     if (file.isEmpty() || !QFile::exists(file))
@@ -1192,84 +1070,9 @@ void RecordingWindow::invokePreviewWindow(const QString& file)
         return;
     }
     m_backgroundWindow->hide();
-    VideoPreviewDialog* dialog = new VideoPreviewDialog(file, m_api, nullptr);
-    connect(dialog, &VideoPreviewDialog::requestLogin, this, &RecordingWindow::invokeLoginWindow);
+    VideoPreviewDialog* dialog = new VideoPreviewDialog(file,  nullptr);
     dialog->exec();
     dialog->deleteLater();
     m_backgroundWindow->showFullScreen();
 }
 
-void RecordingWindow::invokeLoginWindow()
-{
-    LoginDialog* dialog = new LoginDialog(m_url, m_curUserAccount, m_api, nullptr);
-    connect(dialog, &LoginDialog::loginFinished, this, [&](bool success)
-    {
-        if (!success)
-            return;
-
-        m_url = m_api->requestHelper()->baseAddress();
-        m_token = m_api->requestHelper()->token();
-
-        ui->statusLabel->setText(u8"已设置在线登录信息,录制完成后即可上传");
-        ui->uploadButton->setVisible(true);
-        ui->unloginNoticeLabel->setVisible(false);
-
-        checkForUpdate();
-    });
-    dialog->exec();
-    dialog->deleteLater();
-}
-
-void RecordingWindow::checkForUpdate()
-{
-    if (m_url.isEmpty() || m_token.isEmpty())
-    {
-        qWarning() << "url or token is empty! ignore check for update";
-        return;
-    }
-
-    bool needsUpdate = false;
-    QJsonDocument doc{};
-    BLOCK_DEBUG(m_requestHandler,
-                m_api->requestHelper()->getRequest(
-                    QNetworkAccessManager::GetOperation,
-                    "api/internal/config")
-                .onSuccess([&]( QNetworkReply* reply)
-                    {
-                    auto result = reply->readAll();
-                    QJsonParseError error;
-                    doc = QJsonDocument::fromJson(result,&error);
-                    if(error.error != QJsonParseError::NoError)
-                    {
-                    qDebug()<<u8"获取更新信息转换失败"+error.errorString();
-                    qDebug()<<u8"原content:"<<result;
-                    return;
-                    }
-                    m_versionCode =doc[VERSION_KEY].toString();
-                    reply->deleteLater();
-                    })
-                .onFailed([&]( QNetworkReply* reply)
-                    {
-                    auto result = reply->readAll();
-                    qDebug()<<u8"获取软件更新信息失败！"<<result;
-                    reply->deleteLater();
-                    })
-                .onTimeout([&]( QNetworkReply* reply)
-                    {
-                    qDebug()<<u8"获取软件更新信息超时!";
-                    reply->deleteLater();
-                    })
-                .timeout(5)
-                .exec());
-
-
-    needsUpdate = checkUpdate(m_versionCode);
-
-    //do next
-    if (!needsUpdate)
-    {
-        return;
-    }
-
-    invokeUpdateWindow(doc);
-}

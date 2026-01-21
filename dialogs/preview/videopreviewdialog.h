@@ -6,10 +6,9 @@
 #define VIDEOPREVIEWDIALOG_H
 
 #include "dragmovedialog.h"
-#include "onlineservice.h"
 #include "videorenderer.h"
 #include <QMutex>
-
+#include <QTimer>
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class VideoPreviewDialog; }
@@ -20,7 +19,7 @@ class VideoPreviewDialog : public DragMoveDialog {
     Q_OBJECT
 
     public:
-    explicit VideoPreviewDialog(const QString& file,QSharedPointer<OnlineService> apiInstance,QWidget *parent = nullptr);
+    explicit VideoPreviewDialog(const QString& file,QWidget *parent = nullptr);
     ~VideoPreviewDialog() override;
 
     void closeEvent(QCloseEvent* event) override;
@@ -58,7 +57,6 @@ private:
 
     bool m_onResize = false;
 
-    QSharedPointer<OnlineService> m_api;
 
     VideoRenderer* m_renderer{nullptr};
     MediaObject* m_mediaObject{nullptr};

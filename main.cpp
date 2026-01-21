@@ -1,17 +1,19 @@
 ﻿
 #include "debug.h"
-#include <QApplication>
-#include <QDir>
-#include <QDebug>
-#include <QSharedMemory>
-#include <QMessageBox>
-#include <QMainWindow>
-#include <QSystemTrayIcon>
 #include <QAction>
-#include <QMenu>
+#include <QApplication>
 #include <QDateTime>
+#include <QDebug>
+#include <QDir>
 #include <QLocalServer>
 #include <QLocalSocket>
+#include <QMainWindow>
+#include <QMenu>
+#include <QMessageBox>
+#include <QSharedMemory>
+#include <QSystemTrayIcon>
+#include <QTcpSocket>
+#include <QFontDatabase>
 #ifdef _WIN32
 #include <windows.h>
 #include <dbghelp.h>
@@ -171,9 +173,17 @@ int main(int argc, char* argv[])
 
     qDebug() << "invoking with param: port:[" << portStr << "]" << " server:[" << server << "] token:[" << token << "]";
 
+#ifdef _WIN32
+    SetUnhandledExceptionFilter(exceptionCallback);
+#endif
+
+    //ElaTheme::getInstance()->setThemeMode(ElaThemeType::ThemeMode::Dark);//dark by default
+
+
     RecordingWindow window(server, token, port, nullptr);
-    app.setWindow(&window);
+
     window.show();
+
 
     qApp->setStyleSheet("QMenu,"
                         "QToolTip "

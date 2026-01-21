@@ -13,7 +13,6 @@
 #include "backgroundwindow.h"
 #include <QTcpServer>
 #include "countdowndialog.h"
-#include "onlineservice.h"
 #include "testwindow.h"
 QT_BEGIN_NAMESPACE
 
@@ -47,21 +46,15 @@ public:
     void stopRecord();
     void saveConfig();
 
-    void checkForUpdate();
 public:
 
 
 public slots:
     void rebuildBackgroundWindow();
-    void invokeUploadWindow(const QStringList& uploadedFiles);
     static bool checkUpdate(const QString& serverVersiona);
-    void invokeUpdateWindow(QJsonDocument doc);
-
-    void invokeUploadNoticeWindow(const QString& file);
 
     void invokePreviewWindow(const QString& file);
 
-    void invokeLoginWindow();
 protected:
     void init(int defaultPort = -1);
     void initSignalProxy();
@@ -69,7 +62,6 @@ protected:
     void initBackgroundWindow();
     void initConfig();
     void initRecordingStatus();
-    void initUpload();
     void initDebugWindow();
     void initFunctionalControls();
     void initHotKeys();
@@ -105,9 +97,7 @@ private:
     QString m_url{};
     QString m_token{};
     QString m_curUserAccount{};
-    QSharedPointer<OnlineService> m_api{nullptr};
     QString m_currentRecordingFile{};
-    HttpResponse* m_requestHandler{nullptr};
     QString m_versionCode{""};
 
     volatile bool m_hasFirstInit = false;

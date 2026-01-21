@@ -9,7 +9,6 @@
 #include <QApplication>
 #include <QMouseEvent>
 #include <QPainter>
-#include <QDesktopWidget>
 #include <QDebug>
 #include <QIcon>
 
