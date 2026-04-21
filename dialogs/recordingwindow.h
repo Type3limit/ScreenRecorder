@@ -14,6 +14,14 @@
 #include <QTcpServer>
 #include "countdowndialog.h"
 #include "testwindow.h"
+class QStackedWidget;
+class RecordingPreviewPage;
+
+namespace Fluent
+{
+    class FluentNavigationView;
+}
+
 QT_BEGIN_NAMESPACE
 
 namespace Ui
@@ -63,7 +71,10 @@ protected:
     void initDebugWindow();
     void initFunctionalControls();
     void initHotKeys();
+    void setupModernLayout();
     void setupFluentWindowChrome();
+    void syncSettingsVisibility(bool expanded);
+    void switchContentPage(const QString& key);
 
 private:
     bool m_isRecordingStarted = false;
@@ -84,6 +95,10 @@ private:
     QHotkey* m_pauseHotKey;
     QHotkey* m_showCaptureKey;
     QTcpServer* m_server = nullptr;
+    Fluent::FluentNavigationView* m_navigationView = nullptr;
+    QStackedWidget* m_contentStack = nullptr;
+    QWidget* m_settingsPanelHost = nullptr;
+    RecordingPreviewPage* m_previewPage = nullptr;
     QTimer m_timer;
     qint64 m_seconds = 0;
     QPoint m_startPos = {0, 0};
