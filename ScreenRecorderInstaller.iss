@@ -3,7 +3,7 @@
 
 #define MyAppName "ScreenRecorder"
 #define MyAppVersion "1.0"
-#define MyAppPublisher "成都东方盛行电子责任有限公司"
+#define MyAppPublisher "Type3Limit"
 #define MyAppExeName "screenRecorder.exe"
 
 [Setup]
@@ -17,7 +17,7 @@ AppVersion={#MyAppVersion}
 AppPublisher={#MyAppPublisher}
 DefaultDirName={autopf}\{#MyAppName}
 DisableProgramGroupPage=yes
-LicenseFile=C:\Users\58226\Documents\License_Agreement.rtf
+LicenseFile=G:\Code\screenRecord-git\ScreenRecorder\License_Agreement.rtf
 ; 移除以下行，以在管理安装模式下运行（为所有用户安装）。
 PrivilegesRequired=lowest
 OutputDir=C:\Users\58226\Desktop

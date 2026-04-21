@@ -11,12 +11,12 @@
 |Mac| 未验证    | 没测试用的机器捏XD                                         |
 
 ---
+## UI
+已于2026-4-21使用项目[QtFluentWidgets](https://github.com/Type3limit/QtFluentWidgets)重构了UI界面，界面风格更为现代化，且支持**暗色模式**和**亮色模式**两种主题切换。
 
 ## 下载
 
-(目前仅提供windows版本下载)
-
-[下载链接](https://github.com/Type3limit/ScreenRecorder/releases)
+[下载链接(目前仅提供windows版本下载)](https://github.com/Type3limit/ScreenRecorder/releases)
 
 ---
 ## 效果预览
