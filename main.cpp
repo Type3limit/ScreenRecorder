@@ -60,11 +60,42 @@ inline LONG WINAPI exceptionCallback(struct _EXCEPTION_POINTERS* exceptionInfo)
 
 #include <QTranslator>
 #include <QLibraryInfo>
+#include "Fluent/FluentTheme.h"
 #include "recordingwindow.h"
 #include <QCommandLineParser>
 #include <QCommandLineOption>
 #include <QThread>
 #include <usermessagebox.h>
+
+namespace {
+
+void initializeFluentTheme(QApplication &app)
+{
+    auto &themeManager = Fluent::ThemeManager::instance();
+    themeManager.setDarkMode();
+
+    auto colors = Fluent::Theme::dark();
+    colors.accent = QColor("#5967F2");
+    colors.text = QColor("#FFFFFF");
+    colors.subText = QColor("#99A1B0");
+    colors.disabledText = QColor("#6C7280");
+    colors.background = QColor("#212126");
+    colors.surface = QColor("#28282E");
+    colors.border = QColor("#454549");
+    colors.hover = QColor("#2F2F34");
+    colors.pressed = QColor("#1B1B20");
+    colors.focus = colors.accent.lighter(120);
+    colors.error = QColor("#FF6B6B");
+    themeManager.setColors(colors);
+
+    QObject::connect(&themeManager, &Fluent::ThemeManager::themeChanged, &app, [&app]() {
+        app.setStyleSheet(Fluent::Theme::baseStyleSheet(Fluent::ThemeManager::instance().colors()));
+    });
+
+    app.setStyleSheet(Fluent::Theme::baseStyleSheet(themeManager.colors()));
+}
+
+}
 
 class SingleInstanceApp : public QApplication {
 public:
@@ -132,6 +163,8 @@ int main(int argc, char* argv[])
 
     app.setApplicationDisplayName(u8"屏幕录制");
 
+    initializeFluentTheme(app);
+
     QThread::sleep(5);
 
     initializeLogger();
@@ -183,11 +216,6 @@ int main(int argc, char* argv[])
     RecordingWindow window(server, token, port, nullptr);
 
     window.show();
-
-
-    qApp->setStyleSheet("QMenu,"
-                        "QToolTip "
-                        "{ padding:5px; color: #ffffff; background-color: #2F2F34; border: 1px solid 454549; }");
 
 
     int code =  QApplication::exec();

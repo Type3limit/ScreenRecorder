@@ -36,6 +36,20 @@
 
 [bin](./bin)目录中保存了预编译好的OBS-plugin链接库，基于[当前cmake](./CMakeLists.txt)的默认构建会生成于对应构建目录中。
 
+### 初始化子模块
+
+QtFluentWidgets 已作为仓库内子模块接入到 [thirdPart/src/QtFluentWidgets](./thirdPart/src/QtFluentWidgets)。首次拉取代码后，先执行：
+
+```shell
+git submodule update --init --recursive
+```
+
+如果仅需更新该依赖：
+
+```shell
+git submodule update --remote thirdPart/src/QtFluentWidgets
+```
+
 ### Windows build
 
 安装Qt 5.15.2版本，使用cmake配置`CMAKE_PREFIX_PATH`为Qt库文件安装路径。

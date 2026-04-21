@@ -5,7 +5,7 @@
 #ifndef RECORDINGWINDOW_H
 #define RECORDINGWINDOW_H
 
-#include <QMainWindow>
+#include "Fluent/FluentMainWindow.h"
 #include "obswrapper.h"
 #include "config.h"
 #include "minimizedrecordingwindow.h"
@@ -23,7 +23,7 @@ namespace Ui
 
 QT_END_NAMESPACE
 
-class RecordingWindow : public QMainWindow
+class RecordingWindow : public Fluent::FluentMainWindow
 {
     Q_OBJECT
 
@@ -33,9 +33,6 @@ public:
     QScreen* findScreen() const;
     int calculateNameSimilarity(const QString& a, const QString& b) const;
     void resetVideo();
-    void mousePressEvent(QMouseEvent* e) override;
-    void mouseMoveEvent(QMouseEvent* e) override;
-    void mouseReleaseEvent(QMouseEvent* e) override;
     void closeEvent(QCloseEvent* event) override;
     void showEvent(QShowEvent* event) override;
 
@@ -56,6 +53,7 @@ public slots:
     void invokePreviewWindow(const QString& file);
 
 protected:
+    bool eventFilter(QObject* watched, QEvent* event) override;
     void init(int defaultPort = -1);
     void initSignalProxy();
     void initMiniWindow();
@@ -65,10 +63,9 @@ protected:
     void initDebugWindow();
     void initFunctionalControls();
     void initHotKeys();
+    void setupFluentWindowChrome();
 
 private:
-    QPoint m_pos = {0, 0};
-    bool m_leftButtonPressed = false;
     bool m_isRecordingStarted = false;
     bool m_isPauseNow = false;
 

@@ -7,13 +7,13 @@
 
 #include <QDialog>
 
-#include "dragmovedialog.h"
+#include "Fluent/FluentDialog.h"
 #include "obswrapper.h"
 QT_BEGIN_NAMESPACE
 namespace Ui { class testwindow; }
 QT_END_NAMESPACE
 
-class testwindow : public DragMoveDialog {
+class testwindow : public Fluent::FluentDialog {
 Q_OBJECT
 
 public:

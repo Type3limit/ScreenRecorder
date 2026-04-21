@@ -1,8 +1,98 @@
 ﻿#include "usermessagebox.h"
 #include "ui_usermessagebox.h"
 
+#include "Fluent/FluentTheme.h"
+
 #include <QStyleOption>
 #include <QPainter>
+
+namespace {
+
+QString noticeIconName(const UserMessageBox::NoticeType noticeType)
+{
+    switch (noticeType)
+    {
+    case UserMessageBox::Info:
+        return "information";
+    case UserMessageBox::Warn:
+        return "warning";
+    case UserMessageBox::Ques:
+        return "question";
+    case UserMessageBox::Fail:
+        return "error";
+    }
+
+    return "information";
+}
+
+QString messageBoxStyleSheet(const UserMessageBox::NoticeType noticeType)
+{
+    const auto &colors = Fluent::ThemeManager::instance().colors();
+    const QString iconName = noticeIconName(noticeType);
+    const QColor primaryHover = colors.accent.lighter(110);
+    const QColor primaryPressed = colors.accent.darker(110);
+
+    return QString(
+        "%1"
+        "QDialog {"
+        "  border-radius: 12px;"
+        "}"
+        "QDialog #m_notifyLabel {"
+        "  image: url(:/icons/images/%2.svg);"
+        "}"
+        "QDialog #m_titleLabel {"
+        "  color: %3;"
+        "  font-size: 15px;"
+        "  font-weight: 600;"
+        "}"
+        "QDialog #m_contentLabel {"
+        "  color: %4;"
+        "  font-size: 13px;"
+        "}"
+        "QPushButton#m_button0 {"
+        "  color: #FFFFFF;"
+        "  background-color: %5;"
+        "  border: 1px solid %5;"
+        "  border-radius: 6px;"
+        "  padding: 6px 14px;"
+        "}"
+        "QPushButton#m_button0:hover {"
+        "  background-color: %6;"
+        "  border-color: %6;"
+        "}"
+        "QPushButton#m_button0:pressed {"
+        "  background-color: %7;"
+        "  border-color: %7;"
+        "}"
+        "QPushButton#m_button1 {"
+        "  color: %3;"
+        "  background-color: %8;"
+        "  border: 1px solid %9;"
+        "  border-radius: 6px;"
+        "  padding: 6px 14px;"
+        "}"
+        "QPushButton#m_button1:hover {"
+        "  background-color: %10;"
+        "  border-color: %5;"
+        "}"
+        "QPushButton#m_button1:pressed {"
+        "  background-color: %11;"
+        "  border-color: %5;"
+        "}")
+        .arg(Fluent::Theme::dialogStyle(colors))
+        .arg(iconName)
+        .arg(colors.text.name())
+        .arg(colors.subText.name())
+        .arg(colors.accent.name())
+        .arg(primaryHover.name())
+        .arg(primaryPressed.name())
+        .arg(colors.surface.name())
+        .arg(colors.border.name())
+        .arg(colors.hover.name())
+        .arg(colors.pressed.name());
+}
+
+}
 
 
 UserMessageBox::UserMessageBox(QWidget* parent) :
@@ -94,68 +184,9 @@ UserMessageBox::ButtonType UserMessageBox::showMessageBox(QWidget* parent,
                                                           const QString& button0Title,
                                                           const QString& button1Title)
 {
-    UserMessageBox messageBox;
+    UserMessageBox messageBox(parent);
 
-    auto styleStr = QString(
-        "QDialog {"
-        "background-color: #28282E;"
-        "border: 1px solid #454549;"
-        "border-radius: 0px;"
-        "}"
-        "QDialog #m_notifyLabel {"
-        "image: url(:/icons/images/{typeIcons}.svg)"
-        "}"
-        "QDialog #m_titleLabel {"
-        "  color:#99A1B0;"
-        "font-size:14px;"
-        "font-family:Microsoft YaHei UI;"
-        "}"
-        "QDialog #m_contentLabel {"
-        "color:#99A1B0;"
-        "font-size:12px;"
-        "font-family:Microsoft YaHei UI;"
-        "}"
-        "QPushButton"
-        "{"
-        "color:#99A1B0;"
-        "font-size:12px;"
-        "font-family:Microsoft YaHei UI;"
-        "background-color:#0F0F0F;"
-        "border: 1px solid #0F0F0F;"
-        "border-radius:4px;"
-        "}"
-        "QPushButton:hover"
-            "{"
-            "background-color:#212126;"
-            "border-radius: 4px;"
-            "border: 1px solid #5967f2;"
-            "}");
-    switch (noticeType)
-    {
-    case Info:
-        {
-            messageBox.setStyleSheet(styleStr.replace("{typeIcons}", "information"));
-            break;
-        }
-
-    case Warn:
-        {
-            messageBox.setStyleSheet(styleStr.replace("{typeIcons}", "warning"));
-            break;
-        }
-
-    case Ques:
-        {
-            messageBox.setStyleSheet(styleStr.replace("{typeIcons}", "question"));
-            break;
-        }
-
-    case Fail:
-        {
-            messageBox.setStyleSheet(styleStr.replace("{typeIcons}", "error"));
-            break;
-        }
-    }
+    messageBox.setStyleSheet(messageBoxStyleSheet(noticeType));
     messageBox.setTitle(title);
     messageBox.setText(text);
 

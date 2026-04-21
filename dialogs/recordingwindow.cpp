@@ -4,8 +4,12 @@
 
 #include "recordingwindow.h"
 #include "dialogs/ui_recordingwindow.h"
+#include "Fluent/FluentButton.h"
+#include "Fluent/FluentIconButton.h"
+#include "Fluent/FluentTheme.h"
 #include <QFileDialog>
 #include <QListView>
+#include <QLineEdit>
 #include <QMenu>
 #include <QMouseEvent>
 #include <QScreen>
@@ -26,7 +30,11 @@
 #include "preview/videopreviewdialog.h"
 
 
-#define SET_POP_VIEW(styledItem) ui->styledItem->setView(new QListView(ui->styledItem));
+#define SET_POP_VIEW(styledItem) \
+    if (!qobject_cast<Fluent::FluentComboBox*>(ui->styledItem)) \
+    { \
+        ui->styledItem->setView(new QListView(ui->styledItem)); \
+    }
 
 
 enum ScreenArea
@@ -37,6 +45,114 @@ enum ScreenArea
 
 const QString ScreenAreaStr[2] = {u8"全屏", u8"自定义"};
 
+QString iconPath(const QString& iconName)
+{
+    return QString(":/icons/images/%1.svg").arg(iconName);
+}
+
+void syncCountDownControls(Ui::RecordingWindow* ui)
+{
+    if (ui == nullptr)
+    {
+        return;
+    }
+
+    const bool enabled = ui->countDownCheckBox->isChecked() && ui->countDownCheckBox->isEnabled();
+    ui->countDownEdit->setEnabled(enabled);
+    ui->label_10->setEnabled(enabled);
+}
+
+void configureFluentButton(QPushButton* button,
+                           const QString& text,
+                           const QString& iconName,
+                           const QSize& iconSize,
+                           const bool primary)
+{
+    if (button == nullptr)
+    {
+        return;
+    }
+
+    button->setText(text);
+    button->setIcon(iconName.isEmpty() ? QIcon() : QIcon(iconPath(iconName)));
+    button->setStyleSheet(QString());
+    if (iconSize.isValid())
+    {
+        button->setIconSize(iconSize);
+    }
+    button->setAutoDefault(false);
+    button->setDefault(false);
+    button->setFlat(false);
+
+    if (auto* fluentButton = qobject_cast<Fluent::FluentButton*>(button))
+    {
+        fluentButton->setPrimary(primary);
+    }
+}
+
+void configureTileButton(QPushButton* button, const QString& iconName)
+{
+    configureFluentButton(button, QString(), iconName, QSize(54, 54), false);
+}
+
+void configureRecordingButton(QPushButton* button, const QString& iconName)
+{
+    configureFluentButton(button, QString(), iconName, QSize(44, 44), true);
+}
+
+QString recordingWindowStyleSheet()
+{
+    const auto& colors = Fluent::ThemeManager::instance().colors();
+
+    return QString(
+        "QWidget#centralwidget,"
+        "QWidget#AreaWidgets,"
+        "QWidget#ScreenAreaWidget,"
+        "QWidget#MicphoneWidget,"
+        "QWidget#PlayerWidget,"
+        "QWidget#RecordingWidget,"
+        "QWidget#SettingExpandWidget,"
+        "QWidget#SettingWidget,"
+        "QFrame#placeholder,"
+        "QFrame#contentFrame {"
+        "  background: transparent;"
+        "  border: none;"
+        "}"
+        "QFrame#titleFrame {"
+        "  background: transparent;"
+        "  border: none;"
+        "}"
+        "QFrame#line,"
+        "#line_1,"
+        "#line_2,"
+        "#line_3,"
+        "#line_4 {"
+        "  background-color: %1;"
+        "}"
+        "QLabel {"
+        "  color: %2;"
+        "  font-size: 12px;"
+        "  font-family: Microsoft YaHei UI;"
+        "}"
+        "QLabel#statusLabel {"
+        "  color: %3;"
+        "  font-size: 10px;"
+        "}"
+        "QLabel#unloginNoticeLabel {"
+        "  color: %4;"
+        "  font-size: 10px;"
+        "}"
+        "QCheckBox#settingExpander {"
+        "  color: %2;"
+        "  font-size: 12px;"
+        "  font-family: Microsoft YaHei UI;"
+        "}")
+        .arg(colors.hover.name())
+        .arg(colors.text.name())
+        .arg(colors.subText.name())
+        .arg(colors.error.name());
+}
+
 bool isValidFilePath(const QString& filePath)
 {
     QRegularExpression re("[*?<>|]");
@@ -45,7 +161,7 @@ bool isValidFilePath(const QString& filePath)
 
 
 RecordingWindow::RecordingWindow(const QString& url, const QString& token, int port, QWidget* parent) :
-    QMainWindow(parent)
+    Fluent::FluentMainWindow(parent)
     , ui(new Ui::RecordingWindow)
     , m_obs(QSharedPointer<ObsWrapper>(new ObsWrapper()))
     , m_recordHotKey(new QHotkey(this))
@@ -55,11 +171,21 @@ RecordingWindow::RecordingWindow(const QString& url, const QString& token, int p
     , m_socketPort(port)
 {
     ui->setupUi(this);
-    // hide title bar
-    setWindowFlags(Qt::FramelessWindowHint);
-    setAttribute(Qt::WA_TranslucentBackground);
-    setWindowIcon(QIcon(QString(":/icons/images/recording.svg")));
-    setWindowTitle(u8"录屏");
+
+    ui->countDownLabel->setCursor(Qt::PointingHandCursor);
+    ui->countDownLabel->installEventFilter(this);
+    connect(ui->countDownCheckBox, &QCheckBox::toggled, this, [this](bool) {
+        syncCountDownControls(ui);
+    });
+    syncCountDownControls(ui);
+
+    configureTileButton(ui->areaButton, "fullscreen");
+    configureTileButton(ui->micphoneButton, "micphone");
+    configureTileButton(ui->playerButton, "player");
+    configureRecordingButton(ui->RecordingButton, "start");
+    configureFluentButton(ui->pathSelectionButton, ui->pathSelectionButton->text(), QString(), QSize(), false);
+
+    setupFluentWindowChrome();
 }
 
 RecordingWindow::~RecordingWindow()
@@ -89,6 +215,82 @@ RecordingWindow::~RecordingWindow()
     delete ui;
 }
 
+void RecordingWindow::setupFluentWindowChrome()
+{
+    setWindowIcon(QIcon(iconPath("recording")));
+    setWindowTitle(u8"录屏");
+    setFluentTitleBarTitle(u8"屏幕录制");
+    setFluentTitleBarIcon(QIcon(iconPath("recording")));
+    setFluentWindowButtons(Fluent::FluentMainWindow::MinimizeButton | Fluent::FluentMainWindow::CloseButton);
+    setFluentResizeEnabled(false);
+
+    ui->titleFrame->hide();
+    setStyleSheet(recordingWindowStyleSheet());
+
+    auto* titleBarActionHost = new QWidget(this);
+    auto* titleBarActionLayout = new QHBoxLayout(titleBarActionHost);
+    titleBarActionLayout->setContentsMargins(0, 0, 0, 0);
+    titleBarActionLayout->setSpacing(8);
+
+    auto* themeToggleButton = new Fluent::FluentIconButton(titleBarActionHost);
+    themeToggleButton->setFixedSize(30, 30);
+    themeToggleButton->setButtonExtent(30);
+    themeToggleButton->setIconSize(QSize(16, 16));
+    titleBarActionLayout->addWidget(themeToggleButton);
+
+    auto* miniModeButton = new Fluent::FluentButton(u8"迷你窗", titleBarActionHost);
+    miniModeButton->setFixedSize(88, 28);
+    miniModeButton->setToolTip(u8"切换到微型窗口");
+    configureFluentButton(miniModeButton, u8"迷你窗", "minimize", QSize(16, 16), false);
+    titleBarActionLayout->addWidget(miniModeButton);
+    setFluentTitleBarRightWidget(titleBarActionHost);
+
+    const auto updateThemeChrome = [this, themeToggleButton]() {
+        const bool isDark = Fluent::ThemeManager::instance().themeMode() == Fluent::ThemeManager::ThemeMode::Dark;
+        configureFluentButton(themeToggleButton,
+                              QString(),
+                              isDark ? "theme_light" : "theme_dark",
+                              QSize(16, 16),
+                              false);
+        themeToggleButton->setToolTip(isDark ? u8"切换到浅色主题" : u8"切换到深色主题");
+        setStyleSheet(recordingWindowStyleSheet());
+    };
+
+    updateThemeChrome();
+
+    connect(themeToggleButton, &QPushButton::clicked, this, []() {
+        auto& themeManager = Fluent::ThemeManager::instance();
+        themeManager.setThemeMode(themeManager.themeMode() == Fluent::ThemeManager::ThemeMode::Dark
+                                      ? Fluent::ThemeManager::ThemeMode::Light
+                                      : Fluent::ThemeManager::ThemeMode::Dark);
+    });
+    connect(&Fluent::ThemeManager::instance(), &Fluent::ThemeManager::themeChanged, this, updateThemeChrome);
+
+    connect(miniModeButton, &QPushButton::clicked, this, [this]() {
+        this->hide();
+        if (m_miniWindow != nullptr)
+        {
+            m_miniWindow->show();
+            m_miniWindow->raise();
+            m_miniWindow->activateWindow();
+        }
+    });
+}
+
+bool RecordingWindow::eventFilter(QObject* watched, QEvent* event)
+{
+    if (watched == ui->countDownLabel && event != nullptr && event->type() == QEvent::MouseButtonRelease)
+    {
+        const auto* mouseEvent = static_cast<QMouseEvent*>(event);
+        if (mouseEvent->button() == Qt::LeftButton && ui->countDownCheckBox->isEnabled())
+        {
+            ui->countDownCheckBox->toggle();
+            return true;
+        }
+    }
+
+    return Fluent::FluentMainWindow::eventFilter(watched, event);
+}
 
 QScreen* RecordingWindow::findScreen() const
 {
@@ -220,23 +422,10 @@ void RecordingWindow::init(const int defaultPort)
     connect(m_obs.get(), &ObsWrapper::recordStatusChanged, this, [&](int status)
     {
         m_backgroundWindow->hide();
-        auto style = QString("QPushButton{"
-            "qproperty-icon:url(:/icons/images/{iconName}.svg);"
-            "qproperty-iconSize:44px;"
-            "background-color:#2F2F34;"
-            "border:1px solid #454549;"
-            "border-radius:4px;"
-            "}"
-            "QPushButton:hover"
-            "{"
-            "background-color:#212126;"
-            "border-radius: 4px;"
-            "border: 1px solid #5967f2;"
-            "}");
         if (status == RecordingStatus::Recording)
         {
             m_timer.start();
-            ui->RecordingButton->setStyleSheet(style.replace("{iconName}", "stop_recoding"));
+            configureRecordingButton(ui->RecordingButton, "stop_recoding");
             ui->statusLabel->setText("");
             ui->ScreenAreaWidget->setDisabled(true);
             ui->MicphoneWidget->setDisabled(true);
@@ -249,7 +438,7 @@ void RecordingWindow::init(const int defaultPort)
         else if (status == RecordingStatus::Paused)
         {
             m_timer.stop();
-            ui->RecordingButton->setStyleSheet(style.replace("{iconName}", "stop_recoding"));
+            configureRecordingButton(ui->RecordingButton, "stop_recoding");
             ui->statusLabel->setText(u8"暂停中...");
             ui->ScreenAreaWidget->setDisabled(true);
             ui->MicphoneWidget->setDisabled(true);
@@ -263,7 +452,7 @@ void RecordingWindow::init(const int defaultPort)
         {
             m_timer.stop();
             m_seconds = 0;
-            ui->RecordingButton->setStyleSheet(style.replace("{iconName}", "start"));
+            configureRecordingButton(ui->RecordingButton, "start");
             ui->statusLabel->setText("");
             ui->ScreenAreaWidget->setDisabled(false);
             ui->MicphoneWidget->setDisabled(false);
@@ -290,6 +479,7 @@ void RecordingWindow::init(const int defaultPort)
             emit SignalProxy::instance()->recodingStoped();
         }
     });
+    configureRecordingButton(ui->RecordingButton, "start");
 
     //button connection
     initFunctionalControls();
@@ -487,21 +677,7 @@ void RecordingWindow::initFunctionalControls()
     //capture type changed
     connect(ui->areaComboBox, QOverload<int>::of(&QComboBox::currentIndexChanged), this, [&](int curIndex)
     {
-        auto style = QString("QPushButton{"
-            "qproperty-icon:url(:/icons/images/{iconName}.svg);"
-            "qproperty-iconSize:44px;"
-            "background-color:#2F2F34;"
-            "border-radius:4px;"
-            "}"
-            "QPushButton:hover"
-            "{"
-            "background-color:#212126;"
-            "border-radius: 4px;"
-            "border: 1px solid #5967f2;"
-            "}");
-        ui->areaButton->setStyleSheet(isFullScreenMode()
-                                          ? style.replace("{iconName}", "fullscreen")
-                                          : style.replace("{iconName}", "areas"));
+        configureTileButton(ui->areaButton, isFullScreenMode() ? "fullscreen" : "areas");
         ui->areaWidthEdit->setDisabled(isFullScreenMode());
         ui->areaHeightEdit->setDisabled(isFullScreenMode());
         auto curScreen = findScreen();
@@ -625,29 +801,6 @@ void RecordingWindow::initFunctionalControls()
         setSizeAct();
     });
 
-    //title buttons
-    connect(ui->closeButton, &QPushButton::clicked, this, [&]()
-{
-    if (m_isRecordingStarted)
-    {
-        auto res = UserMessageBox::question(this, "提示", "当前正在录制，确认退出？");
-        if (res == UserMessageBox::ButtonType::Ok)
-        {
-            stopRecord();
-            close();
-        }
-    }
-    else
-    {
-        close();
-    }
-});
-    connect(ui->miniWindowButton, &QPushButton::clicked, this, [&]()
-    {
-        this->hide();
-        m_miniWindow->show();
-    });
-    connect(ui->minimizeButton, &QPushButton::clicked, this, &RecordingWindow::showMinimized);
     //region set
     connect(ui->areaButton, &QPushButton::clicked, this, [&]()
     {
@@ -681,30 +834,7 @@ void RecordingWindow::initFunctionalControls()
         ui->micphoneVolume->setVisible(m_isMicphoneEnable);
         auto curId = m_obs->micDeviceId(ui->micphoneDeviceComboBox->currentText());
         m_obs->recMicAudio(m_isMicphoneEnable, curId);
-        auto style = QString("QPushButton"
-            "{"
-            "qproperty-icon:url(:/icons/images/{iconName}.svg);"
-            "qproperty-iconSize:54px;"
-            "background-color:#2F2F34;"
-            "border-radius:4px;"
-            "border:1px solid #454549;"
-            "}"
-            "QPushButton:hover"
-            "{"
-            "background-color:#212126;"
-            "border-radius: 4px;"
-            "border: 1px solid #5967f2;"
-            "}");
-        if (m_isMicphoneEnable)
-        {
-            style.replace("{iconName}", "micphone");
-        }
-        else
-        {
-            style.replace("{iconName}", "micphone_mute");
-        }
-        ui->micphoneButton->setStyleSheet(style);
-        ui->micphoneButton->update();
+        configureTileButton(ui->micphoneButton, m_isMicphoneEnable ? "micphone" : "micphone_mute");
     });
     //player button
     connect(ui->playerButton, &QPushButton::clicked, this, [&]()
@@ -714,30 +844,7 @@ void RecordingWindow::initFunctionalControls()
         ui->playerVolume->setVisible(m_isPlayerEnable);
         auto curId = m_obs->playerDeviceId(ui->playerDeviceComboBox->currentText());
         m_obs->recPlayerAudio(m_isPlayerEnable, curId);
-        auto style = QString("QPushButton"
-            "{"
-            "qproperty-icon:url(:/icons/images/{iconName}.svg);"
-            "qproperty-iconSize:54px;"
-            "background-color:#2F2F34;"
-            "border-radius:4px;"
-            "border:1px solid #454549;"
-            "}"
-            "QPushButton:hover"
-            "{"
-            "background-color:#212126;"
-            "border-radius: 4px;"
-            "border: 1px solid #5967f2;"
-            "}");
-        if (m_isPlayerEnable)
-        {
-            style.replace("{iconName}", "player");
-        }
-        else
-        {
-            style.replace("{iconName}", "player_mute");
-        }
-        ui->playerButton->setStyleSheet(style);
-        ui->playerButton->update();
+        configureTileButton(ui->playerButton, m_isPlayerEnable ? "player" : "player_mute");
     });
 }
 
@@ -765,36 +872,6 @@ void RecordingWindow::initHotKeys()
 }
 
 #pragma endregion
-
-
-void RecordingWindow::mousePressEvent(QMouseEvent* e)
-{
-    if (e->button() != Qt::LeftButton)
-    {
-        return;
-    }
-    m_pos = e->globalPos() - mapToGlobal({0, 0});
-    m_leftButtonPressed = true;
-}
-
-void RecordingWindow::mouseMoveEvent(QMouseEvent* e)
-{
-    if (!m_leftButtonPressed)
-    {
-        return;
-    }
-    QPoint posOffset = e->globalPos() - m_pos;
-    move(posOffset);
-}
-
-void RecordingWindow::mouseReleaseEvent(QMouseEvent* e)
-{
-    if (e->button() != Qt::LeftButton)
-    {
-        return;
-    }
-    m_leftButtonPressed = false;
-}
 
 bool RecordingWindow::isFullScreenMode() const
 {
@@ -843,12 +920,25 @@ void RecordingWindow::setupPort(int port)
 
 void RecordingWindow::closeEvent(QCloseEvent* event)
 {
+    if (m_isRecordingStarted)
+    {
+        const auto result = UserMessageBox::question(this, u8"提示", u8"当前正在录制，确认退出？");
+        if (result != UserMessageBox::ButtonType::Ok)
+        {
+            event->ignore();
+            return;
+        }
+
+        stopRecord();
+    }
+
     m_obs->release();
+    Fluent::FluentMainWindow::closeEvent(event);
 }
 
 void RecordingWindow::showEvent(QShowEvent* event)
 {
-    QWidget::showEvent(event);
+    Fluent::FluentMainWindow::showEvent(event);
 
     if (!m_hasFirstInit)
     {
@@ -1003,7 +1093,7 @@ void RecordingWindow::stopRecord()
 
     if (!m_url.isEmpty() && !m_token.isEmpty())
     {
-        ui->statusLabel->setText(u8"已设置在线登录信息,录制完成后即可上传");
+        ui->statusLabel->setText(u8"已设置在线登录信息");
     }
 }
 

@@ -1,4 +1,5 @@
 #include "volumecontrol.h"
+#include "Fluent/FluentTheme.h"
 #include <QDateTime>
 #include <QPainter>
 #include <QDebug>
@@ -98,19 +99,23 @@ inline int convertToInt(float number)
 
 void VolumeControl::paintEvent(QPaintEvent* event)
 {
+    Q_UNUSED(event)
+
+    const auto &colors = Fluent::ThemeManager::instance().colors();
+    const QColor peakColor("#34D399");
 
 	QRect widgetRect = rect();
 	int width = widgetRect.width();
 	int height = widgetRect.height();
 	QPainter painter(this);
-	painter.setPen(QPen(QColor(15, 15, 15),1));
-	painter.setBrush(QColor(33, 33, 38));
+	painter.setPen(QPen(colors.border, 1));
+	painter.setBrush(colors.background);
 	painter.drawRoundedRect(widgetRect, 4, 4);
 
 	if (width > 8)
 	{
 		painter.setPen(Qt::NoPen);
-		painter.setBrush(QColor(57, 57, 61));
+		painter.setBrush(colors.hover);
 
 		auto drawCount = width / (ITEM_DISTANCE + COLUMN_WIDTH);
 		for (int i = 1; i <= drawCount; i++)
@@ -137,21 +142,21 @@ void VolumeControl::paintEvent(QPaintEvent* event)
 		{
 			drawCount = width/(ITEM_DISTANCE+COLUMN_WIDTH);
 		}
-		painter.setBrush(QColor(89, 103, 242));
+		painter.setBrush(colors.accent);
 		for (int i = 1; i <= drawCount; i++)
 		{
 			painter.drawRoundedRect(QRectF{ (qreal)i * (ITEM_DISTANCE + COLUMN_WIDTH),(qreal)widgetRect.y() + TOP_DISTANCE,COLUMN_WIDTH,(qreal)widgetRect.height() - (2 * TOP_DISTANCE) }, 1, 1);
 		}
 		//draw peak
 		drawCount = peakPos / (ITEM_DISTANCE + COLUMN_WIDTH);
-		painter.setBrush(Qt::green);
+		painter.setBrush(peakColor);
 		if (drawCount > 0)
 		{
 			painter.drawRoundedRect(QRectF{ (qreal)drawCount * (ITEM_DISTANCE + COLUMN_WIDTH),(qreal)widgetRect.y() + TOP_DISTANCE,COLUMN_WIDTH,(qreal)widgetRect.height() - (2 * TOP_DISTANCE) }, 1, 1);
 		}
 		//draw peakholder
 		drawCount = peakHolderPos / (ITEM_DISTANCE + COLUMN_WIDTH);
-		painter.setBrush(Qt::red);
+		painter.setBrush(colors.error);
 		if (drawCount > 0)
 		{
 			painter.drawRoundedRect(QRectF{ (qreal)drawCount * (ITEM_DISTANCE + COLUMN_WIDTH),(qreal)widgetRect.y() + TOP_DISTANCE,COLUMN_WIDTH,(qreal)widgetRect.height() - (2 * TOP_DISTANCE) }, 1, 1);

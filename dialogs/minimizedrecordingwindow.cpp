@@ -6,8 +6,101 @@
 
 #include "minimizedrecordingwindow.h"
 #include "ui_minimizedrecordingwindow.h"
+#include "Fluent/FluentTheme.h"
 #include "obswrapper.h"
 #include <QMouseEvent>
+
+namespace {
+
+QString minimizedWindowStyleSheet()
+{
+    const auto &colors = Fluent::ThemeManager::instance().colors();
+
+    return QString(
+        "QFrame#contentFrame {"
+        "  background-color: %1;"
+        "  border: 1px solid %2;"
+        "  border-radius: 12px;"
+        "}"
+        "QFrame#line,"
+        "#line_1,"
+        "#line_2,"
+        "#line_3,"
+        "#line_4 {"
+        "  background-color: %3;"
+        "}")
+        .arg(colors.surface.name())
+        .arg(colors.border.name())
+        .arg(colors.hover.name());
+}
+
+QString compactButtonStyle(const QString &iconName = QString())
+{
+    const auto &colors = Fluent::ThemeManager::instance().colors();
+    QString iconRule;
+    if (!iconName.isEmpty())
+    {
+        iconRule = QString("qproperty-icon:url(:/icons/images/%1.svg); qproperty-iconSize:20px;").arg(iconName);
+    }
+
+    return QString(
+        "QPushButton {"
+        "  %1"
+        "  color: %2;"
+        "  background-color: transparent;"
+        "  border: 1px solid transparent;"
+        "  border-radius: 6px;"
+        "  padding: 1px 0px 1px 2px;"
+        "}"
+        "QPushButton:hover {"
+        "  background-color: %3;"
+        "  border-color: %4;"
+        "}"
+        "QPushButton:pressed {"
+        "  background-color: %5;"
+        "  border-color: %4;"
+        "}"
+        "QPushButton:disabled {"
+        "  color: %6;"
+        "  border-color: transparent;"
+        "}")
+        .arg(iconRule)
+        .arg(colors.text.name())
+        .arg(colors.hover.name())
+        .arg(colors.accent.name())
+        .arg(colors.pressed.name())
+        .arg(colors.disabledText.name());
+}
+
+void applyCompactWindowState(Ui::MinimizedRecordingWindow* ui, const int status)
+{
+    if (ui == nullptr)
+    {
+        return;
+    }
+
+    if (status == RecordingStatus::Recording)
+    {
+        ui->recordingButton->setStyleSheet(compactButtonStyle("stop_recoding_minimize"));
+        ui->pauseButton->setStyleSheet(compactButtonStyle("pause"));
+        ui->pauseButton->setEnabled(true);
+        return;
+    }
+
+    if (status == RecordingStatus::Paused)
+    {
+        ui->recordingButton->setStyleSheet(compactButtonStyle("stop_recoding_minimize"));
+        ui->pauseButton->setStyleSheet(compactButtonStyle("play"));
+        ui->pauseButton->setEnabled(true);
+        return;
+    }
+
+    ui->recordingButton->setStyleSheet(compactButtonStyle("start"));
+    ui->pauseButton->setStyleSheet(compactButtonStyle("play"));
+    ui->pauseButton->setEnabled(false);
+}
+
+}
 
 MinimizedRecordingWindow::MinimizedRecordingWindow(const QSharedPointer<ObsWrapper>& obs_wrapper, QWidget* parent)
     : DragMoveDialog(parent)
@@ -15,61 +108,23 @@ MinimizedRecordingWindow::MinimizedRecordingWindow(const QSharedPointer<ObsWrapp
     , m_obs(obs_wrapper)
 {
     ui->setupUi(this);
+    setStyleSheet(minimizedWindowStyleSheet());
     // hide title bar
     setWindowFlags(Qt::FramelessWindowHint);
     setAttribute(Qt::WA_TranslucentBackground);
     setWindowIcon(QIcon(QString(":/icons/images/recording.svg")));
     setWindowTitle(u8"录屏");
+    applyCompactWindowState(ui, m_recordStatus);
+    ui->recoverButton->setStyleSheet(compactButtonStyle());
     connect(m_obs.get(), &ObsWrapper::recordStatusChanged, this, [&](const int status)
     {
-        auto startButtonStyle = QString("QPushButton {"
-            "    qproperty-icon:url(:/icons/images/{iconName}.svg);"
-            "    qproperty-iconSize:20px;"
-            "    selection-background-color: #40404A;"
-            "    selection-color: #3B3B41;"
-            "    color: #99A1B0;"
-            "    height:24px;"
-            "    background-color: transparent;"
-            "    border-style: solid;"
-            "    border: 0px solid #0F0F0F;"
-            "    border-radius: 4;"
-            "    padding: 1px 0px 1px 2px;"
-            "    font-size: 12px;"
-            "    font-family:Microsoft YaHei UI;"
-            "    padding-left:0px;"
-            "}"
-            ""
-            "QPushButton:hover {"
-            "    background-color: #2F2F34;"
-            "    border-radius: 4px;"
-            "    border: 1px solid #5967f2;"
-            "}"
-        );
-        if (status == RecordingStatus::Recording)
-        {
-            auto recStyle = QString(startButtonStyle).replace("{iconName}", "stop_recoding_minimize");
-            ui->recordingButton->setStyleSheet(recStyle);
-            auto pauseStyle = QString(startButtonStyle).replace("{iconName}", "pause");
-            ui->pauseButton->setStyleSheet(pauseStyle);
-            ui->pauseButton->setEnabled(true);
-        }
-        else if (status == RecordingStatus::Paused)
-        {
-            auto recStyle = QString(startButtonStyle).replace("{iconName}", "stop_recoding_minimize");
-            ui->recordingButton->setStyleSheet(recStyle);
-
-            auto pauseStyle = QString(startButtonStyle).replace("{iconName}", "play");
-            ui->pauseButton->setStyleSheet(pauseStyle);
-            ui->pauseButton->setEnabled(true);
-        }
-        else
-        {
-            auto recStyle = QString(startButtonStyle).replace("{iconName}", "start");
-            ui->recordingButton->setStyleSheet(recStyle);
-            auto pauseStyle = QString(startButtonStyle).replace("{iconName}", "play");
-            ui->pauseButton->setStyleSheet(pauseStyle);
-            ui->pauseButton->setEnabled(false);
-        }
+        m_recordStatus = status;
+        applyCompactWindowState(ui, m_recordStatus);
+    });
+    connect(&Fluent::ThemeManager::instance(), &Fluent::ThemeManager::themeChanged, this, [this]() {
+        setStyleSheet(minimizedWindowStyleSheet());
+        applyCompactWindowState(ui, m_recordStatus);
+        ui->recoverButton->setStyleSheet(compactButtonStyle());
     });
     connect(m_obs.get(), &ObsWrapper::micVolumeDataChange, this, [&]
         (const float* magnitude, const float* peak, const float* inputPeak)

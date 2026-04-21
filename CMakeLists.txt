@@ -137,6 +137,18 @@ endif()
 include(FetchContent)
 include(ExternalProject)
 
+set(QT_FLUENT_WIDGETS_DIR "${CMAKE_CURRENT_LIST_DIR}/thirdPart/src/QtFluentWidgets")
+if(NOT EXISTS "${QT_FLUENT_WIDGETS_DIR}/CMakeLists.txt")
+    message(FATAL_ERROR "QtFluentWidgets submodule is missing. Run 'git submodule update --init --recursive' before configuring ScreenRecorder.")
+endif()
+
+set(FLUENT_BUILD_DESIGNER_PLUGIN OFF CACHE BOOL "Disable QtFluentWidgets designer plugin for ScreenRecorder" FORCE)
+add_subdirectory(${QT_FLUENT_WIDGETS_DIR} ${CMAKE_CURRENT_BINARY_DIR}/QtFluentWidgets EXCLUDE_FROM_ALL)
+
+if(MSVC)
+    target_compile_options(QtFluentWidgets PRIVATE /utf-8)
+endif()
+
 set (QT_AVPLAYER_URL "https://github.com/valbok/QtAVPlayer")
 
 set(QT_AV_PLAYER_DIR "${CMAKE_CURRENT_LIST_DIR}/../thirdPart/src/QtAVPlayer")
@@ -162,9 +174,14 @@ else()
     add_executable(${CMAKE_PROJECT_NAME}  ${RESOURCES} main.cpp appicon.rc ${QtAVPlayer_SOURCES} )
 endif()
 
+if(MSVC)
+    target_compile_options(${CMAKE_PROJECT_NAME} PRIVATE /utf-8)
+endif()
+
 
 target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE ${LinkLib}
-        ${QtAVPlayer_LIBS})
+    ${QtAVPlayer_LIBS}
+    QtFluentWidgets)
 
 if(UNIX)
   target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/libobs.so)

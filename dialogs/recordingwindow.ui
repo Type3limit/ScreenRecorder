@@ -523,7 +523,7 @@ QAbstractSpinBox::up-button:disabled {
              <item>
               <layout class="QHBoxLayout" name="horizontalLayout_5">
                <item>
-                <widget class="QPushButton" name="areaButton">
+                <widget class="Fluent::FluentIconButton" name="areaButton">
                  <property name="minimumSize">
                   <size>
                    <width>80</width>
@@ -571,7 +571,7 @@ background-color:#212126;
                 <number>10</number>
                </property>
                <item>
-                <widget class="QComboBox" name="areaComboBox">
+                <widget class="Fluent::FluentComboBox" name="areaComboBox">
                  <property name="sizePolicy">
                   <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
                    <horstretch>0</horstretch>
@@ -591,7 +591,7 @@ background-color:#212126;
              <item>
               <layout class="QHBoxLayout" name="horizontalLayout_4">
                <item>
-                <widget class="QLineEdit" name="areaWidthEdit">
+                <widget class="Fluent::FluentLineEdit" name="areaWidthEdit">
                  <property name="sizePolicy">
                   <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
                    <horstretch>0</horstretch>
@@ -638,7 +638,7 @@ image:url(:/icons/images/lock.svg);
                 </widget>
                </item>
                <item>
-                <widget class="QLineEdit" name="areaHeightEdit">
+                <widget class="Fluent::FluentLineEdit" name="areaHeightEdit">
                  <property name="sizePolicy">
                   <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
                    <horstretch>0</horstretch>
@@ -677,7 +677,7 @@ image:url(:/icons/images/lock.svg);
              <item>
               <layout class="QHBoxLayout" name="horizontalLayout_8">
                <item>
-                <widget class="QPushButton" name="micphoneButton">
+                <widget class="Fluent::FluentIconButton" name="micphoneButton">
                  <property name="minimumSize">
                   <size>
                    <width>80</width>
@@ -770,7 +770,7 @@ background-color:#212126;
              <item>
               <layout class="QHBoxLayout" name="horizontalLayout_9">
                <item>
-                <widget class="QComboBox" name="micphoneDeviceComboBox">
+                <widget class="Fluent::FluentComboBox" name="micphoneDeviceComboBox">
                  <property name="minimumSize">
                   <size>
                    <width>0</width>
@@ -797,7 +797,7 @@ background-color:#212126;
              <item>
               <layout class="QHBoxLayout" name="horizontalLayout_13">
                <item>
-                <widget class="QPushButton" name="playerButton">
+                <widget class="Fluent::FluentIconButton" name="playerButton">
                  <property name="minimumSize">
                   <size>
                    <width>80</width>
@@ -884,7 +884,7 @@ background-color:#212126;
              <item>
               <layout class="QHBoxLayout" name="horizontalLayout_15">
                <item>
-                <widget class="QComboBox" name="playerDeviceComboBox">
+                <widget class="Fluent::FluentComboBox" name="playerDeviceComboBox">
                  <property name="minimumSize">
                   <size>
                    <width>0</width>
@@ -911,7 +911,7 @@ background-color:#212126;
              <item>
               <layout class="QHBoxLayout" name="horizontalLayout_21">
                <item>
-                <widget class="QPushButton" name="RecordingButton">
+                <widget class="Fluent::FluentIconButton" name="RecordingButton">
                  <property name="minimumSize">
                   <size>
                    <width>80</width>
@@ -1062,7 +1062,7 @@ font-family:Microsoft YaHei UI;
              <item>
               <layout class="QHBoxLayout" name="horizontalLayout_20">
                <item>
-                <widget class="QComboBox" name="screenDeviceComboBox">
+                <widget class="Fluent::FluentComboBox" name="screenDeviceComboBox">
                  <property name="minimumSize">
                   <size>
                    <width>0</width>
@@ -1205,7 +1205,7 @@ font-family:Microsoft YaHei UI;
              </widget>
             </item>
             <item>
-             <widget class="QLineEdit" name="nameEdit">
+             <widget class="Fluent::FluentLineEdit" name="nameEdit">
               <property name="minimumSize">
                <size>
                 <width>0</width>
@@ -1235,7 +1235,7 @@ font-family:Microsoft YaHei UI;
              </widget>
             </item>
             <item>
-             <widget class="QComboBox" name="bitrateComboBox">
+             <widget class="Fluent::FluentComboBox" name="bitrateComboBox">
               <property name="minimumSize">
                <size>
                 <width>0</width>
@@ -1265,7 +1265,7 @@ font-family:Microsoft YaHei UI;
              </widget>
             </item>
             <item>
-             <widget class="QComboBox" name="frameRateComboBox">
+             <widget class="Fluent::FluentComboBox" name="frameRateComboBox">
               <property name="minimumSize">
                <size>
                 <width>0</width>
@@ -1289,7 +1289,7 @@ font-family:Microsoft YaHei UI;
              </widget>
             </item>
             <item>
-             <widget class="QLineEdit" name="savePathEdit">
+             <widget class="Fluent::FluentLineEdit" name="savePathEdit">
               <property name="minimumSize">
                <size>
                 <width>0</width>
@@ -1299,7 +1299,7 @@ font-family:Microsoft YaHei UI;
              </widget>
             </item>
             <item>
-             <widget class="QPushButton" name="pathSelectionButton">
+             <widget class="Fluent::FluentButton" name="pathSelectionButton">
               <property name="minimumSize">
                <size>
                 <width>80</width>
@@ -1358,7 +1358,7 @@ QPushButton:hover
              </widget>
             </item>
             <item>
-             <widget class="QSpinBox" name="m_minuteSpinBox">
+             <widget class="Fluent::FluentSpinBox" name="m_minuteSpinBox">
               <property name="minimumSize">
                <size>
                 <width>80</width>
@@ -1375,7 +1375,7 @@ QPushButton:hover
              </widget>
             </item>
             <item>
-             <widget class="QSpinBox" name="m_secondSpinBox">
+             <widget class="Fluent::FluentSpinBox" name="m_secondSpinBox">
               <property name="minimumSize">
                <size>
                 <width>80</width>
@@ -1419,7 +1419,7 @@ QPushButton:hover
              </widget>
             </item>
             <item>
-             <widget class="QKeySequenceEdit" name="StartShortCut">
+             <widget class="Fluent::FluentKeySequenceEdit" name="StartShortCut">
               <property name="sizePolicy">
                <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
                 <horstretch>0</horstretch>
@@ -1455,7 +1455,7 @@ QPushButton:hover
              </widget>
             </item>
             <item>
-             <widget class="QKeySequenceEdit" name="PauseShortCut">
+             <widget class="Fluent::FluentKeySequenceEdit" name="PauseShortCut">
               <property name="minimumSize">
                <size>
                 <width>0</width>
@@ -1481,7 +1481,7 @@ QPushButton:hover
              <number>0</number>
             </property>
             <item>
-             <widget class="QLabel" name="label_9">
+             <widget class="QLabel" name="countDownLabel">
               <property name="sizePolicy">
                <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
                 <horstretch>0</horstretch>
@@ -1494,20 +1494,26 @@ QPushButton:hover
              </widget>
             </item>
             <item>
-             <widget class="QCheckBox" name="countDownCheckBox">
+             <widget class="Fluent::FluentCheckBox" name="countDownCheckBox">
+                            <property name="sizePolicy">
+                             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                                <horstretch>0</horstretch>
+                                <verstretch>0</verstretch>
+                             </sizepolicy>
+                            </property>
               <property name="minimumSize">
                <size>
-                <width>0</width>
+                                <width>56</width>
                 <height>28</height>
                </size>
               </property>
               <property name="text">
-               <string/>
+                             <string>启用</string>
               </property>
              </widget>
             </item>
             <item>
-             <widget class="QLineEdit" name="countDownEdit">
+             <widget class="Fluent::FluentLineEdit" name="countDownEdit">
               <property name="minimumSize">
                <size>
                 <width>0</width>
@@ -1535,6 +1541,41 @@ QPushButton:hover
   </widget>
  </widget>
  <customwidgets>
+    <customwidget>
+     <class>Fluent::FluentButton</class>
+     <extends>QPushButton</extends>
+     <header location="global">Fluent/FluentButton.h</header>
+    </customwidget>
+    <customwidget>
+     <class>Fluent::FluentIconButton</class>
+     <extends>QPushButton</extends>
+     <header location="global">Fluent/FluentIconButton.h</header>
+    </customwidget>
+    <customwidget>
+     <class>Fluent::FluentComboBox</class>
+     <extends>QComboBox</extends>
+     <header location="global">Fluent/FluentComboBox.h</header>
+    </customwidget>
+    <customwidget>
+     <class>Fluent::FluentLineEdit</class>
+     <extends>QLineEdit</extends>
+     <header location="global">Fluent/FluentLineEdit.h</header>
+    </customwidget>
+    <customwidget>
+     <class>Fluent::FluentKeySequenceEdit</class>
+     <extends>QKeySequenceEdit</extends>
+     <header location="global">Fluent/FluentKeySequenceEdit.h</header>
+    </customwidget>
+    <customwidget>
+     <class>Fluent::FluentCheckBox</class>
+     <extends>QCheckBox</extends>
+     <header location="global">Fluent/FluentCheckBox.h</header>
+    </customwidget>
+    <customwidget>
+     <class>Fluent::FluentSpinBox</class>
+     <extends>QSpinBox</extends>
+     <header location="global">Fluent/FluentSpinBox.h</header>
+    </customwidget>
   <customwidget>
    <class>VolumeControl</class>
    <extends>QWidget</extends>

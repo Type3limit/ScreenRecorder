@@ -31,6 +31,7 @@ public:
 private:
     Ui::MinimizedRecordingWindow *ui;
     QSharedPointer<ObsWrapper> m_obs;
+    int m_recordStatus = 0;
     QPoint m_pos = {0,0};
     bool m_leftButtonPressed = false;
     float m_currentMagnitude[8]{-90};

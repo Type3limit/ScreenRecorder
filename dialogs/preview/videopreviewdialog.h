@@ -5,7 +5,7 @@
 #ifndef VIDEOPREVIEWDIALOG_H
 #define VIDEOPREVIEWDIALOG_H
 
-#include "dragmovedialog.h"
+#include "Fluent/FluentDialog.h"
 #include "videorenderer.h"
 #include <QMutex>
 #include <QTimer>
@@ -15,7 +15,7 @@ namespace Ui { class VideoPreviewDialog; }
 QT_END_NAMESPACE
 class QAVPlayer;
 class QAVAudioOutput;
-class VideoPreviewDialog : public DragMoveDialog {
+class VideoPreviewDialog : public Fluent::FluentDialog {
     Q_OBJECT
 
     public:
@@ -30,7 +30,7 @@ class VideoPreviewDialog : public DragMoveDialog {
     void onDurationChanged(qint64 duration);
     void onPositionChanged(qint64 position);
 
-    void invokeUploadWindow();
+    void openPreviewFolder();
 
     void seek(qint64 position);
 

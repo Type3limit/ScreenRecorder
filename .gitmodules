@@ -1,0 +1,3 @@
+[submodule "thirdPart/src/QtFluentWidgets"]
+	path = thirdPart/src/QtFluentWidgets
+	url = https://github.com/Type3limit/QtFluentWidgets.git

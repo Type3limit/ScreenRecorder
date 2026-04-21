@@ -9,15 +9,43 @@
 #include "obswrapper.h"
 #include "ui_testwindow.h"
 #include "qoperationhelper.h"
+#include "Fluent/FluentTheme.h"
+
+namespace {
+
+QString previewCaptureDialogStyleSheet()
+{
+    const auto &colors = Fluent::ThemeManager::instance().colors();
+    return QString(
+        "%1"
+        "QFrame#contentFrame {"
+        "  background: #000000;"
+        "  border: 1px solid %2;"
+        "  border-radius: 10px;"
+        "}")
+        .arg(Fluent::Theme::dialogStyle(colors))
+        .arg(colors.border.name());
+}
+
+}
 
 
 
 
 testwindow::testwindow(const QSharedPointer<ObsWrapper>& obs, QWidget *parent) :
-m_obs(obs),DragMoveDialog(parent), ui(new Ui::testwindow) {
+m_obs(obs),Fluent::FluentDialog(parent), ui(new Ui::testwindow) {
     ui->setupUi(this);
     setWindowIcon(QIcon(QString(":/icons/images/recording.svg")));
     setWindowTitle(u8"采集预览");
+    setModal(false);
+    setWindowModality(Qt::NonModal);
+    setFluentWindowButtons(Fluent::FluentDialog::CloseButton);
+    setFluentResizeEnabled(true);
+    ui->titleFrame->hide();
+    setStyleSheet(previewCaptureDialogStyleSheet());
+    connect(&Fluent::ThemeManager::instance(), &Fluent::ThemeManager::themeChanged, this, [this]() {
+        setStyleSheet(previewCaptureDialogStyleSheet());
+    });
     connect(ui->closeButton, &QPushButton::clicked, this, &testwindow::close);
 }
 
@@ -46,9 +74,11 @@ void testwindow::createDisplayer()
 
 void testwindow::resizeEvent(QResizeEvent* event)
 {
-    QSize size = GetPixelSize(ui->contentFrame);
-    obs_display_resize(m_displayer,size.width(), size.height());
-    QDialog::resizeEvent(event);
+    if (m_displayer != nullptr) {
+        QSize size = GetPixelSize(ui->contentFrame);
+        obs_display_resize(m_displayer,size.width(), size.height());
+    }
+    Fluent::FluentDialog::resizeEvent(event);
 }
 
 
